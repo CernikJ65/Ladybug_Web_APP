@@ -1,39 +1,42 @@
 import React, { useState } from 'react';
 import {
-  FaSun,
-  FaSpinner,
-  FaArrowLeft,
-  FaLeaf,
-  FaBolt,
-  FaChartLine,
-  FaBuilding,
-  FaMapMarkerAlt,
-  FaCog,
-  FaFile,
-  FaCloudUploadAlt,
-  FaCheckCircle,
-  FaCloudSun,
+  FaSun, FaSpinner, FaArrowLeft, FaBolt,
+  FaBuilding, FaMapMarkerAlt, FaCog,
+  FaFile, FaCloudUploadAlt, FaCheckCircle, FaSolarPanel,
+  FaStar, FaThList,
 } from 'react-icons/fa';
+import PanelMapView, { type RoofMeta } from './PanelMapView';
 import './SolarAnalysisAdvanced.css';
 
-interface RoofSurface {
-  identifier: string;
-  area_m2: number;
-  tilt_degrees: number;
-  azimuth_degrees: number;
-  orientation: string;
+// ---------------------------------------------------------------------------
+// Typy
+// ---------------------------------------------------------------------------
+interface PanelResult {
+  id: number;
+  roof_id: string;
   center: number[];
-  annual_radiation_kwh: number;
-  annual_radiation_kwh_m2: number;
-  pv_production: {
-    annual_production_kwh: number;
-    monthly_avg_kwh: number;
-    daily_avg_kwh: number;
-    installed_capacity_kwp: number;
-  };
+  area_m2: number;
+  tilt: number;
+  azimuth: number;
+  radiation_kwh_m2: number;
+  annual_production_kwh: number;
+  capacity_kwp: number;
 }
 
-interface SolarAnalysisResult {
+interface Variant {
+  num_panels: number;
+  is_requested: boolean;
+  total_production_kwh: number;
+  total_capacity_kwp: number;
+  total_area_m2: number;
+  avg_radiation_kwh_m2: number;
+  co2_savings_kg: number;
+  co2_savings_tons: number;
+  trees_equivalent: number;
+  panels: PanelResult[];
+}
+
+interface AnalysisResult {
   model_info: {
     model_name: string;
     total_roof_area_m2: number;
@@ -43,402 +46,274 @@ interface SolarAnalysisResult {
     city: string;
     latitude: number;
     longitude: number;
-    elevation: number;
   };
-  roof_analysis: {
-    total_roof_area_m2: number;
-    total_annual_radiation_kwh: number;
-    average_radiation_kwh_m2: number;
-    roof_surfaces: RoofSurface[];
+  optimal_orientation: {
+    tilt_degrees: number;
+    azimuth_degrees: number;
   };
-  energy_production: {
-    annual_production_kwh: number;
-    monthly_avg_kwh: number;
-    daily_avg_kwh: number;
-    installed_capacity_kwp: number;
-    specific_yield_kwh_per_kwp: number;
-    performance_ratio: number;
-  };
-  environmental_impact: {
-    co2_savings_kg_per_year: number;
-    co2_savings_tons_per_year: number;
-    coal_savings_kg_per_year: number;
-    trees_equivalent: number;
-  };
-  parameters: {
+  panel_config: {
     pv_efficiency: number;
-    system_losses: number;
-    performance_ratio: number;
+    module_type: string;
+    mounting_type: string;
+  };
+  simulation_engine: string;
+  roofs: RoofMeta[];
+  optimization: {
+    max_panels_available: number;
+    variants: Variant[];
   };
 }
 
-interface SolarAnalysisAdvancedProps {
+interface Props {
   onBack: () => void;
 }
 
-const SolarAnalysisAdvanced: React.FC<SolarAnalysisAdvancedProps> = ({ onBack }) => {
+// ---------------------------------------------------------------------------
+// Komponenta
+// ---------------------------------------------------------------------------
+const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [hbjsonFile, setHbjsonFile] = useState<File | null>(null);
-  const [epwFile, setEpwFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<SolarAnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [epwFile, setEpwFile]       = useState<File | null>(null);
+  const [loading, setLoading]       = useState(false);
+  const [result, setResult]         = useState<AnalysisResult | null>(null);
+  const [error, setError]           = useState<string | null>(null);
+  const [selIdx, setSelIdx]         = useState<number | null>(null);
+  const [numPanels, setNumPanels]   = useState(10);
+  const [pvEff, setPvEff]           = useState(20);
+  const [maxTilt, setMaxTilt]       = useState(60);
+  const [modType, setModType]       = useState('Standard');
+  const [mountType, setMountType]   = useState('FixedOpenRack');
 
-  const [pvEfficiency, setPvEfficiency] = useState(18);
-  const [systemLosses, setSystemLosses] = useState(14);
-  const [maxTilt, setMaxTilt] = useState(60);
+  const run = async () => {
+    if (!hbjsonFile || !epwFile) { setError('Vyberte oba soubory'); return; }
+    setLoading(true); setError(null); setResult(null);
 
-  const handleHbjsonChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setHbjsonFile(e.target.files[0]);
-      setError(null);
-    }
-  };
-
-  const handleEpwChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setEpwFile(e.target.files[0]);
-      setError(null);
-    }
-  };
-
-  const handleUpload = async () => {
-    if (!hbjsonFile || !epwFile) {
-      setError('Prosím vyberte oba soubory (HBJSON a EPW)');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setResult(null);
-
-    const formData = new FormData();
-    formData.append('hbjson_file', hbjsonFile);
-    formData.append('epw_file', epwFile);
-    formData.append('pv_efficiency', (pvEfficiency / 100).toString());
-    formData.append('system_losses', (systemLosses / 100).toString());
-    formData.append('max_tilt', maxTilt.toString());
+    const fd = new FormData();
+    fd.append('hbjson_file', hbjsonFile);
+    fd.append('epw_file', epwFile);
+    fd.append('num_panels', numPanels.toString());
+    fd.append('pv_efficiency', (pvEff / 100).toString());
+    fd.append('max_tilt', maxTilt.toString());
+    fd.append('module_type', modType);
+    fd.append('mounting_type', mountType);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/solar/analyze-roof-potential', {
+      const res = await fetch('http://127.0.0.1:8000/api/solar/optimize-panels', {
         method: 'POST',
-        body: formData,
+        body: fd,
       });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || 'Chyba při analýze');
+      if (!res.ok) {
+        const e = await res.json();
+        throw new Error(e.detail || 'Chyba');
       }
-
-      const data: SolarAnalysisResult = await response.json();
+      const data: AnalysisResult = await res.json();
       setResult(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Neznámá chyba');
+      setSelIdx(data.optimization.variants.findIndex(v => v.is_requested) ?? 0);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Neznámá chyba');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="solar-advanced-container">
+  const fmt = (n: number) =>
+    n.toLocaleString('cs-CZ', { maximumFractionDigits: 0 });
 
-      {/* Hero banner – modrý gradient pozadí */}
-      <div className="page-hero">
-        <button onClick={onBack} className="back-button">
-          <FaArrowLeft /> Zpět na přehled
+  const sel =
+    result && selIdx !== null ? result.optimization.variants[selIdx] : null;
+
+  return (
+    <div className="sa-container">
+      {/* Hero banner */}
+      <div className="sa-hero">
+        <button onClick={onBack} className="sa-back">
+          <FaArrowLeft /> Zpět
         </button>
-        <div className="page-hero-content">
-          <div className="page-hero-icon-wrap">
-            <FaSun className="page-hero-icon" />
-          </div>
-          <h1>Pokročilá solární analýza</h1>
-          <p>Analyzujte solární potenciál streech z HBJSON modelu</p>
+        <div className="sa-hero-body">
+          <div className="sa-hero-icon"><FaSolarPanel /></div>
+          <h1>Optimalizace solárních panelů</h1>
+          <p>HBJSON + EPW → algoritmus najde nejlepší rozmístění panelů</p>
         </div>
       </div>
 
-      {/* Upload sekce */}
-      <div className="upload-section">
-        <div className="upload-grid">
-          <div className="file-upload-box">
-            <label htmlFor="hbjson-upload">
-              <div className="upload-box-inner">
-                <div className="upload-icon-wrap">
-                  <FaFile className="upload-icon" />
-                </div>
-                <div className="upload-box-text">
-                  <h3>HBJSON model</h3>
-                  <p>Geometrie budovy</p>
-                </div>
-              </div>
-              <input
-                id="hbjson-upload"
-                type="file"
-                accept=".hbjson,.json"
-                onChange={handleHbjsonChange}
-                style={{ display: 'none' }}
-              />
-              {hbjsonFile && (
-                <div className="file-selected">
-                  <FaCheckCircle className="file-selected-icon" />
-                  <span>{hbjsonFile.name}</span>
-                </div>
-              )}
-            </label>
-          </div>
-
-          <div className="file-upload-box">
-            <label htmlFor="epw-upload">
-              <div className="upload-box-inner">
-                <div className="upload-icon-wrap">
-                  <FaCloudUploadAlt className="upload-icon" />
-                </div>
-                <div className="upload-box-text">
-                  <h3>EPW soubor</h3>
-                  <p>Klimatická data</p>
-                </div>
-              </div>
-              <input
-                id="epw-upload"
-                type="file"
-                accept=".epw"
-                onChange={handleEpwChange}
-                style={{ display: 'none' }}
-              />
-              {epwFile && (
-                <div className="file-selected">
-                  <FaCheckCircle className="file-selected-icon" />
-                  <span>{epwFile.name}</span>
-                </div>
-              )}
-            </label>
-          </div>
+      {/* Upload + parametry */}
+      <div className="sa-card">
+        <div className="sa-upload-grid">
+          <FileBox
+            id="hbjson"
+            label="HBJSON model"
+            sub="Geometrie budovy"
+            file={hbjsonFile}
+            accept=".hbjson,.json"
+            onChange={f => { setHbjsonFile(f); setError(null); }}
+            icon={<FaFile />}
+          />
+          <FileBox
+            id="epw"
+            label="EPW soubor"
+            sub="Klimatická data"
+            file={epwFile}
+            accept=".epw"
+            onChange={f => { setEpwFile(f); setError(null); }}
+            icon={<FaCloudUploadAlt />}
+          />
         </div>
 
-        {/* Parametry */}
-        <div className="parameters-section">
-          <h3>
-            <FaCog className="section-icon" />
-            Parametry simulace
-          </h3>
-
-          <div className="param-group">
-            <label>
-              <span>Účinnost PV panelů</span>
-              <span className="param-value">{pvEfficiency} %</span>
-            </label>
-            <input
-              type="range"
-              min="10"
-              max="25"
-              step="1"
-              value={pvEfficiency}
-              onChange={(e) => setPvEfficiency(Number(e.target.value))}
-            />
-            <div className="param-hint">Standardní křemíkové panely: 15–20 %</div>
-          </div>
-
-          <div className="param-group">
-            <label>
-              <span>Systémové ztráty</span>
-              <span className="param-value">{systemLosses} %</span>
-            </label>
-            <input
-              type="range"
-              min="5"
-              max="25"
-              step="1"
-              value={systemLosses}
-              onChange={(e) => setSystemLosses(Number(e.target.value))}
-            />
-            <div className="param-hint">Zahrnuje invertor, kabely, teplotu</div>
-          </div>
-
-          <div className="param-group">
-            <label>
-              <span>Max. sklon strechy</span>
-              <span className="param-value">{maxTilt}°</span>
-            </label>
-            <input
-              type="range"
-              min="30"
-              max="90"
-              step="5"
-              value={maxTilt}
-              onChange={(e) => setMaxTilt(Number(e.target.value))}
-            />
-            <div className="param-hint">Plochy s větším sklonem nebudou analyzovány</div>
-          </div>
+        <div className="sa-panels-input">
+          <label><FaSolarPanel /> Počet panelů</label>
+          <input
+            type="number"
+            min={1}
+            max={500}
+            value={numPanels}
+            onChange={e => setNumPanels(Math.max(1, +e.target.value))}
+          />
         </div>
+
+        <details className="sa-params">
+          <summary><FaCog /> Parametry simulace</summary>
+          <Slider
+            label="Účinnost PV"
+            value={pvEff}
+            min={10}
+            max={25}
+            unit="%"
+            hint="Standard: 18–22 %"
+            onChange={setPvEff}
+          />
+          <Slider
+            label="Max. sklon střechy"
+            value={maxTilt}
+            min={30}
+            max={90}
+            unit="°"
+            hint="Plochy nad tímto sklonem se přeskočí"
+            onChange={setMaxTilt}
+          />
+          <div className="sa-select-row">
+            <label>Typ modulu</label>
+            <select value={modType} onChange={e => setModType(e.target.value)}>
+              <option value="Standard">Standard (14–17 %)</option>
+              <option value="Premium">Premium (18–20 %)</option>
+              <option value="ThinFilm">Thin Film (&lt;12 %)</option>
+            </select>
+          </div>
+          <div className="sa-select-row">
+            <label>Typ montáže</label>
+            <select value={mountType} onChange={e => setMountType(e.target.value)}>
+              <option value="FixedOpenRack">Open Rack (volný vzduch)</option>
+              <option value="FixedRoofMounted">Roof Mounted (flush)</option>
+            </select>
+          </div>
+        </details>
 
         <button
-          onClick={handleUpload}
+          onClick={run}
           disabled={loading || !hbjsonFile || !epwFile}
-          className="analyze-button"
+          className="sa-run"
         >
-          {loading ? (
-            <>
-              <FaSpinner className="spinner" /> Analyzuji model…
-            </>
-          ) : (
-            <>
-              <FaSun /> Spustit analýzu
-            </>
-          )}
+          {loading
+            ? <><FaSpinner className="sa-spin" /> Analyzuji…</>
+            : <><FaSun /> Spustit optimalizaci</>
+          }
         </button>
       </div>
 
       {/* Chyba */}
       {error && (
-        <div className="error-message">
+        <div className="sa-error">
           <strong>Chyba:</strong> {error}
         </div>
       )}
 
-      {/* ====== VÝSLEDKY ====== */}
-      {result && (
-        <div className="results-container">
+      {/* Výsledky */}
+      {result && sel && (
+        <div className="sa-results">
 
-          {/* 1. Summary banner — hlavní číslo vlevo, 3 secondary stats vpravo */}
-          <div className="summary-banner">
-            <div className="summary-main">
-              <FaBolt className="summary-main-icon" />
-              <div className="summary-main-value">
-                {result.energy_production.annual_production_kwh.toLocaleString('cs-CZ', { maximumFractionDigits: 0 })}
-              </div>
-              <div className="summary-main-unit">kWh / rok</div>
-              <div className="summary-main-label">Roční výroba energie</div>
-            </div>
-            <div className="summary-secondary">
-              <div className="summary-stat">
-                <FaChartLine className="summary-stat-icon" />
-                <div className="summary-stat-value">{result.energy_production.installed_capacity_kwp.toFixed(2)}</div>
-                <div className="summary-stat-label">kWp · Instalovaný výkon</div>
-              </div>
-              <div className="summary-stat">
-                <FaCloudSun className="summary-stat-icon" />
-                <div className="summary-stat-value">{result.roof_analysis.average_radiation_kwh_m2.toFixed(0)}</div>
-                <div className="summary-stat-label">kWh/m² · Průměrná radiace</div>
-              </div>
-              <div className="summary-stat">
-                <FaLeaf className="summary-stat-icon" />
-                <div className="summary-stat-value">−{result.environmental_impact.co2_savings_tons_per_year.toFixed(2)}</div>
-                <div className="summary-stat-label">t CO₂/rok · Úspora emisí</div>
-              </div>
-            </div>
+          {/* Informační řádek */}
+          <div className="sa-info-row">
+            <span>
+              <FaMapMarkerAlt /> {result.location.city} ({result.location.latitude.toFixed(1)}° N)
+            </span>
+            <span>
+              <FaBuilding /> {result.model_info.roof_count} střech
+              · {result.model_info.total_roof_area_m2.toFixed(0)} m²
+            </span>
+            <span>
+              <FaSolarPanel /> Max {result.optimization.max_panels_available} panelů
+            </span>
+            <span>
+              <FaBolt /> {result.simulation_engine || 'RadiationStudy'}
+            </span>
           </div>
 
-          {/* 2. Dva panely: Vstupní data | Energetická analýza */}
-          <div className="detail-panels">
-            <div className="detail-panel">
-              <div className="panel-header">
-                <FaBuilding className="panel-header-icon" />
-                <h3>Vstupní data</h3>
-              </div>
-
-              <div className="panel-subsection">
-                <div className="panel-subsection-title">
-                  <FaMapMarkerAlt /> Lokace
-                </div>
-                <div className="panel-row">
-                  <span>Město</span>
-                  <strong>{result.location.city}</strong>
-                </div>
-                <div className="panel-row">
-                  <span>Souřadnice</span>
-                  <strong>{result.location.latitude.toFixed(2)}° N, {result.location.longitude.toFixed(2)}° E</strong>
-                </div>
-                <div className="panel-row">
-                  <span>Nadmorská výška</span>
-                  <strong>{result.location.elevation.toFixed(0)} m</strong>
-                </div>
-              </div>
-
-              <div className="panel-subsection">
-                <div className="panel-subsection-title">
-                  <FaBuilding /> Model budovy
-                </div>
-                <div className="panel-row">
-                  <span>Název</span>
-                  <strong>{result.model_info.model_name}</strong>
-                </div>
-                <div className="panel-row">
-                  <span>Počet streech</span>
-                  <strong>{result.model_info.roof_count}</strong>
-                </div>
-                <div className="panel-row">
-                  <span>Celková plocha streech</span>
-                  <strong>{result.model_info.total_roof_area_m2.toFixed(1)} m²</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="detail-panel">
-              <div className="panel-header">
-                <FaBolt className="panel-header-icon" />
-                <h3>Energetická analýza</h3>
-              </div>
-
-              <div className="panel-row">
-                <span>Roční výroba</span>
-                <strong className="value-highlight">{result.energy_production.annual_production_kwh.toLocaleString('cs-CZ', { maximumFractionDigits: 0 })} kWh</strong>
-              </div>
-              <div className="panel-row">
-                <span>Měsíční průměr</span>
-                <strong>{result.energy_production.monthly_avg_kwh.toFixed(0)} kWh</strong>
-              </div>
-              <div className="panel-row">
-                <span>Denní průměr</span>
-                <strong>{result.energy_production.daily_avg_kwh.toFixed(1)} kWh</strong>
-              </div>
-              <div className="panel-row">
-                <span>Instalovaný výkon</span>
-                <strong>{result.energy_production.installed_capacity_kwp.toFixed(2)} kWp</strong>
-              </div>
-              <div className="panel-row">
-                <span>Specifický výnos</span>
-                <strong>{result.energy_production.specific_yield_kwh_per_kwp.toFixed(0)} kWh / kWp</strong>
-              </div>
-              <div className="panel-row">
-                <span>Účinnost systému</span>
-                <strong>{(result.energy_production.performance_ratio * 100).toFixed(0)} %</strong>
-              </div>
-              <div className="panel-row">
-                <span>Celková radiace</span>
-                <strong>{result.roof_analysis.total_annual_radiation_kwh.toLocaleString('cs-CZ', { maximumFractionDigits: 0 })} kWh</strong>
-              </div>
-            </div>
+          {/* Varianty */}
+          <h2 className="sa-section-title">Varianty</h2>
+          <div className="sa-variants">
+            {result.optimization.variants.map((v, idx) => (
+              <button
+                key={v.num_panels}
+                className={`sa-variant ${idx === selIdx ? 'active' : ''} ${v.is_requested ? 'requested' : ''}`}
+                onClick={() => setSelIdx(idx)}
+              >
+                {v.is_requested && (
+                  <span className="sa-badge"><FaStar /> Požadováno</span>
+                )}
+                <div className="sa-var-count">{v.num_panels}</div>
+                <div className="sa-var-label">panelů</div>
+                <div className="sa-var-prod">{fmt(v.total_production_kwh)} kWh/rok</div>
+                <div className="sa-var-meta">{v.total_capacity_kwp.toFixed(1)} kWp</div>
+              </button>
+            ))}
           </div>
 
-          {/* 3. Roof detail jako tabulka */}
-          <div className="roofs-table-section">
-            <div className="roofs-table-header">
-              <FaSun className="roofs-table-header-icon" />
-              <h3>Detail jednotlivých streech</h3>
+          {/* Detail + mapa */}
+          <div className="sa-detail-grid">
+            <div className="sa-detail-card">
+              <h3><FaBolt /> Energetika</h3>
+              <Row label="Roční výroba"      value={`${fmt(sel.total_production_kwh)} kWh`} highlight />
+              <Row label="Instalovaný výkon" value={`${sel.total_capacity_kwp.toFixed(2)} kWp`} />
+              <Row label="Plocha panelů"     value={`${sel.total_area_m2.toFixed(1)} m²`} />
+              <Row label="Solární potenciál" value={`${sel.avg_radiation_kwh_m2.toFixed(0)} kWh/m²`} />
+              <Row label="Typ modulu"        value={result.panel_config.module_type} />
+              <Row label="Typ montáže"       value={result.panel_config.mounting_type} />
             </div>
-            <div className="roofs-table-wrap">
-              <table className="roofs-table">
+
+            {/* Vizualizace — předáváme i roofs s world_bounds */}
+            <PanelMapView
+              panels={sel.panels}
+              roofs={result.roofs}
+            />
+          </div>
+
+          {/* Tabulka panelů */}
+          <div className="sa-table-section">
+            <h3><FaThList /> Panely ({sel.num_panels} ks)</h3>
+            <div className="sa-table-wrap">
+              <table className="sa-table">
                 <thead>
                   <tr>
-                    <th className="col-name">Streecha</th>
-                    <th>Orientace</th>
+                    <th>#</th>
+                    <th>Střecha</th>
                     <th>Plocha</th>
                     <th>Sklon</th>
                     <th>Azimut</th>
-                    <th>Radiace</th>
+                    <th>Sol. potenciál</th>
                     <th>Výroba</th>
                     <th>Kapacita</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {result.roof_analysis.roof_surfaces.map((roof, idx) => (
-                    <tr key={idx}>
-                      <td className="col-name">{roof.identifier}</td>
-                      <td><span className="orientation-badge">{roof.orientation}</span></td>
-                      <td>{roof.area_m2.toFixed(1)} m²</td>
-                      <td>{roof.tilt_degrees.toFixed(1)}°</td>
-                      <td>{roof.azimuth_degrees.toFixed(1)}°</td>
-                      <td className="val-highlight">{roof.annual_radiation_kwh_m2.toFixed(0)} kWh/m²</td>
-                      <td className="val-highlight">{roof.pv_production.annual_production_kwh.toFixed(0)} kWh</td>
-                      <td>{roof.pv_production.installed_capacity_kwp.toFixed(2)} kWp</td>
+                  {sel.panels.map((p, i) => (
+                    <tr key={p.id}>
+                      <td>{i + 1}</td>
+                      <td>{p.roof_id}</td>
+                      <td>{p.area_m2} m²</td>
+                      <td>{p.tilt.toFixed(1)}°</td>
+                      <td>{p.azimuth.toFixed(0)}°</td>
+                      <td className="val-hl">{p.radiation_kwh_m2.toFixed(0)} kWh/m²</td>
+                      <td className="val-hl">{p.annual_production_kwh.toFixed(0)} kWh</td>
+                      <td>{p.capacity_kwp.toFixed(3)} kWp</td>
                     </tr>
                   ))}
                 </tbody>
@@ -451,5 +326,90 @@ const SolarAnalysisAdvanced: React.FC<SolarAnalysisAdvancedProps> = ({ onBack })
     </div>
   );
 };
+
+// ---------------------------------------------------------------------------
+// Pomocné subkomponenty
+// ---------------------------------------------------------------------------
+function FileBox({
+  id, label, sub, file, accept, onChange, icon,
+}: {
+  id: string;
+  label: string;
+  sub: string;
+  file: File | null;
+  accept: string;
+  onChange: (f: File) => void;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="sa-file-box">
+      <label htmlFor={`sa-${id}`}>
+        <div className="sa-file-inner">
+          {icon}
+          <div>
+            <h4>{label}</h4>
+            <p>{sub}</p>
+          </div>
+        </div>
+        <input
+          id={`sa-${id}`}
+          type="file"
+          accept={accept}
+          style={{ display: 'none' }}
+          onChange={e => e.target.files?.[0] && onChange(e.target.files[0])}
+        />
+        {file && (
+          <div className="sa-file-ok">
+            <FaCheckCircle /> {file.name}
+          </div>
+        )}
+      </label>
+    </div>
+  );
+}
+
+function Slider({
+  label, value, min, max, unit, hint, onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  unit: string;
+  hint: string;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="sa-slider">
+      <label>
+        <span>{label}</span>
+        <span className="sa-slider-val">{value}{unit}</span>
+      </label>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={e => onChange(+e.target.value)}
+      />
+      <p className="sa-slider-hint">{hint}</p>
+    </div>
+  );
+}
+
+function Row({
+  label, value, highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="sa-row">
+      <span>{label}</span>
+      <strong className={highlight ? 'hl' : ''}>{value}</strong>
+    </div>
+  );
+}
 
 export default SolarAnalysisAdvanced;

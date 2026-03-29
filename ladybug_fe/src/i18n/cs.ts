@@ -10,7 +10,7 @@ export default {
     title: 'Ladybug Simulace',
     titleHighlight: 've vašem prohlížeči',
     description:
-      'Zkoušejte pokročilé funkce Ladybug Tools bez nutnosti programování. Analyzujte klima, slunce, větrání a energetickou efektivitu budov online.',
+      'Webová platforma zpřístupňuje vybrané analýzy nad Ladybug Tools pro potřeby návrhu a posuzování PED scénářů bez psaní kódu.',
     btnFeatures: 'Přehled funkcí',
     btnMore: 'Více informací',
     card1Value: 'Analýza EPW',

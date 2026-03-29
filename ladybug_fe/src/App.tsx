@@ -1,40 +1,46 @@
-import { useState, useEffect, useCallback } from 'react';
+/**
+ * Hlavní App s routingem.
+ * ZMĚNA: přidán 'combined' view pro energetický optimalizátor.
+ *
+ * Soubor: ladybug_fe/src/App.tsx
+ */
+import { useState, useEffect, useCallback, type FC } from 'react';
 import { ViewCacheProvider } from './context/ViewCacheContext';
 import LandingPage from './components/LandingPage';
-import SolarAnalysis from './components/analysis/SolarAnalysis';
+import SolarAnalysis from './components/analysis/solar/SolarAnalysis';
 import SolarAnalysisAdvanced from './components/analysis/solar/SolarAnalysisAdvanced';
-import HBJSONViewer from './components/analysis/Hbjsonviewer';
-import HBJSONBuilder from './components/analysis/builder/HbjsonBuilder';
+import HBJSONViewerRaw from './components/analysis/Hbjsonviewer';
+import HBJSONBuilderRaw from './components/analysis/builder/HbjsonBuilder';
+import HeatPumpAnalysis from './components/analysis/heatpump/HeatPumpAnalysis';
+import EnergyOptimizer from './components/analysis/combined/EnergyOptimizer';
 
-type ViewType = 'landing' | 'solar' | 'solar-advanced' | 'hbjson' | 'builder';
+/* Tyto komponenty nemají explicitní Props typ — přetypujeme */
+const HBJSONViewer = HBJSONViewerRaw as FC<{ onBack: () => void }>;
+const HBJSONBuilder = HBJSONBuilderRaw as FC<{ onBack: () => void }>;
 
-// Hash → ViewType mapping
+type ViewType =
+  | 'landing' | 'solar' | 'solar-advanced'
+  | 'hbjson' | 'builder' | 'heatpump' | 'combined';
+
 const hashToView: Record<string, ViewType> = {
-  '': 'landing',
-  'features': 'landing',
-  'about': 'landing',
-  'solar': 'solar',
-  'solar-advanced': 'solar-advanced',
-  'hbjson': 'hbjson',
-  'builder': 'builder',
+  '': 'landing', features: 'landing', about: 'landing',
+  solar: 'solar', 'solar-advanced': 'solar-advanced',
+  hbjson: 'hbjson', builder: 'builder',
+  heatpump: 'heatpump', combined: 'combined',
 };
-
-// ViewType → hash mapping (canonical URL per view)
 const viewToHash: Record<ViewType, string> = {
-  landing: '',
-  solar: 'solar',
-  'solar-advanced': 'solar-advanced',
-  hbjson: 'hbjson',
-  builder: 'builder',
+  landing: '', solar: 'solar', 'solar-advanced': 'solar-advanced',
+  hbjson: 'hbjson', builder: 'builder',
+  heatpump: 'heatpump', combined: 'combined',
 };
-
-// Titles per view
 const viewTitles: Record<ViewType, { cs: string; en: string }> = {
-  landing: { cs: 'Ladybug Web', en: 'Ladybug Web' },
-  solar: { cs: 'Analýza EPW – Ladybug Web', en: 'EPW Analysis – Ladybug Web' },
-  'solar-advanced': { cs: 'Pokročilá solární analýza – Ladybug Web', en: 'Advanced Solar Analysis – Ladybug Web' },
-  hbjson: { cs: '3D Vizualizace – Ladybug Web', en: '3D Visualization – Ladybug Web' },
-  builder: { cs: 'HBJSON Builder – Ladybug Web', en: 'HBJSON Builder – Ladybug Web' },
+  landing:          { cs: 'Ladybug Web',                                en: 'Ladybug Web' },
+  solar:            { cs: 'Analýza EPW – Ladybug Web',                  en: 'EPW Analysis – Ladybug Web' },
+  'solar-advanced': { cs: 'Pokročilá solární analýza – Ladybug Web',    en: 'Advanced Solar Analysis – Ladybug Web' },
+  hbjson:           { cs: '3D Vizualizace – Ladybug Web',               en: '3D Visualization – Ladybug Web' },
+  builder:          { cs: 'HBJSON Builder – Ladybug Web',               en: 'HBJSON Builder – Ladybug Web' },
+  heatpump:         { cs: 'Tepelná čerpadla – Ladybug Web',             en: 'Heat Pumps – Ladybug Web' },
+  combined:         { cs: 'Energetický optimalizátor – Ladybug Web',    en: 'Energy Optimizer – Ladybug Web' },
 };
 
 function getHash(): string {
@@ -42,92 +48,95 @@ function getHash(): string {
 }
 
 function App() {
-  const [currentView, setCurrentView] = useState<ViewType>(() => {
-    const hash = getHash();
-    return hashToView[hash] ?? 'landing';
-  });
-
+  const [currentView, setCurrentView] = useState<ViewType>(() =>
+    hashToView[getHash()] ?? 'landing',
+  );
   const getLang = (): 'cs' | 'en' => {
     try {
-      const stored = localStorage.getItem('i18nextLng');
-      return stored === 'en' ? 'en' : 'cs';
+      const s = localStorage.getItem('i18nextLng');
+      return s === 'en' ? 'en' : 'cs';
     } catch {
       return 'cs';
     }
   };
-
-  const updateTitle = useCallback((view: ViewType) => {
-    const lang = getLang();
-    document.title = viewTitles[view][lang];
+  const updateTitle = useCallback((v: ViewType) => {
+    document.title = viewTitles[v][getLang()];
   }, []);
 
-  // Sync hash → view (handles browser back/forward)
   useEffect(() => {
-    const handleHashChange = () => {
+    const h = () => {
       const hash = getHash();
       const view = hashToView[hash] ?? 'landing';
       setCurrentView(view);
       updateTitle(view);
-
-      if (view === 'landing' && (hash === 'features' || hash === 'about')) {
-        setTimeout(() => {
-          const element = document.getElementById(hash);
-          if (element) element.scrollIntoView({ behavior: 'smooth' });
-        }, 100);
-      }
+      if (
+        view === 'landing' &&
+        (hash === 'features' || hash === 'about')
+      )
+        setTimeout(
+          () =>
+            document
+              .getElementById(hash)
+              ?.scrollIntoView({ behavior: 'smooth' }),
+          100,
+        );
     };
-
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('hashchange', h);
+    return () => window.removeEventListener('hashchange', h);
   }, [updateTitle]);
 
-  // Sync view → hash + title
   useEffect(() => {
     const hash = viewToHash[currentView];
-    const currentHash = getHash();
-
+    const cur = getHash();
     if (currentView !== 'landing') {
-      if (currentHash !== hash) {
-        window.location.hash = hash;
-      }
-    } else if (!['', 'features', 'about'].includes(currentHash)) {
-      window.history.pushState(null, '', window.location.pathname);
+      if (cur !== hash) window.location.hash = hash;
+    } else if (!['', 'features', 'about'].includes(cur)) {
+      window.history.pushState(
+        null, '', window.location.pathname,
+      );
     }
-
     updateTitle(currentView);
   }, [currentView, updateTitle]);
 
-  // Update title on language change
   useEffect(() => {
-    const handleStorage = () => updateTitle(currentView);
-    window.addEventListener('storage', handleStorage);
-    const interval = setInterval(() => updateTitle(currentView), 1000);
+    const h = () => updateTitle(currentView);
+    window.addEventListener('storage', h);
+    const i = setInterval(
+      () => updateTitle(currentView), 1000,
+    );
     return () => {
-      window.removeEventListener('storage', handleStorage);
-      clearInterval(interval);
+      window.removeEventListener('storage', h);
+      clearInterval(i);
     };
   }, [currentView, updateTitle]);
 
-  // On initial load: scroll to landing sub-section if needed
   useEffect(() => {
     const hash = getHash();
-    if (hash === 'features' || hash === 'about') {
-      setTimeout(() => {
-        const element = document.getElementById(hash);
-        if (element) element.scrollIntoView({ behavior: 'smooth' });
-      }, 200);
-    }
+    if (hash === 'features' || hash === 'about')
+      setTimeout(
+        () =>
+          document
+            .getElementById(hash)
+            ?.scrollIntoView({ behavior: 'smooth' }),
+        200,
+      );
     updateTitle(currentView);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleFeatureClick = (featureId: string) => {
-    switch (featureId) {
+  const handleFeatureClick = (id: string) => {
+    switch (id) {
       case 'solar':
         setCurrentView('solar');
         break;
       case 'solar-advanced':
         setCurrentView('solar-advanced');
+        break;
+      case 'heatpump':
+        setCurrentView('heatpump');
+        break;
+      case 'combined':
+        setCurrentView('combined');
         break;
       case 'hbjson':
       case 'energy':
@@ -139,23 +148,35 @@ function App() {
         setCurrentView('builder');
         break;
       default:
-        alert(`Funkce "${featureId}" bude brzy dostupná!`);
+        alert(`Funkce "${id}" bude brzy dostupná!`);
     }
   };
-
-  const handleBackToLanding = () => {
-    setCurrentView('landing');
-  };
+  const back = () => setCurrentView('landing');
 
   return (
     <ViewCacheProvider>
-      {currentView === 'solar' && <SolarAnalysis onBack={handleBackToLanding} />}
-      {currentView === 'solar-advanced' && <SolarAnalysisAdvanced onBack={handleBackToLanding} />}
-      {currentView === 'hbjson' && <HBJSONViewer onBack={handleBackToLanding} />}
-      {currentView === 'builder' && <HBJSONBuilder onBack={handleBackToLanding} />}
-      {currentView === 'landing' && <LandingPage onFeatureClick={handleFeatureClick} />}
+      {currentView === 'solar' && (
+        <SolarAnalysis onBack={back} />
+      )}
+      {currentView === 'solar-advanced' && (
+        <SolarAnalysisAdvanced onBack={back} />
+      )}
+      {currentView === 'hbjson' && (
+        <HBJSONViewer onBack={back} />
+      )}
+      {currentView === 'builder' && (
+        <HBJSONBuilder onBack={back} />
+      )}
+      {currentView === 'heatpump' && (
+        <HeatPumpAnalysis onBack={back} />
+      )}
+      {currentView === 'combined' && (
+        <EnergyOptimizer onBack={back} />
+      )}
+      {currentView === 'landing' && (
+        <LandingPage onFeatureClick={handleFeatureClick} />
+      )}
     </ViewCacheProvider>
   );
 }
-
 export default App;

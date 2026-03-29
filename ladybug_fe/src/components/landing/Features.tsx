@@ -1,5 +1,13 @@
-import React, { type ReactNode } from 'react';
-import { FaSun, FaWind, FaTree, FaChartLine, FaCog, FaCube, FaSolarPanel } from 'react-icons/fa';
+/**
+ * Feature karty — Light theme · Uniform grid · Clean hover.
+ *
+ * Soubor: ladybug_fe/src/components/landing/Features.tsx
+ */
+import React, { useCallback, type ReactNode } from 'react';
+import {
+  FaSun, FaWind, FaChartLine,
+  FaCog, FaCube, FaSolarPanel, FaFire, FaBolt,
+} from 'react-icons/fa';
 
 interface Feature {
   id: string;
@@ -7,89 +15,136 @@ interface Feature {
   title: string;
   description: string;
   color: string;
+  tags?: string[];
 }
 
-interface FeaturesProps {
-  onFeatureClick: (featureId: string) => void;
+interface Props {
+  onFeatureClick: (id: string) => void;
 }
 
-const Features: React.FC<FeaturesProps> = ({ onFeatureClick }) => {
+const Features: React.FC<Props> = ({ onFeatureClick }) => {
+
+  /* Spotlight: sledování kurzoru */
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const card = e.currentTarget;
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+    }, [],
+  );
+
   const features: Feature[] = [
     {
       id: 'solar',
       icon: <FaSun />,
       title: 'Analýza EPW dat o počasí',
-      description: 'Analyzujte EPW data o počasí, pro danou lokalitu, směr větru a sestavte větrnou růžici pro vaši lokalitu.',
+      description:
+        'Analyzujte EPW data o počasí, směr větru a sestavte větrnou růžici. Interaktivní grafy teploty, vlhkosti a radiace.',
       color: '#f39c12',
+      tags: ['EPW', 'Ladybug', 'Wind Rose'],
     },
     {
       id: 'solar-advanced',
       icon: <FaSolarPanel />,
       title: 'Pokročilá solární analýza',
-      description: 'Analyzujte solární potenciál střech z HBJSON modelu. Vypočítejte roční radiaci a odhad výroby z PV panelů.',
+      description:
+        'Solární potenciál střech z HBJSON. Roční radiace a výroba z PV panelů.',
       color: '#e67e22',
+      tags: ['Radiance', 'HBJSON'],
+    },
+    {
+      id: 'heatpump',
+      icon: <FaFire />,
+      title: 'Potenciál tepelných čerpadel',
+      description:
+        'EnergyPlus simulace + Ladybug COP. Porovnání ASHP vs GSHP per místnost.',
+      color: '#14b8a6',
+      tags: ['EnergyPlus', 'COP'],
+    },
+    {
+      id: 'combined',
+      icon: <FaBolt />,
+      title: 'Energetický optimalizátor',
+      description:
+        'Kombinovaná analýza TČ + FVE. Investiční hodnocení, NPV a energetická bilance.',
+      color: '#0d9488',
+      tags: ['NPV', 'PED', 'Bilance'],
     },
     {
       id: 'hbjson',
       icon: <FaCube />,
       title: '3D Vizualizace HBJSON',
-      description: 'Interaktivní 3D prohlížeč pro HBJSON modely budov s renderingem a analýzou geometrie.',
+      description:
+        'Vizualizujte HBJSON oblasti pomocí interaktivní 3D vizualizace.',
       color: '#8e44ad',
+      tags: ['Three.js', 'HBJSON'],
     },
     {
       id: 'parametric',
       icon: <FaCog />,
-      title: 'Návrhář budov',
-      description: 'Vytvářejte vlastní HBJSON modely budov s místnostmi, okny a exportem dat.',
+      title: '?',
+      description: '?',
       color: '#9b59b6',
     },
     {
       id: 'wind',
       icon: <FaWind />,
-      title: 'Větrání & CFD',
-      description: 'Simulujte proudění vzduchu kolem budovy a optimalizujte přirozené větrání.',
+      title: '?',
+      description: '?',
       color: '#3498db',
-    },
-    {
-      id: 'climate',
-      icon: <FaTree />,
-      title: 'Klimatická data',
-      description: 'Pracujte s EPW soubory a analyzujte mikroklima lokality.',
-      color: '#27ae60',
     },
     {
       id: 'energy',
       icon: <FaChartLine />,
-      title: 'Energetické modely',
-      description: 'Vyhodnocujte energetickou náročnost a optimalizujte návrh.',
-      color: '#e74c3c',
+      title: '?',
+      description: '?',
+      color: '#2ecc71',
     },
   ];
 
   return (
-    <section className="features-section" id="features">
+    <section id="features" className="features-section">
+      {/* Jemná aurora */}
+      <div className="features-aurora" aria-hidden="true" />
+
       <div className="features-header">
-        <h2 className="section-title">Co můžete zkusit</h2>
+        <span className="features-eyebrow">Moduly</span>
+        <h2 className="section-title">Funkce platformy</h2>
         <p className="section-subtitle">
-          Nástroje pro analýzu pomocí Ladybug dostupné jedním kliknutím
+          Každý modul řeší konkrétní analytickou úlohu — od počasí přes solární
+          potenciál až po komplexní energetickou bilanci.
         </p>
       </div>
+
       <div className="features-grid">
-        {features.map((feature, index) => (
+        {features.map((f, i) => (
           <div
-            key={feature.id}
+            key={f.id}
             className="feature-card"
-            style={{ animationDelay: `${index * 0.1}s`, cursor: 'pointer' }}
-            onClick={() => onFeatureClick(feature.id)}
+            style={{ '--accent': f.color, '--i': i } as React.CSSProperties}
+            onClick={() => onFeatureClick(f.id)}
+            onMouseMove={handleMouseMove}
           >
-            <div
-              className="feature-icon"
-              style={{ backgroundColor: `${feature.color}15`, color: feature.color }}
-            >
-              {feature.icon}
-            </div>
-            <h3 className="feature-title">{feature.title}</h3>
-            <p className="feature-description">{feature.description}</p>
+            {/* Spotlight — jemný follow kurzoru */}
+            <div className="feature-spotlight" />
+
+            {/* Barevný akcent nahoře */}
+            <div className="feature-accent" />
+
+            <div className="feature-icon">{f.icon}</div>
+            <h3>{f.title}</h3>
+            <p>{f.description}</p>
+
+            {f.tags && f.tags.length > 0 && (
+              <div className="feature-tags">
+                {f.tags.map((tag) => (
+                  <span key={tag} className="feature-tag">{tag}</span>
+                ))}
+              </div>
+            )}
+
+            <span className="feature-arrow">→</span>
           </div>
         ))}
       </div>
