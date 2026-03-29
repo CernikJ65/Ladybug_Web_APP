@@ -1,0 +1,107 @@
+/* ==========================================================
+   HeatPumpRealResults.css — Výsledkové styly
+   Importuje existující HP Results design, přidává stacked bary.
+   Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpRealResults.css
+   ========================================================== */
+
+@import '../heatpump/HeatPumpResults.css';
+
+/* ── Stacked bars — vytápění + chlazení ── */
+
+.hpr-stacked-bars {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+  height: 130px;
+  padding: 0 .25rem;
+  margin-bottom: .5rem;
+}
+
+.hpr-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.hpr-bar-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+.hpr-bar-heat {
+  width: 100%;
+  background: linear-gradient(0deg, #b45309, #f59e0b);
+  border-radius: 4px 4px 0 0;
+  transition: height .5s cubic-bezier(.4, 0, .2, 1);
+  min-height: 0;
+}
+
+.hpr-bar-cool {
+  width: 100%;
+  background: linear-gradient(0deg, #0369a1, #38bdf8);
+  border-radius: 0;
+  transition: height .5s cubic-bezier(.4, 0, .2, 1);
+  min-height: 0;
+}
+
+.hpr-bar-heat:hover,
+.hpr-bar-cool:hover {
+  opacity: .85;
+}
+
+/* Pokud je chlazení nahoře, zakulatit horní rohy */
+.hpr-bar-cool:last-child {
+  border-radius: 4px 4px 0 0;
+}
+
+/* Pokud je chlazení 0 a jen heat, heat má horní rohy */
+.hpr-bar-heat:first-child:last-child {
+  border-radius: 4px 4px 0 0;
+}
+
+/* ── Legenda ── */
+
+.hpr-legend {
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  font-size: .68rem;
+  font-weight: 600;
+  font-family: var(--hp-mono);
+  color: var(--hp-text-muted);
+}
+
+.hpr-leg-heat::before,
+.hpr-leg-cool::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: .35rem;
+  vertical-align: middle;
+}
+
+.hpr-leg-heat::before {
+  background: linear-gradient(135deg, #b45309, #f59e0b);
+}
+
+.hpr-leg-cool::before {
+  background: linear-gradient(135deg, #0369a1, #38bdf8);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 640px) {
+  .hpr-stacked-bars {
+    height: 100px;
+  }
+}

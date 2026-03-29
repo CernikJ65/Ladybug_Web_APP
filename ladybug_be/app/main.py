@@ -1,14 +1,14 @@
 """
 FastAPI hlavní aplikace — registrace všech routerů.
 
-ZMĚNA: přidán router 'combined' pro kombinovanou analýzu TČ + FVE.
+ZMĚNA: přidán router 'heatpump_real' pro celoroční simulaci
+s reálným HVAC (VRF / WSHP).
 
 Soubor: ladybug_be/app/main.py
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from .routers import analysis, solar, heatpump, combined
+from .routers import analysis, solar, heatpump, combined, heatpump_real
 
 app = FastAPI(title="Ladybug Backend", version="0.1.0")
 
@@ -38,4 +38,9 @@ app.include_router(
 )
 app.include_router(
     combined.router, prefix="/api/combined", tags=["combined"],
+)
+app.include_router(
+    heatpump_real.router,
+    prefix="/api/heatpump-real",
+    tags=["heatpump-real"],
 )

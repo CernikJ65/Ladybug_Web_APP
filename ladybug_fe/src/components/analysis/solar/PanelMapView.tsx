@@ -1,6 +1,6 @@
 /**
- * PanelMapView v5 — kompaktnější vizualizace.
- * SVG 420×280, max-width 600px na roof view.
+ * PanelMapView v6 — 2-sloupcový grid, stránkování 4+ střech.
+ * Soubor: ladybug_fe/src/components/analysis/solar/PanelMapView.tsx
  */
 import React, { useMemo, useState } from 'react';
 
@@ -87,7 +87,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, accen
   return (
     <div style={{
       background:'#fff', borderRadius:10, border:'1px solid #e5e7eb',
-      overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.05)', maxWidth:600,
+      overflow:'hidden', boxShadow:'0 1px 3px rgba(0,0,0,0.05)',
     }}>
       <div style={{
         display:'flex', justifyContent:'space-between', alignItems:'center',
@@ -259,8 +259,11 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, accen
 };
 
 const ACCENTS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+const INITIAL_VISIBLE = 4;
 
 const PanelMapView: React.FC<Props> = ({ panels, roofs }) => {
+  const [showAll, setShowAll] = useState(false);
+
   const data = useMemo(() => {
     if (!panels.length) return null;
     const gMinR = Math.min(...panels.map(p=>p.radiation_kwh_m2));
@@ -278,6 +281,10 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs }) => {
   if (!data) return null;
   const {gr,gMinR,gMaxR,tP,rI} = data;
   const fmt=(n:number)=>n.toLocaleString('cs-CZ',{maximumFractionDigits:0});
+
+  const needsPaging = gr.length > INITIAL_VISIBLE;
+  const visible = showAll ? gr : gr.slice(0, INITIAL_VISIBLE);
+  const hiddenCount = gr.length - INITIAL_VISIBLE;
 
   return (
     <div style={{background:'#fff',borderRadius:10,border:'1px solid #e5e7eb',overflow:'hidden'}}>
@@ -309,13 +316,84 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs }) => {
         <span style={{fontSize:9,fontFamily:'monospace',color:'#94a3b8'}}>{Math.round(gMaxR)} kWh/m²</span>
       </div>
 
-      <div style={{padding:10,display:'flex',flexDirection:'column',gap:10}}>
-        {gr.map(([rid,rp],gi)=>(
+      {/* 2-sloupcový grid pro střechy */}
+      <div style={{
+        padding:10,
+        display:'grid',
+        gridTemplateColumns: gr.length === 1 ? '1fr' : '1fr 1fr',
+        gap:10,
+      }}>
+        {visible.map(([rid,rp],gi)=>(
           <RoofView key={rid} roofId={rid} panels={rp}
             roofMeta={rI.get(rid)} gMinR={gMinR} gMaxR={gMaxR}
             accent={ACCENTS[gi%ACCENTS.length]} />
         ))}
       </div>
+
+      {/* Tlačítko pro zobrazení dalších střech */}
+      {needsPaging && !showAll && (
+        <div style={{padding:'0 10px 10px',textAlign:'center'}}>
+          <button
+            onClick={() => setShowAll(true)}
+            style={{
+              width:'100%',
+              padding:'8px 16px',
+              background:'#f8fafc',
+              border:'1px solid #e2e8f0',
+              borderRadius:8,
+              fontSize:12,
+              fontWeight:600,
+              color:'#64748b',
+              cursor:'pointer',
+              fontFamily:'inherit',
+              transition:'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#f1f5f9';
+              e.currentTarget.style.color = '#334155';
+              e.currentTarget.style.borderColor = '#cbd5e1';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#f8fafc';
+              e.currentTarget.style.color = '#64748b';
+              e.currentTarget.style.borderColor = '#e2e8f0';
+            }}
+          >
+            Zobrazit dalších {hiddenCount} střech
+          </button>
+        </div>
+      )}
+
+      {needsPaging && showAll && (
+        <div style={{padding:'0 10px 10px',textAlign:'center'}}>
+          <button
+            onClick={() => setShowAll(false)}
+            style={{
+              width:'100%',
+              padding:'8px 16px',
+              background:'#f8fafc',
+              border:'1px solid #e2e8f0',
+              borderRadius:8,
+              fontSize:12,
+              fontWeight:600,
+              color:'#64748b',
+              cursor:'pointer',
+              fontFamily:'inherit',
+              transition:'all 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = '#f1f5f9';
+              e.currentTarget.style.color = '#334155';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = '#f8fafc';
+              e.currentTarget.style.color = '#64748b';
+            }}
+          >
+            Skrýt ({hiddenCount} střech)
+          </button>
+        </div>
+      )}
     </div>
   );
 };

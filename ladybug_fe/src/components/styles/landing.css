@@ -1,5 +1,6 @@
 /* ==========================================================
    landing.css — Apple-refined · Blue palette · Premium cards
+   + Subtle living hero (grain, breathing gradient, light leaks)
    Soubor: ladybug_fe/src/components/styles/landing.css
    ========================================================== */
 
@@ -131,6 +132,20 @@
   align-items: center;
   min-height: 90vh;
   position: relative;
+  /* Breathing gradient — slow ambient color shift */
+  animation: heroBreathing 12s ease-in-out infinite;
+}
+
+@keyframes heroBreathing {
+  0%, 100% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  33% {
+    filter: hue-rotate(-4deg) brightness(1.02);
+  }
+  66% {
+    filter: hue-rotate(5deg) brightness(0.98);
+  }
 }
 
 .hero-section::before {
@@ -151,6 +166,89 @@
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   border-radius: 50%;
   pointer-events: none;
+}
+
+/* --- Grain texture — premium depth --- */
+.hero-grain {
+  position: absolute;
+  inset: -50% -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 256px 256px;
+  background-repeat: repeat;
+  animation: grainDrift 8s linear infinite;
+}
+
+@keyframes grainDrift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-256px, -256px); }
+}
+
+/* --- Light leak — soft wandering glow --- */
+.hero-light-leak {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  animation: lightLeak1 18s ease-in-out infinite;
+  top: -10%;
+  right: 5%;
+}
+
+.hero-light-leak--2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.04) 0%, transparent 60%);
+  animation: lightLeak2 22s ease-in-out infinite;
+  top: auto;
+  bottom: -5%;
+  right: auto;
+  left: 10%;
+}
+
+@keyframes lightLeak1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(-40px, 30px) scale(1.15);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(20px, 50px) scale(0.95);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translate(-20px, -20px) scale(1.08);
+    opacity: 0.8;
+  }
+}
+
+@keyframes lightLeak2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.7;
+  }
+  60% {
+    transform: translate(-25px, -40px) scale(0.9);
+    opacity: 0.5;
+  }
+  80% {
+    transform: translate(15px, 10px) scale(1.05);
+    opacity: 0.6;
+  }
 }
 
 .hero-content {
@@ -308,12 +406,20 @@
   display: flex;
   align-items: center;
   gap: 1.2rem;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .floating-card:hover {
   transform: translateY(-8px) scale(1.03) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.04),
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06);
   z-index: 10;
 }
 
@@ -415,81 +521,130 @@
 .card-1 .card-label { font-size: 0.76rem; }
 
 /* ==========================================================
-   FEATURES — Torn paper edges · Paper texture · Clean cards
+   FEATURES — Premium torn paper · Organic edges · Depth
+   Hand-torn papír s nepravidelnými zuby, hloubkou a texturou
    ========================================================== */
 .features-section {
   position: relative;
   padding: 10rem 3rem 10rem;
-  padding-top: calc(10rem + 50px);
-  padding-bottom: calc(10rem + 50px);
-  margin-top: -50px;
-  margin-bottom: -50px;
-  background: #faf9f7;
+  padding-top: calc(10rem + 65px);
+  padding-bottom: calc(10rem + 65px);
+  margin-top: -60px;
+  margin-bottom: -60px;
+  background-color: #faf9f7;
   overflow: visible;
   z-index: 1;
+
   clip-path: polygon(
-    /* --- horní zuby (nahoru do modré) --- */
-    0% 46px,
-    1.5% 30px, 3% 50px, 5% 26px, 7% 48px, 9% 32px, 11% 54px,
-    13% 28px, 15% 50px, 17% 24px, 19% 52px, 21% 34px, 23% 56px,
-    25% 26px, 27% 48px, 29% 30px, 31% 54px, 33% 28px, 35% 50px,
-    37% 24px, 39% 52px, 41% 32px, 43% 56px, 45% 26px, 47% 48px,
-    49% 30px, 51% 54px, 53% 28px, 55% 50px, 57% 24px, 59% 52px,
-    61% 34px, 63% 56px, 65% 26px, 67% 48px, 69% 30px, 71% 54px,
-    73% 28px, 75% 50px, 77% 24px, 79% 52px, 81% 32px, 83% 56px,
-    85% 26px, 87% 48px, 89% 30px, 91% 54px, 93% 28px, 95% 50px,
-    97% 24px, 99% 48px, 100% 36px,
-    /* --- rovné strany + spodní zuby (dolů do modré) --- */
-    100% calc(100% - 36px),
-    99% calc(100% - 48px), 97% calc(100% - 24px), 95% calc(100% - 50px),
-    93% calc(100% - 28px), 91% calc(100% - 54px), 89% calc(100% - 30px),
-    87% calc(100% - 48px), 85% calc(100% - 26px), 83% calc(100% - 56px),
-    81% calc(100% - 32px), 79% calc(100% - 52px), 77% calc(100% - 24px),
-    75% calc(100% - 50px), 73% calc(100% - 28px), 71% calc(100% - 54px),
-    69% calc(100% - 30px), 67% calc(100% - 48px), 65% calc(100% - 26px),
-    63% calc(100% - 56px), 61% calc(100% - 34px), 59% calc(100% - 52px),
-    57% calc(100% - 24px), 55% calc(100% - 50px), 53% calc(100% - 28px),
-    51% calc(100% - 54px), 49% calc(100% - 30px), 47% calc(100% - 48px),
-    45% calc(100% - 26px), 43% calc(100% - 56px), 41% calc(100% - 32px),
-    39% calc(100% - 52px), 37% calc(100% - 24px), 35% calc(100% - 50px),
-    33% calc(100% - 28px), 31% calc(100% - 54px), 29% calc(100% - 30px),
-    27% calc(100% - 48px), 25% calc(100% - 26px), 23% calc(100% - 56px),
-    21% calc(100% - 34px), 19% calc(100% - 52px), 17% calc(100% - 24px),
-    15% calc(100% - 50px), 13% calc(100% - 28px), 11% calc(100% - 54px),
-    9% calc(100% - 32px), 7% calc(100% - 48px), 5% calc(100% - 26px),
-    3% calc(100% - 50px), 1.5% calc(100% - 30px), 0% calc(100% - 46px)
+    /* === HORNÍ HRANA — nahoru do modré === */
+    0% 52px,
+    0.8% 38px, 1.6% 48px, 2.5% 22px, 3.8% 44px, 4.5% 36px,
+    5.5% 58px, 6.2% 42px, 7.5% 20px, 8.8% 50px, 9.5% 40px,
+    10.5% 16px, 11.8% 46px, 12.5% 54px, 13.5% 28px, 14.8% 48px,
+    16% 18px, 17.2% 52px, 18% 44px, 19.5% 24px, 20.5% 56px,
+    21.2% 38px, 22.5% 14px, 23.8% 46px, 24.5% 52px, 25.5% 30px,
+    27% 50px, 28% 20px, 29.5% 54px, 30.2% 42px, 31.5% 18px,
+    32.8% 48px, 33.5% 56px, 34.5% 26px, 36% 44px, 37% 12px,
+    38.5% 50px, 39.2% 38px, 40.5% 22px, 41.8% 54px, 42.5% 46px,
+    43.5% 16px, 45% 48px, 46% 56px, 47% 28px, 48.5% 44px,
+    49.5% 18px, 50.5% 52px, 51.2% 40px, 52.5% 24px, 53.8% 56px,
+    54.5% 34px, 55.5% 14px, 57% 46px, 58% 52px, 59% 30px,
+    60.5% 50px, 61.5% 20px, 63% 54px, 64% 44px, 65% 16px,
+    66.5% 48px, 67.2% 56px, 68.5% 26px, 69.5% 42px, 71% 12px,
+    72.5% 50px, 73.2% 38px, 74.5% 22px, 75.8% 54px, 76.5% 46px,
+    77.5% 18px, 79% 48px, 80% 56px, 81% 28px, 82.5% 44px,
+    83.5% 14px, 85% 52px, 86% 40px, 87.5% 24px, 88.5% 56px,
+    89.5% 34px, 91% 16px, 92% 48px, 93.5% 52px, 94.5% 30px,
+    95.5% 46px, 96.5% 20px, 97.5% 50px, 98.5% 38px, 100% 44px,
+    /* === SPODNÍ HRANA — dolů do modré === */
+    100% calc(100% - 44px),
+    98.5% calc(100% - 34px), 97.5% calc(100% - 54px), 96.5% calc(100% - 22px),
+    95.5% calc(100% - 48px), 94.5% calc(100% - 28px), 93.5% calc(100% - 56px),
+    92% calc(100% - 40px), 91% calc(100% - 14px), 89.5% calc(100% - 50px),
+    88.5% calc(100% - 46px), 87.5% calc(100% - 18px), 86% calc(100% - 52px),
+    85% calc(100% - 36px), 83.5% calc(100% - 12px), 82.5% calc(100% - 48px),
+    81% calc(100% - 54px), 80% calc(100% - 26px), 79% calc(100% - 44px),
+    77.5% calc(100% - 16px), 76.5% calc(100% - 52px), 75.8% calc(100% - 38px),
+    74.5% calc(100% - 20px), 73.2% calc(100% - 56px), 72.5% calc(100% - 42px),
+    71% calc(100% - 10px), 69.5% calc(100% - 46px), 68.5% calc(100% - 54px),
+    67.2% calc(100% - 24px), 66.5% calc(100% - 50px), 65% calc(100% - 14px),
+    64% calc(100% - 48px), 63% calc(100% - 38px), 61.5% calc(100% - 18px),
+    60.5% calc(100% - 54px), 59% calc(100% - 32px), 58% calc(100% - 56px),
+    57% calc(100% - 22px), 55.5% calc(100% - 46px), 54.5% calc(100% - 12px),
+    53.8% calc(100% - 50px), 52.5% calc(100% - 42px), 51.2% calc(100% - 16px),
+    50.5% calc(100% - 54px), 49.5% calc(100% - 30px), 48.5% calc(100% - 56px),
+    47% calc(100% - 20px), 46% calc(100% - 48px), 45% calc(100% - 36px),
+    43.5% calc(100% - 14px), 42.5% calc(100% - 52px), 41.8% calc(100% - 44px),
+    40.5% calc(100% - 18px), 39.2% calc(100% - 54px), 38.5% calc(100% - 28px),
+    37% calc(100% - 10px), 36% calc(100% - 46px), 34.5% calc(100% - 52px),
+    33.5% calc(100% - 22px), 32.8% calc(100% - 50px), 31.5% calc(100% - 16px),
+    30.2% calc(100% - 48px), 29.5% calc(100% - 38px), 28% calc(100% - 56px),
+    27% calc(100% - 24px), 25.5% calc(100% - 44px), 24.5% calc(100% - 14px),
+    23.8% calc(100% - 52px), 22.5% calc(100% - 34px), 21.2% calc(100% - 12px),
+    20.5% calc(100% - 50px), 19.5% calc(100% - 46px), 18% calc(100% - 20px),
+    17.2% calc(100% - 54px), 16% calc(100% - 30px), 14.8% calc(100% - 56px),
+    13.5% calc(100% - 22px), 12.5% calc(100% - 48px), 11.8% calc(100% - 40px),
+    10.5% calc(100% - 14px), 9.5% calc(100% - 52px), 8.8% calc(100% - 36px),
+    7.5% calc(100% - 18px), 6.2% calc(100% - 54px), 5.5% calc(100% - 44px),
+    4.5% calc(100% - 26px), 3.8% calc(100% - 50px), 2.5% calc(100% - 16px),
+    1.6% calc(100% - 46px), 0.8% calc(100% - 32px), 0% calc(100% - 52px)
   );
 }
 
-/* Stín pod roztrhaným okrajem — wrapper element není třeba,
-   features-aurora leží uvnitř clip-path a stín se řeší
-   jemným gradientem na okrajích features sekce */
+/* --- Hloubkový stín u roztrhaných okrajů --- */
 .features-section::before {
   content: '';
-  display: none;
-}
-.features-section::after {
-  content: '';
-  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.06) 0%,
+    rgba(0, 0, 0, 0.02) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
-/* --- Jemná papírová textura (grain) --- */
+.features-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.06) 0%,
+    rgba(0, 0, 0, 0.02) 40%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* --- Papírová textura — grain + jemné vlákna --- */
 .features-aurora {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.5;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity: 0.6;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.02 0.06' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.015'/%3E%3C/svg%3E");
   background-repeat: repeat;
-  background-size: 200px 200px;
+  background-size: 256px 256px, 400px 400px;
 }
 
 
-/* --- Header --- */
+/* --- Header — Apple centered hierarchy --- */
 .features-header {
-  max-width: 720px;
-  margin: 0 auto 5rem;
+  max-width: 680px;
+  margin: 0 auto 4.5rem;
   text-align: center;
   position: relative;
   z-index: 2;
@@ -497,34 +652,36 @@
 
 .features-eyebrow {
   display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #2980b9;
-  background: rgba(52, 152, 219, 0.08);
-  border: 1px solid rgba(52, 152, 219, 0.15);
-  padding: 0.45rem 1.2rem;
-  border-radius: 980px;
-  margin-bottom: 1.6rem;
+  background: none;
+  border: none;
+  padding: 0;
+  border-radius: 0;
+  margin-bottom: 1.2rem;
 }
 
 .features-section .section-title {
   font-size: clamp(2.4rem, 4vw, 3.2rem);
-  font-weight: 900;
-  letter-spacing: -1px;
-  margin-bottom: 1.2rem;
-  background: linear-gradient(135deg, #1a202c 0%, #4a5568 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin-bottom: 1rem;
+  color: #1d1d1f;
+  -webkit-text-fill-color: #1d1d1f;
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
 }
 
 .section-subtitle {
-  font-size: 1.1rem;
-  color: #94a3b8;
-  line-height: 1.75;
+  font-size: 1.08rem;
+  color: #86868b;
+  line-height: 1.65;
   font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
 /* --- Grid --- */
@@ -533,37 +690,40 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  gap: 1.25rem;
   position: relative;
   z-index: 2;
 }
 
-/* --- Karta --- */
+/* --- Karta — Apple material design --- */
 .feature-card {
   position: relative;
-  background: #ffffff;
-  border: 1px solid #eaedf2;
-  border-radius: 20px;
-  padding: 2.6rem 2.2rem 2.2rem;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(0, 0, 0, 0.06);
+  border-radius: 22px;
+  padding: 2.4rem 2rem 2rem;
   cursor: pointer;
   overflow: hidden;
   transition:
-    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.35s ease;
+    transform 0.5s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.5s cubic-bezier(0.2, 0, 0, 1),
+    border-color 0.4s ease;
 
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.04),
-    0 4px 12px rgba(0, 0, 0, 0.03);
+    0 0.5px 0 0 rgba(255, 255, 255, 0.6) inset,
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 3px 10px rgba(0, 0, 0, 0.04);
 
-  animation: featureCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(0.06s * var(--i, 0));
+  animation: featureCardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.07s * var(--i, 0));
 }
 
 @keyframes featureCardIn {
   from {
     opacity: 0;
-    transform: translateY(28px) scale(0.97);
+    transform: translateY(24px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -572,130 +732,176 @@
 }
 
 .feature-card:hover {
-  transform: translateY(-6px);
-  border-color: #d1d9e2;
+  transform: translateY(-4px) scale(1.01);
+  border-color: color-mix(in srgb, var(--accent) 8%, rgba(0,0,0,0.06));
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.04),
-    0 16px 40px rgba(0, 0, 0, 0.08);
+    0 0.5px 0 0 rgba(255, 255, 255, 0.8) inset,
+    0 2px 3px rgba(0, 0, 0, 0.06),
+    0 6px 12px rgba(0, 0, 0, 0.07),
+    0 0 0 1px color-mix(in srgb, var(--accent) 3%, transparent);
 }
 
-/* --- Spotlight --- */
-.feature-spotlight {
+/* --- Shine sweep --- */
+.feature-card::before {
+  content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  background: radial-gradient(
-    450px circle at var(--mx, 50%) var(--my, 50%),
-    color-mix(in srgb, var(--accent) 6%, transparent),
-    transparent 50%
+  top: 0;
+  left: -100%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.12) 50%,
+    transparent 60%
   );
+  transition: left 0.6s cubic-bezier(0.2, 0, 0, 1);
+  pointer-events: none;
+  z-index: 2;
 }
 
-.feature-card:hover .feature-spotlight {
-  opacity: 1;
+.feature-card:hover::before {
+  left: 130%;
 }
 
-/* --- Barevný akcent nahoře --- */
+/* --- Spotlight — vypnutý --- */
+.feature-spotlight {
+  display: none;
+}
+
+/* --- Barevný akcent --- */
 .feature-accent {
   position: absolute;
   top: 0;
-  left: 2rem;
-  right: 2rem;
-  height: 3px;
-  border-radius: 0 0 3px 3px;
-  background: var(--accent);
-  opacity: 0.35;
-  transition: opacity 0.3s ease;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 22px 22px 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent 5%,
+    var(--accent) 35%,
+    var(--accent) 65%,
+    transparent 95%
+  );
+  opacity: 0.2;
+  transition: opacity 0.5s ease;
 }
 
 .feature-card:hover .feature-accent {
-  opacity: 0.8;
+  opacity: 0.45;
 }
 
 /* --- Ikona --- */
 .feature-card .feature-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.45rem;
-  margin-bottom: 1.6rem;
+  font-size: 1.35rem;
+  margin-bottom: 1.4rem;
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, #ffffff);
-  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: none;
+  background: color-mix(in srgb, var(--accent) 8%, #ffffff);
+  border: 0.5px solid color-mix(in srgb, var(--accent) 10%, transparent);
+  transition:
+    transform 0.5s cubic-bezier(0.2, 0, 0, 1),
+    box-shadow 0.5s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow:
+    0 1px 2px color-mix(in srgb, var(--accent) 10%, transparent),
+    0 0 0 0.5px color-mix(in srgb, var(--accent) 8%, transparent);
+  position: relative;
+  z-index: 1;
 }
 
 .feature-card:hover .feature-icon {
-  transform: scale(1.1) rotate(3deg);
+  transform: scale(1.1) rotate(4deg);
+  box-shadow:
+    0 2px 4px color-mix(in srgb, var(--accent) 14%, transparent),
+    0 0 0 0.5px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
-/* --- Typografie --- */
+/* --- Typografie — Apple tight hierarchy --- */
 .feature-card h3 {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #1a202c;
-  margin-bottom: 0.7rem;
-  letter-spacing: -0.3px;
-  line-height: 1.35;
+  font-size: 1.12rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 0.55rem;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  position: relative;
+  z-index: 1;
+  transition: color 0.4s ease;
+}
+
+.feature-card:hover h3 {
+  color: color-mix(in srgb, var(--accent) 40%, #1d1d1f);
 }
 
 .feature-card p {
-  color: #8896a6;
-  line-height: 1.72;
-  font-size: 0.93rem;
+  color: #86868b;
+  line-height: 1.65;
+  font-size: 0.9rem;
   font-weight: 400;
+  letter-spacing: 0.01em;
+  position: relative;
+  z-index: 1;
+  transition: color 0.4s ease;
 }
 
-/* --- Tech tagy --- */
+.feature-card:hover p {
+  color: #6e6e73;
+}
+
+/* --- Tech tagy — Apple pill styl --- */
 .feature-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-top: 1.2rem;
+  gap: 0.35rem;
+  margin-top: 1.1rem;
+  position: relative;
+  z-index: 1;
 }
 
 .feature-tag {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 0.3rem 0.7rem;
-  border-radius: 6px;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, #ffffff);
-  border: 1px solid color-mix(in srgb, var(--accent) 12%, transparent);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.25rem 0.65rem;
+  border-radius: 980px;
+  color: color-mix(in srgb, var(--accent) 80%, #1d1d1f);
+  background: color-mix(in srgb, var(--accent) 7%, #faf9f7);
+  border: 0.5px solid color-mix(in srgb, var(--accent) 10%, transparent);
+  transition: all 0.4s ease;
 }
 
-/* --- Šipka --- */
+.feature-card:hover .feature-tag {
+  background: color-mix(in srgb, var(--accent) 12%, #ffffff);
+  border-color: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+/* --- Šipka — Apple chevron --- */
 .feature-arrow {
   position: absolute;
-  bottom: 1.8rem;
-  right: 2rem;
-  font-size: 1.15rem;
+  bottom: 1.6rem;
+  right: 1.8rem;
+  font-size: 1rem;
   color: var(--accent);
   opacity: 0;
-  transform: translateX(-8px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateX(-6px);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.2, 0, 0, 1);
   z-index: 1;
 }
 
 .feature-card:hover .feature-arrow {
-  opacity: 0.6;
+  opacity: 0.5;
   transform: translateX(0);
 }
 
 /* ========== ABOUT ========== */
 .about-section {
   padding: 8rem 3rem;
-  /* Žádný vlastní gradient — prosvítá z .landing-container,
-     takže hero i about jsou jedna plynulá modrá */
   position: relative;
   overflow: hidden;
 }
@@ -1069,10 +1275,16 @@
     margin-top: -35px;
     margin-bottom: -35px;
   }
-  .features-grid { grid-template-columns: 1fr; gap: 1.2rem; }
-  .features-header { margin-bottom: 3rem; }
-  .feature-card { padding: 2rem 1.6rem 1.6rem; }
-  .feature-accent { left: 1.5rem; right: 1.5rem; }
+  .features-section::before,
+  .features-section::after { height: 50px; }
+  .features-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .features-header { margin-bottom: 2.5rem; }
+  .feature-card { padding: 2rem 1.5rem 1.5rem; border-radius: 18px; }
+  .feature-accent { border-radius: 18px 18px 0 0; }
+
+  /* Hero ambient layers — reduce on mobile */
+  .hero-light-leak { width: 300px; height: 300px; }
+  .hero-light-leak--2 { width: 250px; height: 250px; }
 }
 
 @media (max-width: 480px) {
@@ -1085,4 +1297,11 @@
     padding-top: calc(6rem + 25px);
     padding-bottom: calc(6rem + 25px);
   }
+  .features-section::before,
+  .features-section::after { height: 35px; }
+
+  /* Disable heavy ambient effects on small screens */
+  .hero-grain { display: none; }
+  .hero-light-leak { display: none; }
+  .hero-section { animation: none; }
 }

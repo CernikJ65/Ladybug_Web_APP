@@ -2,7 +2,7 @@
  * Formulář parametrů — vizuální karty místo dropdownů.
  *
  * Typ budovy a teplota topné vody se vybírají kliknutím
- * na kartu s ikonou. Rekuperace jako Apple-style slider.
+ * na kartu s ikonou. Setpoint a rekuperace jako slider.
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump/HPForm.tsx
  */
@@ -56,7 +56,8 @@ const SUPPLY_TEMPS = [
   { value: 55, label: '55 °C', desc: 'Radiátory' },
 ];
 
-const SETPOINTS = [18, 19, 20, 21, 22];
+const SP_MIN = 16;
+const SP_MAX = 25;
 
 const HPForm: React.FC<Props> = (p) => (
   <div className="hp-form">
@@ -128,26 +129,39 @@ const HPForm: React.FC<Props> = (p) => (
     </div>
 
     <div className="hp-params-grid">
-      <div className="hp-field">
+      {/* ── Setpoint — slider ── */}
+      <div className="hp-field hp-field--full">
         <label>Setpoint vytápění</label>
-        <div className="hp-chip-row">
-          {SETPOINTS.map(s => (
-            <button key={s}
-              className={`hp-chip ${
-                p.heatingSetpoint === s ? 'active' : ''
-              }`}
-              onClick={() => p.onHeatingSetpoint(s)}>
-              {s} °C
-            </button>
-          ))}
+        <div className="hp-slider-wrap">
+          <div className="hp-slider-track">
+            <div className="hp-slider-fill"
+              style={{
+                width: `${((p.heatingSetpoint - SP_MIN)
+                  / (SP_MAX - SP_MIN)) * 100}%`,
+              }} />
+            <input
+              type="range"
+              className="hp-slider"
+              min={SP_MIN} max={SP_MAX} step={1}
+              value={p.heatingSetpoint}
+              onChange={e => p.onHeatingSetpoint(+e.target.value)}
+            />
+          </div>
+          <span className="hp-slider-val">
+            {p.heatingSetpoint} °C
+          </span>
         </div>
       </div>
+
+      {/* ── Rekuperace — slider ── */}
       <div className="hp-field hp-field--full">
         <label>Rekuperace (ZZT)</label>
         <div className="hp-slider-wrap">
           <div className="hp-slider-track">
             <div className="hp-slider-fill"
-              style={{ width: `${(p.heatRecovery / 0.95) * 100}%` }} />
+              style={{
+                width: `${(p.heatRecovery / 0.95) * 100}%`,
+              }} />
             <input
               type="range"
               className="hp-slider"
@@ -163,6 +177,7 @@ const HPForm: React.FC<Props> = (p) => (
           </span>
         </div>
       </div>
+
       <div className="hp-field">
         <label>Hloubka kolektoru GSHP</label>
         <div className="hp-input-wrap">

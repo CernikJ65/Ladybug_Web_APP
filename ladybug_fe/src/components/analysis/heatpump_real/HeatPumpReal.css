@@ -1,0 +1,7 @@
+/* ==========================================================
+   HeatPumpReal.css — Celoroční simulace TČ
+   Importuje existující HP design systém, přidává minimum nového.
+   Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpReal.css
+   ========================================================== */
+
+@import '../heatpump/HeatPumpAnalysis.css';

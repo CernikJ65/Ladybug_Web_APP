@@ -1,5 +1,5 @@
 /**
- * Hero sekce — Apple-inspired.
+ * Hero sekce — Apple-inspired + subtle living touches.
  *
  * Soubor: ladybug_fe/src/components/landing/Hero.tsx
  */
@@ -21,6 +21,11 @@ const Hero: React.FC = () => {
 
   return (
     <section className="hero-section">
+      {/* Subtle ambient layers */}
+      <div className="hero-grain" aria-hidden="true" />
+      <div className="hero-light-leak" aria-hidden="true" />
+      <div className="hero-light-leak hero-light-leak--2" aria-hidden="true" />
+
       <div className="hero-content">
         <div className="hero-badge">
           <FaSun className="badge-icon" />

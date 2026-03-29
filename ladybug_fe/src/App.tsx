@@ -1,6 +1,6 @@
 /**
  * Hlavní App s routingem.
- * ZMĚNA: přidán 'combined' view pro energetický optimalizátor.
+ * ZMĚNA: přidán 'heatpump-real' view pro celoroční simulaci TČ.
  *
  * Soubor: ladybug_fe/src/App.tsx
  */
@@ -12,6 +12,7 @@ import SolarAnalysisAdvanced from './components/analysis/solar/SolarAnalysisAdva
 import HBJSONViewerRaw from './components/analysis/Hbjsonviewer';
 import HBJSONBuilderRaw from './components/analysis/builder/HbjsonBuilder';
 import HeatPumpAnalysis from './components/analysis/heatpump/HeatPumpAnalysis';
+import HeatPumpReal from './components/analysis/heatpump_real/HeatPumpReal';
 import EnergyOptimizer from './components/analysis/combined/EnergyOptimizer';
 
 /* Tyto komponenty nemají explicitní Props typ — přetypujeme */
@@ -20,18 +21,21 @@ const HBJSONBuilder = HBJSONBuilderRaw as FC<{ onBack: () => void }>;
 
 type ViewType =
   | 'landing' | 'solar' | 'solar-advanced'
-  | 'hbjson' | 'builder' | 'heatpump' | 'combined';
+  | 'hbjson' | 'builder' | 'heatpump'
+  | 'heatpump-real' | 'combined';
 
 const hashToView: Record<string, ViewType> = {
   '': 'landing', features: 'landing', about: 'landing',
   solar: 'solar', 'solar-advanced': 'solar-advanced',
   hbjson: 'hbjson', builder: 'builder',
-  heatpump: 'heatpump', combined: 'combined',
+  heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
+  combined: 'combined',
 };
 const viewToHash: Record<ViewType, string> = {
   landing: '', solar: 'solar', 'solar-advanced': 'solar-advanced',
   hbjson: 'hbjson', builder: 'builder',
-  heatpump: 'heatpump', combined: 'combined',
+  heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
+  combined: 'combined',
 };
 const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   landing:          { cs: 'Ladybug Web',                                en: 'Ladybug Web' },
@@ -40,6 +44,7 @@ const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   hbjson:           { cs: '3D Vizualizace – Ladybug Web',               en: '3D Visualization – Ladybug Web' },
   builder:          { cs: 'HBJSON Builder – Ladybug Web',               en: 'HBJSON Builder – Ladybug Web' },
   heatpump:         { cs: 'Tepelná čerpadla – Ladybug Web',             en: 'Heat Pumps – Ladybug Web' },
+  'heatpump-real':  { cs: 'Celoroční simulace TČ – Ladybug Web',       en: 'Year-Round HP Simulation – Ladybug Web' },
   combined:         { cs: 'Energetický optimalizátor – Ladybug Web',    en: 'Energy Optimizer – Ladybug Web' },
 };
 
@@ -135,6 +140,9 @@ function App() {
       case 'heatpump':
         setCurrentView('heatpump');
         break;
+      case 'heatpump-real':
+        setCurrentView('heatpump-real');
+        break;
       case 'combined':
         setCurrentView('combined');
         break;
@@ -169,6 +177,9 @@ function App() {
       )}
       {currentView === 'heatpump' && (
         <HeatPumpAnalysis onBack={back} />
+      )}
+      {currentView === 'heatpump-real' && (
+        <HeatPumpReal onBack={back} />
       )}
       {currentView === 'combined' && (
         <EnergyOptimizer onBack={back} />

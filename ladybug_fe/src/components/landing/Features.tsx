@@ -1,12 +1,15 @@
 /**
  * Feature karty — Light theme · Uniform grid · Clean hover.
  *
+ * ZMĚNA: přidána karta 'heatpump-real' pro celoroční simulaci TČ.
+ *
  * Soubor: ladybug_fe/src/components/landing/Features.tsx
  */
 import React, { useCallback, type ReactNode } from 'react';
 import {
   FaSun, FaWind, FaChartLine,
   FaCog, FaCube, FaSolarPanel, FaFire, FaBolt,
+  FaThermometerHalf,
 } from 'react-icons/fa';
 
 interface Feature {
@@ -40,16 +43,16 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       icon: <FaSun />,
       title: 'Analýza EPW dat o počasí',
       description:
-        'Analyzujte EPW data o počasí, směr větru a sestavte větrnou růžici. Interaktivní grafy teploty, vlhkosti a radiace.',
+        'Analyzujte EPW data o počasí, směr větru, větrná růžice, teplota, sluneční dráha.',
       color: '#f39c12',
       tags: ['EPW', 'Ladybug', 'Wind Rose'],
     },
     {
       id: 'solar-advanced',
       icon: <FaSolarPanel />,
-      title: 'Pokročilá solární analýza',
+      title: 'Solární analýza',
       description:
-        'Solární potenciál střech z HBJSON. Roční radiace a výroba z PV panelů.',
+        'Vypočet potenciálu solární energie pro FVE, roční výroba, orientace, umístění panelů.',
       color: '#e67e22',
       tags: ['Radiance', 'HBJSON'],
     },
@@ -58,9 +61,18 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       icon: <FaFire />,
       title: 'Potenciál tepelných čerpadel',
       description:
-        'EnergyPlus simulace + Ladybug COP. Porovnání ASHP vs GSHP per místnost.',
+        'Simulace a porovnání výroby energie čerpadel typu vzduch-voda a země-voda pro vytápění ',
       color: '#14b8a6',
       tags: ['EnergyPlus', 'COP'],
+    },
+    {
+      id: 'heatpump-real',
+      icon: <FaThermometerHalf />,
+      title: 'Celoroční simulace TČ',
+      description:
+        'Reálný HVAC (VRF / WSHP) s výkonovými křivkami. Vytápění i chlazení po celý rok.',
+      color: '#0891b2',
+      tags: ['VRF', 'WSHP', 'HVAC'],
     },
     {
       id: 'combined',
@@ -107,14 +119,13 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
     <section id="features" className="features-section">
       {/* Jemná aurora */}
       <div className="features-aurora" aria-hidden="true" />
+      {/* Dekorativní geo linie */}
+      <div className="features-geo" aria-hidden="true" />
 
       <div className="features-header">
         <span className="features-eyebrow">Moduly</span>
         <h2 className="section-title">Funkce platformy</h2>
-        <p className="section-subtitle">
-          Každý modul řeší konkrétní analytickou úlohu — od počasí přes solární
-          potenciál až po komplexní energetickou bilanci.
-        </p>
+     
       </div>
 
       <div className="features-grid">

@@ -5,8 +5,8 @@ Honeybee-energy třídy:
   - IdealAirSystem → simulace tepelných zátěží
   - IdealAirSystem.sensible_heat_recovery → rekuperace
   - Setpoint, ScheduleRuleset → teplotní požadavky
-  - construction_set_by_identifier → výchozí obálka budovy
-  - building_program_type_by_identifier → vnitřní zisky
+  - program_type_by_identifier → space-level profily (ASHRAE)
+  - Infiltration → netěsnost obálky
   - no_limit → bez omezení výkonu
 
 Soubor: ladybug_be/app/services/heatpump_model_preparer.py
@@ -23,10 +23,10 @@ from honeybee.altnumber import no_limit
 
 from honeybee_energy.hvac.idealair import IdealAirSystem
 from honeybee_energy.load.setpoint import Setpoint
+from honeybee_energy.load.infiltration import Infiltration
 from honeybee_energy.schedule.ruleset import ScheduleRuleset
 from honeybee_energy.lib.programtypes import (
     program_type_by_identifier,
-    building_program_type_by_identifier,
 )
 import honeybee_energy.lib.scheduletypelimits as _type_lib
 
@@ -36,13 +36,19 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_COOLING_SP = 26.0
 
+# PED vzduchotěsnost: 0.0001 m³/s·m² fasády (tight building)
+# ASHRAE výchozí: 0.0003 (average) až 0.0006 (leaky)
+PED_INFILTRATION = 0.0001
+
+# Mapování UI typů → ASHRAE 2019 space-level program type.
+# Každý typ reprezentuje hlavní užitný prostor dané budovy.
 BUILDING_TYPE_MAP: Dict[str, str] = {
-    "Residential": "Residential",
-    "Office": "LargeOffice",
-    "Retail": "Retail",
-    "School": "PrimarySchool",
-    "Hotel": "LargeHotel",
-    "Hospital": "Hospital",
+    "Residential": "2019::MidriseApartment::Apartment",
+    "Office": "2019::MediumOffice::OpenOffice",
+    "Retail": "2019::Retail::Retail",
+    "School": "2019::SecondarySchool::Classroom",
+    "Hotel": "2019::SmallHotel::GuestRoom",
+    "Hospital": "2019::Hospital::PatRoom",
 }
 
 
@@ -75,8 +81,9 @@ class HeatPumpModelPreparer:
         Pořadí:
           1. Konstrukce → PED nízkoenergetický standard
           2. Program type → dle zvoleného typu budovy
-          3. Setpoint → uživatelova teplota
-          4. IdealAirSystem → no_limit + volitelná rekuperace
+          3. Infiltrace → PED vzduchotěsnost (přepíše ASHRAE)
+          4. Setpoint → uživatelova teplota
+          5. IdealAirSystem → no_limit + volitelná rekuperace
         """
         if self._model is None:
             self.load_model()
@@ -89,6 +96,7 @@ class HeatPumpModelPreparer:
 
         for room in self._model.rooms:
             self._apply_program_type(room, self._building_type)
+            self._apply_ped_infiltration(room)
             self._apply_setpoint(room, self._heating_sp)
             self._assign_ideal_air(room, self._heat_recovery)
 
@@ -137,40 +145,44 @@ class HeatPumpModelPreparer:
     def _apply_program_type(
         self, room: Room, building_type: str,
     ) -> None:
-        """Přiřadí program type dle zvoleného typu budovy."""
-        mix_key = BUILDING_TYPE_MAP.get(building_type)
-        if mix_key is not None:
-            applied = self._try_building_mix(room, mix_key)
-        else:
-            applied = self._try_direct(room, building_type)
-        self._applied_programs[room.identifier] = applied
+        """Přiřadí ASHRAE 2019 space-level program type.
 
-    def _try_building_mix(
-        self, room: Room, mix_key: str,
-    ) -> str:
-        try:
-            pt = building_program_type_by_identifier(mix_key)
-            room.properties.energy.program_type = pt
-            return pt.identifier
-        except Exception:
-            return self._try_direct(room, mix_key)
+        Raises:
+            ValueError: Pokud se nepodaří najít program type
+                v honeybee-energy standardech.
+        """
+        pt_id = BUILDING_TYPE_MAP.get(building_type)
+        if pt_id is None:
+            pt_id = building_type
 
-    def _try_direct(
-        self, room: Room, identifier: str,
-    ) -> str:
         try:
-            pt = program_type_by_identifier(identifier)
+            pt = program_type_by_identifier(pt_id)
             room.properties.energy.program_type = pt
-            return pt.identifier
-        except Exception:
-            try:
-                fb = program_type_by_identifier(
-                    "Generic Office Program",
-                )
-                room.properties.energy.program_type = fb
-                return fb.identifier
-            except Exception:
-                return "FALLBACK_FAILED"
+            self._applied_programs[room.identifier] = (
+                pt.identifier
+            )
+        except Exception as e:
+            raise ValueError(
+                f"Program type '{pt_id}' pro typ budovy "
+                f"'{building_type}' nenalezen v honeybee-energy "
+                f"standardech. Podporované typy: "
+                f"{list(BUILDING_TYPE_MAP.keys())}. Chyba: {e}"
+            )
+
+    @staticmethod
+    def _apply_ped_infiltration(room: Room) -> None:
+        """Přepíše ASHRAE infiltraci na PED standard.
+
+        ASHRAE profily předpokládají běžnou netěsnost obálky
+        (0.0003 m³/s·m²). PED budovy vyžadují vzduchotěsnost
+        ověřenou Blower door testem (n50 ≤ 0.6 h⁻¹),
+        odpovídající 0.0001 m³/s·m² fasády (tight building).
+        """
+        infil = Infiltration(
+            f"{room.identifier}_PED_Infiltration",
+            PED_INFILTRATION,
+        )
+        room.properties.energy.infiltration = infil
 
     @staticmethod
     def _apply_setpoint(room: Room, heating_sp: float) -> None:
