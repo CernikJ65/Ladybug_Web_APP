@@ -67,6 +67,14 @@ interface Props {
   onBack: () => void;
 }
 
+/* ───── Presety modulů ───── */
+
+const MODULE_PRESETS: Record<string, { min: number; max: number; default: number; label: string }> = {
+  Standard: { min: 14, max: 18, default: 16, label: 'Standardní (poly-Si)' },
+  Premium:  { min: 18, max: 23, default: 20, label: 'Prémiový (mono-Si PERC/HJT)' },
+  ThinFilm: { min: 8,  max: 13, default: 11, label: 'Tenkovrstvý (CdTe, a-Si)' },
+};
+
 /* ───── Komponenta ───── */
 
 const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
@@ -77,10 +85,18 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [error, setError]           = useState<string | null>(null);
   const [selIdx, setSelIdx]         = useState<number | null>(null);
   const [numPanels, setNumPanels]   = useState(10);
-  const [pvEff, setPvEff]           = useState(20);
+  const [pvEff, setPvEff]           = useState(MODULE_PRESETS.Standard.default);
   const [maxTilt, setMaxTilt]       = useState(60);
   const [modType, setModType]       = useState('Standard');
   const [mountType, setMountType]   = useState('FixedOpenRack');
+
+  const currentPreset = MODULE_PRESETS[modType] ?? MODULE_PRESETS.Standard;
+
+  const handleModTypeChange = (value: string) => {
+    const preset = MODULE_PRESETS[value] ?? MODULE_PRESETS.Standard;
+    setModType(value);
+    setPvEff(preset.default);
+  };
 
   const run = async () => {
     if (!hbjsonFile || !epwFile) { setError('Vyberte oba soubory'); return; }
@@ -121,12 +137,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     result && selIdx !== null ? result.optimization.variants[selIdx] : null;
 
   const moduleLabel = (v: string) => {
-    switch (v) {
-      case 'Standard': return 'Standardní';
-      case 'Premium': return 'Prémiový';
-      case 'ThinFilm': return 'Tenkovrstvý';
-      default: return v;
-    }
+    return MODULE_PRESETS[v]?.label ?? v;
   };
 
   const mountLabel = (v: string) => {
@@ -219,13 +230,21 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
           <details className="saa-params">
             <summary><FaCog /> Pokročilé parametry</summary>
             <div className="saa-params-body">
+              <div className="saa-select-row">
+                <label>Typ modulu</label>
+                <select value={modType} onChange={e => handleModTypeChange(e.target.value)}>
+                  {Object.entries(MODULE_PRESETS).map(([key, preset]) => (
+                    <option key={key} value={key}>{preset.label}</option>
+                  ))}
+                </select>
+              </div>
               <Slider
                 label="Účinnost FV modulu"
                 value={pvEff}
-                min={10}
-                max={25}
+                min={currentPreset.min}
+                max={currentPreset.max}
                 unit="%"
-                hint="Standardní moduly: 18–22 %"
+                hint={`Rozsah pro ${moduleLabel(modType)}: ${currentPreset.min}–${currentPreset.max} %`}
                 onChange={setPvEff}
               />
               <Slider
@@ -237,14 +256,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                 hint="Plochy nad tímto sklonem se přeskočí"
                 onChange={setMaxTilt}
               />
-              <div className="saa-select-row">
-                <label>Typ modulu</label>
-                <select value={modType} onChange={e => setModType(e.target.value)}>
-                  <option value="Standard">Standardní (14–17 %)</option>
-                  <option value="Premium">Prémiový (18–20 %)</option>
-                  <option value="ThinFilm">Tenkovrstvý (&lt;12 %)</option>
-                </select>
-              </div>
               <div className="saa-select-row">
                 <label>Typ montáže</label>
                 <select value={mountType} onChange={e => setMountType(e.target.value)}>

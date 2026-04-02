@@ -1,12 +1,16 @@
 """
-EnergyPlus simulace s reálným HVAC — OpenStudio translation.
+EnergyPlus simulace s realnym HVAC — FCU ASHP / WSHP GSHP.
 
 Honeybee/Ladybug funkce:
-  - to_openstudio_sim_folder() → OSM → IDF přes OpenStudio SDK
-  - run_idf() / run_osw() → spuštění simulace
-  - eui_from_sql() → roční end uses, plochy (E+ 25.1+)
-  - data_collections_by_output_name() → hodinové kolekce
-  - total_monthly() → měsíční součty
+  - to_openstudio_sim_folder() -> IDF pres OpenStudio
+  - run_idf() -> spusteni E+ simulace
+  - SimulationOutput.add_hvac_energy_use()
+      -> presny seznam HVAC outputu
+  - SQLiteResult + data_collections_by_output_name()
+      -> hodinove kolekce (uz v kWh!)
+  - HourlyContinuousCollection + operator -> soucet zon
+  - collection.total_monthly() -> mesicni soucty
+  - Err() -> parsovani E+ error logu
 
 Soubor: ladybug_be/app/services/heatpump_real/real_hp_simulator.py
 """
@@ -18,16 +22,19 @@ import tempfile
 from typing import Dict, Any, List, Optional
 
 from honeybee.model import Model
-from honeybee_energy.simulation.parameter import SimulationParameter
+from honeybee_energy.simulation.parameter import (
+    SimulationParameter,
+)
 from honeybee_energy.run import (
     to_openstudio_sim_folder,
-    run_osw, run_idf, output_energyplus_files,
+    run_idf,
 )
 from honeybee_energy.result.err import Err
-from honeybee_energy.result.eui import eui_from_sql
 
 from ladybug.sql import SQLiteResult
-from ladybug.datacollection import HourlyContinuousCollection
+from ladybug.datacollection import (
+    HourlyContinuousCollection,
+)
 from ladybug.designday import DesignDay
 from ladybug.epw import EPW
 
@@ -35,47 +42,74 @@ logger = logging.getLogger(__name__)
 
 HEAT_OUT = "Zone Air System Sensible Heating Energy"
 COOL_OUT = "Zone Air System Sensible Cooling Energy"
-SKIP_ELEC = {"Zone Lights", "Zone Electric Equipment"}
+
+# Outputy specificky pro tepelne cerpadlo
+HP_ELEC_OUTPUTS = [
+    "Hot_Water_Loop_Central_Air_Source_Heat_Pump"
+    " Electricity Consumption",
+    "Cooling Coil Electricity Energy",
+    "Heating Coil Electricity Energy",
+    "VRF Heat Pump Cooling Electricity Energy",
+    "VRF Heat Pump Heating Electricity Energy",
+    "VRF Heat Pump Defrost Electricity Energy",
+    "VRF Heat Pump Crankcase Heater Electricity"
+    " Energy",
+    "Zone VRF Air Terminal Cooling Electricity"
+    " Energy",
+    "Zone VRF Air Terminal Heating Electricity"
+    " Energy",
+    "Chiller Electricity Energy",
+    "Chiller Heater System Cooling Electricity"
+    " Energy",
+    "Chiller Heater System Heating Electricity"
+    " Energy",
+]
+
+# Pomocne HVAC (ventilatory, cerpadla, backup)
+AUX_ELEC_OUTPUTS = [
+    "Fan Electricity Energy",
+    "Pump Electricity Energy",
+    "Cooling Tower Fan Electricity Energy",
+    "Baseboard Electricity Energy",
+    "Humidifier Electricity Energy",
+    "Evaporative Cooler Electricity Energy",
+    "Boiler Electricity Energy",
+]
 
 
 class RealHPSimulator:
-    """Simulace přes OpenStudio SDK — reálný HVAC."""
+    """Simulace pres OpenStudio — ASHP/GSHP."""
 
     def __init__(self, epw: str, dds: List[DesignDay]):
         self._epw = epw
         self._dds = dds
 
     def simulate(self, model: Model) -> Dict[str, Any]:
-        with tempfile.TemporaryDirectory(prefix="hp_") as tmp:
-            sp = self._sim_par()
+        """Spusti E+ a vrati vysledky s rozpadem."""
+        with tempfile.TemporaryDirectory(
+            prefix="hp_real_",
+        ) as tmp:
+            sp = self._build_sim_par()
             osm, osw, idf = to_openstudio_sim_folder(
                 model, tmp, epw_file=self._epw,
                 sim_par=sp, enforce_rooms=True,
             )
-            if idf and os.path.isfile(idf):
-                self._patch_idf(idf)
-                sql, _, _, _, err = run_idf(idf, self._epw)
-            elif osw:
-                _, idf2 = run_osw(osw, measures_only=False)
-                if not idf2 or not os.path.isfile(idf2):
-                    raise FileNotFoundError("OS CLI: no IDF")
-                self._patch_idf(idf2)
-                sql, _, _, _, err = output_energyplus_files(
-                    os.path.dirname(idf2))
-            else:
-                raise FileNotFoundError("No IDF/OSW")
-            if err and os.path.isfile(err):
-                eo = Err(err)
-                for s in eo.severe_errors:
-                    logger.error("SEVERE: %s", s)
-                if eo.fatal_errors:
-                    d = "\n".join(eo.severe_errors[:5])
-                    raise RuntimeError(f"E+ FATAL:\n{d}")
+            if not idf or not os.path.isfile(idf):
+                raise FileNotFoundError(
+                    "OpenStudio nevygenerovalo IDF"
+                )
+            self._patch_idf_for_compat(idf)
+            sql, _, _, _, err = run_idf(
+                idf, self._epw,
+            )
+            self._check_err(err)
             if not sql or not os.path.isfile(sql):
-                raise FileNotFoundError("E+ SQL chybí")
-            return self._parse(sql)
+                raise FileNotFoundError("E+ SQL chybi")
+            return self._read_results(sql)
 
-    def _sim_par(self) -> SimulationParameter:
+    # -- SimulationParameter --
+
+    def _build_sim_par(self) -> SimulationParameter:
         sp = SimulationParameter()
         sp.output.include_sqlite = True
         sp.output.add_hvac_energy_use()
@@ -87,114 +121,228 @@ class RealHPSimulator:
         else:
             epw = EPW(self._epw)
             sp.sizing_parameter.design_days = [
-                epw.approximate_design_day('WinterDesignDay'),
-                epw.approximate_design_day('SummerDesignDay'),
+                epw.approximate_design_day(
+                    "WinterDesignDay",
+                ),
+                epw.approximate_design_day(
+                    "SummerDesignDay",
+                ),
             ]
         return sp
 
-    def _parse(self, sql_path: str) -> Dict[str, Any]:
+    # -- Cteni vysledku --
+
+    def _read_results(
+        self, sql_path: str,
+    ) -> Dict[str, Any]:
+        """Precte SQL a vrati vysledky s rozpadem."""
         sql = SQLiteResult(sql_path)
         avail = sql.available_outputs
-        logger.info("Výstupy (%d): %s", len(avail), avail)
 
-        # Hodinové kolekce → teplo a chlad dodané do zón
-        h = self._merge_output(sql, avail, HEAT_OUT)
-        c = self._merge_output(sql, avail, COOL_OUT)
-        e = self._merge_hvac_elec(sql, avail)
-        ht = sum(h.values) if h else 0.0
-        ct = sum(c.values) if c else 0.0
-        et = sum(e.values) if e else 0.0
+        # DIAGNOSTIKA — print do terminalu
+        print(f"\n{'='*70}")
+        print(f"E+ OUTPUTS ({len(avail)}):")
+        print(f"{'='*70}")
+        for o in sorted(avail):
+            try:
+                colls = (
+                    sql.data_collections_by_output_name(o)
+                )
+                total = sum(
+                    sum(c.values) for c in colls
+                )
+                z = len(colls)
+                print(
+                    f"  {o:55s} "
+                    f"{z:2d}z {total:10.0f} kWh"
+                )
+            except Exception:
+                print(f"  {o:55s}  (error)")
+        print(f"{'='*70}")
 
-        # eui_from_sql jako doplněk (roční souhrn)
-        eui = self._try_eui(sql_path)
+        heating = self._sum_zones(sql, avail, HEAT_OUT)
+        cooling = self._sum_zones(sql, avail, COOL_OUT)
+        hp_elec, hp_bkd = self._sum_outputs(
+            sql, avail, HP_ELEC_OUTPUTS, "HP",
+        )
+        aux_elec, aux_bkd = self._sum_outputs(
+            sql, avail, AUX_ELEC_OUTPUTS, "AUX",
+        )
 
-        logger.info("heat=%.0f cool=%.0f elec=%.0f", ht, ct, et)
+        ht = sum(heating.values) if heating else 0.0
+        ct = sum(cooling.values) if cooling else 0.0
+        hp_e = (
+            sum(hp_elec.values) if hp_elec else 0.0
+        )
+        ax_e = (
+            sum(aux_elec.values) if aux_elec else 0.0
+        )
+        total_e = hp_e + ax_e
+
+        # DIAGNOSTIKA — souhrn
+        print(f"\nRESULT:")
+        print(f"  Heating:   {ht:10.0f} kWh")
+        print(f"  Cooling:   {ct:10.0f} kWh")
+        print(f"  HP elec:   {hp_e:10.0f} kWh")
+        print(f"  AUX elec:  {ax_e:10.0f} kWh")
+        print(f"  Total:     {total_e:10.0f} kWh")
+        thermal = ht + ct
+        if total_e > 0:
+            print(f"  Sys COP:   {thermal/total_e:.2f}")
+        if hp_e > 0:
+            print(f"  HP COP:    {thermal/hp_e:.2f}")
+        print()
+
         return {
             "total_heating_kwh": round(ht, 1),
             "total_cooling_kwh": round(ct, 1),
-            "total_electricity_kwh": round(et, 1),
-            "monthly_heating_kwh": self._mo(h),
-            "monthly_cooling_kwh": self._mo(c),
-            "monthly_electricity_kwh": self._mo(e),
-            "eui": eui,
+            "total_electricity_kwh": round(
+                total_e, 1,
+            ),
+            "hp_electricity_kwh": round(hp_e, 1),
+            "aux_electricity_kwh": round(ax_e, 1),
+            "monthly_heating_kwh": self._monthly(
+                heating,
+            ),
+            "monthly_cooling_kwh": self._monthly(
+                cooling,
+            ),
+            "monthly_electricity_kwh": (
+                self._monthly_sum(hp_elec, aux_elec)
+            ),
+            "monthly_hp_elec_kwh": self._monthly(
+                hp_elec,
+            ),
+            "monthly_aux_elec_kwh": self._monthly(
+                aux_elec,
+            ),
             "available_outputs": avail,
+            "hp_breakdown": hp_bkd,
+            "aux_breakdown": aux_bkd,
         }
 
-    def _merge_output(
-        self, sql: SQLiteResult, avail: list, name: str,
+    def _sum_zones(
+        self, sql: SQLiteResult, avail: list,
+        name: str,
     ) -> Optional[HourlyContinuousCollection]:
-        """Sečte kolekce všech zón pro jeden output."""
+        """Secte kolekce vsech zon pro output."""
         if name not in avail:
             return None
-        try:
-            colls = sql.data_collections_by_output_name(name)
-            if not colls:
-                return None
-            merged = colls[0]
-            for c in colls[1:]:
-                merged = merged + c
-            logger.info("'%s': Σ=%.0f kWh", name, sum(merged.values))
-            return merged
-        except Exception as e:
-            logger.warning("'%s': %s", name, e)
+        colls = sql.data_collections_by_output_name(
+            name,
+        )
+        if not colls:
             return None
-
-    def _merge_hvac_elec(
-        self, sql: SQLiteResult, avail: list,
-    ) -> Optional[HourlyContinuousCollection]:
-        """HVAC elektřina — bez osvětlení a spotřebičů."""
-        names = [
-            n for n in avail
-            if ("Electricity" in n or "Electric" in n)
-            and not any(s in n for s in SKIP_ELEC)
-        ]
-        merged = None
-        for name in names:
-            try:
-                for c in sql.data_collections_by_output_name(name):
-                    merged = c if merged is None else merged + c
-            except Exception:
-                continue
-        if merged:
-            logger.info("HVAC elec: Σ=%.0f kWh", sum(merged.values))
+        merged = colls[0]
+        for c in colls[1:]:
+            merged = merged + c
         return merged
 
-    @staticmethod
-    def _try_eui(sql_path: str) -> Optional[Dict]:
-        try:
-            return eui_from_sql(sql_path)
-        except Exception as e:
-            logger.warning("eui_from_sql: %s", e)
-            return None
+    def _sum_outputs(
+        self,
+        sql: SQLiteResult,
+        avail: list,
+        output_list: list,
+        label: str,
+    ) -> tuple:
+        """Secte vice outputu + vrati breakdown."""
+        merged = None
+        breakdown = {}
+        for name in output_list:
+            if name not in avail:
+                continue
+            colls = sql.data_collections_by_output_name(
+                name,
+            )
+            sub = 0.0
+            for c in colls:
+                sub += sum(c.values)
+                if merged is None:
+                    merged = c
+                else:
+                    merged = merged + c
+            breakdown[name] = round(sub, 1)
+            print(
+                f"  {label}: {name:45s} "
+                f"= {sub:10.0f} kWh"
+            )
+        return merged, breakdown
 
     @staticmethod
-    def _mo(coll: Optional[HourlyContinuousCollection]) -> List[float]:
+    def _monthly(
+        coll: Optional[HourlyContinuousCollection],
+    ) -> List[float]:
         if coll is None:
             return [0.0] * 12
-        return [round(v, 1) for v in coll.total_monthly().values]
+        monthly = coll.total_monthly()
+        return [round(v, 1) for v in monthly.values]
 
     @staticmethod
-    def _patch_idf(idf_path: str) -> None:
-        """Odstraní pole nekompatibilní se starším E+."""
-        with open(idf_path, "r") as f:
+    def _monthly_sum(
+        a: Optional[HourlyContinuousCollection],
+        b: Optional[HourlyContinuousCollection],
+    ) -> List[float]:
+        if a is None and b is None:
+            return [0.0] * 12
+        if a is None:
+            return RealHPSimulator._monthly(b)
+        if b is None:
+            return RealHPSimulator._monthly(a)
+        total = a + b
+        monthly = total.total_monthly()
+        return [round(v, 1) for v in monthly.values]
+
+    # -- Error handling --
+
+    @staticmethod
+    def _check_err(err_path: Optional[str]) -> None:
+        if not err_path or not os.path.isfile(err_path):
+            return
+        eo = Err(err_path)
+        for s in eo.severe_errors:
+            logger.error("E+ SEVERE: %s", s)
+        if eo.fatal_errors:
+            detail = "\n".join(eo.severe_errors[:5])
+            raise RuntimeError(f"E+ FATAL:\n{detail}")
+
+    # -- IDF kompatibilita --
+
+    @staticmethod
+    def _patch_idf_for_compat(idf_path: str) -> None:
+        """Odstrani pole pro novejsi E+ verze."""
+        with open(
+            idf_path, "r", encoding="utf-8",
+        ) as f:
             lines = f.readlines()
-        remove = {"Density Basis", "Type of Space Sum to Use"}
+        remove = {
+            "Density Basis",
+            "Type of Space Sum to Use",
+        }
         skip = set()
         for i, line in enumerate(lines):
             if any(r in line for r in remove):
                 skip.add(i)
         if not skip:
             return
-        out = []
+        result = []
         for i, line in enumerate(lines):
             if i in skip:
-                if out:
-                    prev = out[-1].rstrip("\n")
-                    idx = prev.rfind(",")
-                    if idx >= 0:
-                        out[-1] = prev[:idx] + ";" + prev[idx+1:] + "\n"
+                if result:
+                    prev = result[-1].rstrip("\n")
+                    comma = prev.rfind(",")
+                    if comma >= 0:
+                        rest = prev[comma + 1:]
+                        result[-1] = (
+                            prev[:comma] + ";" + rest
+                            + "\n"
+                        )
                 continue
-            out.append(line)
-        with open(idf_path, "w") as f:
-            f.writelines(out)
-        logger.info("IDF patched: %d fields removed", len(skip))
+            result.append(line)
+        with open(
+            idf_path, "w", encoding="utf-8",
+        ) as f:
+            f.writelines(result)
+        logger.info(
+            "IDF patched: %d fields removed",
+            len(skip),
+        )

@@ -4,6 +4,8 @@ Větrná analýza z EPW — WindRose + WindProfile, žádné fallbacky.
   - WindRose(direction, speed, 16) → histogram_data, prevailing_direction
   - WindProfile(terrain, 10) → calculate_wind(speed, height)
   - collection.average_monthly(), filter_by_analysis_period()
+
+Soubor: ladybug_be/app/services/wind_analyzer_advanced.py
 """
 from __future__ import annotations
 
@@ -29,7 +31,7 @@ BEAUFORT = [
     (13.9, "6 Prudký"), (17.2, "7 Bouřlivý"), (999, "8+ Vichřice"),
 ]
 
-# Power law exponent α pro různé terény (EN 1991-1-4, EnergyPlus)
+# Power law exponent α pro různé terény (EN 1991-1-4)
 TERRAIN_ALPHA = {
     "Vodní plocha": 0.10,
     "Otevřená rovina": 0.14,
@@ -77,48 +79,70 @@ class WindAnalyzerAdvanced:
                         break
             total = len(speeds)
             mx = max(mx, total)
-            avg = round(sum(_fl(s) for s in speeds) / total, 2) if total else 0
+            avg = round(
+                sum(_fl(s) for s in speeds) / total, 2,
+            ) if total else 0
             dirs.append({
                 "index": i, "label": DIR_16[i],
                 "angle": round(i * sector, 1),
                 "total_hours": total,
-                "frequency_pct": round(total / self._n * 100, 2),
+                "frequency_pct": round(
+                    total / self._n * 100, 2,
+                ),
                 "bins": bins, "avg_speed": avg,
             })
-        return {"directions": dirs, "speed_labels": SP_LABELS, "max_hours": mx}
+        return {
+            "directions": dirs,
+            "speed_labels": SP_LABELS,
+            "max_hours": mx,
+        }
 
     def _monthly_speed(self) -> List[Dict[str, Any]]:
         avg = self._ws_coll.average_monthly()
         result = []
         for i in range(12):
             ap = AnalysisPeriod(i + 1, 1, 0, i + 1, 31, 23)
-            vals = list(self._ws_coll.filter_by_analysis_period(ap).values)
+            vals = list(
+                self._ws_coll.filter_by_analysis_period(ap).values,
+            )
             result.append({
-                "month": i + 1, "name": MONTH_NAMES_CZ[i],
+                "month": i + 1,
+                "name": MONTH_NAMES_CZ[i],
                 "avg_speed": round(_fl(avg[i]), 2),
                 "max_speed": round(max(vals), 1) if vals else 0,
             })
         return result
 
     def _beaufort(self) -> List[Dict[str, Any]]:
+        """Beaufortova stupnice — počet hodin a procenta.
+
+        Každá hodina spadne právě do jednoho binu,
+        takže součet procent je vždy 100 %.
+        """
         counts = [0] * len(BEAUFORT)
         for ws in self._ws:
             for bi, (thr, _) in enumerate(BEAUFORT):
                 if ws < thr:
                     counts[bi] += 1
                     break
+
+        total = sum(counts)
+        if total == 0:
+            total = 1
+
         return [
-            {"label": BEAUFORT[i][1], "hours": counts[i],
-             "pct": round(counts[i] / self._n * 100, 1)}
+            {
+                "label": BEAUFORT[i][1],
+                "hours": counts[i],
+                "pct": round(counts[i] / total * 100, 1),
+            }
             for i in range(len(BEAUFORT))
         ]
 
     def _wind_heights(self) -> Dict[str, Any]:
-        """
-        Větrný profil — power law: v(h) = v_ref × (h / h_ref)^α
+        """Větrný profil — power law: v(h) = v_ref × (h/h_ref)^α
 
         EPW = 10 m na letišti. α závisí na terénu (EN 1991-1-4).
-        Vyšší α = vítr se více brzdí blízko země.
         """
         avg10 = sum(self._ws) / self._n
         h_ref = 10.0
@@ -133,7 +157,6 @@ class WindAnalyzerAdvanced:
             terrains.append({"name": name, "speeds": speeds})
 
         return {
-            "reference_speed_10m": round(avg10, 2),
             "heights": heights,
             "terrains": terrains,
         }

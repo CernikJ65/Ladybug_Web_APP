@@ -1,13 +1,26 @@
 """
-Příprava honeybee modelu s reálným HVAC (VRF / WSHP).
+Priprava honeybee modelu s realnym HVAC pro PED.
 
-Honeybee-energy HVAC třídy:
-  - VRFwithDOAS → vzduch-voda TČ s řízeným větráním (DOAS)
-  - WSHPwithDOAS → země-voda TČ (GSHP) s řízeným větráním
-  - sensible_heat_recovery → rekuperace tepla v DOAS
+ASHP (vzduch-voda):
+  FCUwithDOAS s equipment_type='DOAS_FCU_Chiller_ASHP'
+  - Centralni ASHP vyrabi teplou vodu 49 C
+  - Fancoily rozvadeji teplo do zon
+  - Chiller resi chlazeni
+  - DOAS zajistuje vetrani s volitelnou rekuperaci
 
-Na rozdíl od IdealAirSystem mají realistické výkonové
-křivky a EnergyPlus sám počítá COP i spotřebu elektřiny.
+GSHP (zeme-voda):
+  WSHPwithDOAS s equipment_type='DOAS_WSHP_GSHP'
+  - Zonove WSHP terminaly na zemnim okruhu
+  - DOAS zajistuje vetrani s volitelnou rekuperaci
+  - Zemni smycka udrzuje stabilni teplotu
+
+Honeybee-energy funkce:
+  - FCUwithDOAS(id, vintage, equipment_type, ...)
+  - WSHPwithDOAS(id, vintage, equipment_type, ...)
+  - sensible_heat_recovery -> rekuperace v DOAS
+  - program_type_by_identifier() -> ASHRAE profily
+  - Setpoint + ScheduleRuleset -> teplotni pozadavky
+  - Infiltration -> PED vzduchotesnost
 
 Soubor: ladybug_be/app/services/heatpump_real/real_hp_model_preparer.py
 """
@@ -20,34 +33,37 @@ from typing import Dict, Any, List
 from honeybee.model import Model
 from honeybee.room import Room
 
-from honeybee_energy.hvac.doas.vrf import VRFwithDOAS
+from honeybee_energy.hvac.doas.fcu import FCUwithDOAS
 from honeybee_energy.hvac.doas.wshp import WSHPwithDOAS
 from honeybee_energy.load.setpoint import Setpoint
+from honeybee_energy.load.infiltration import Infiltration
 from honeybee_energy.schedule.ruleset import ScheduleRuleset
 from honeybee_energy.lib.programtypes import (
-    building_program_type_by_identifier,
     program_type_by_identifier,
 )
-import honeybee_energy.lib.scheduletypelimits as _type_lib
+import honeybee_energy.lib.scheduletypelimits as _tl
 
 from ..construction_upgrader import ConstructionUpgrader
 
 logger = logging.getLogger(__name__)
 
+PED_INFILTRATION = 0.0001
+
+# Space-level ASHRAE 2019 — shodne s heatpump_model_preparer
 BUILDING_TYPE_MAP: Dict[str, str] = {
-    "Residential": "Residential",
-    "Office": "LargeOffice",
-    "Retail": "Retail",
-    "School": "PrimarySchool",
-    "Hotel": "LargeHotel",
-    "Hospital": "Hospital",
+    "Residential": "2019::MidriseApartment::Apartment",
+    "Office": "2019::MediumOffice::OpenOffice",
+    "Retail": "2019::Retail::Retail",
+    "School": "2019::SecondarySchool::Classroom",
+    "Hotel": "2019::SmallHotel::GuestRoom",
+    "Hospital": "2019::Hospital::PatRoom",
 }
 
 VINTAGE = "ASHRAE_2019"
 
 
 class RealHPModelPreparer:
-    """Připraví honeybee Model s reálným HVAC pro E+."""
+    """Pripravi honeybee Model s ASHP/GSHP HVAC."""
 
     def __init__(
         self,
@@ -63,35 +79,48 @@ class RealHPModelPreparer:
         self._cool_sp = cooling_setpoint_c
         self._hr = heat_recovery
 
-    def prepare_vrf(self) -> Model:
-        """Model s VRFwithDOAS (vzduch-voda TČ + DOAS)."""
-        model = self._load_fresh()
-        ConstructionUpgrader().upgrade(model)
-        hvac = VRFwithDOAS(
-            "DOAS_VRF_System", vintage=VINTAGE,
+    def prepare_ashp(self) -> Model:
+        """FCUwithDOAS + centralni ASHP (vzduch-voda).
+
+        Equipment: DOAS_FCU_Chiller_ASHP
+        - ASHP vyrabi teplou vodu 49 C pro FCU
+        - Chiller resi chlazeni pres chilled water
+        - DOAS s rekuperaci pro vetrani
+        """
+        model = self._load_and_prepare()
+        hvac = FCUwithDOAS(
+            "DOAS_FCU_ASHP_System",
+            vintage=VINTAGE,
+            equipment_type="DOAS_FCU_Chiller_ASHP",
             sensible_heat_recovery=self._hr,
         )
         for room in model.rooms:
-            self._apply_program(room)
-            self._apply_setpoint(room)
             room.properties.energy.hvac = hvac
-        logger.info("VRFwithDOAS → %d rooms", len(model.rooms))
+        logger.info(
+            "FCU+ASHP -> %d rooms", len(model.rooms),
+        )
         return model
 
-    def prepare_wshp(self) -> Model:
-        """Model s WSHPwithDOAS GSHP (země-voda TČ + DOAS)."""
-        model = self._load_fresh()
-        ConstructionUpgrader().upgrade(model)
+    def prepare_gshp(self) -> Model:
+        """WSHPwithDOAS + zemni smycka (zeme-voda).
+
+        Equipment: DOAS_WSHP_GSHP
+        - Zonove WSHP na zemnim okruhu
+        - DX coils v DOAS (ne boiler)
+        - DOAS s rekuperaci pro vetrani
+        """
+        model = self._load_and_prepare()
         hvac = WSHPwithDOAS(
-            "DOAS_WSHP_System", vintage=VINTAGE,
+            "DOAS_WSHP_GSHP_System",
+            vintage=VINTAGE,
             equipment_type="DOAS_WSHP_GSHP",
             sensible_heat_recovery=self._hr,
         )
         for room in model.rooms:
-            self._apply_program(room)
-            self._apply_setpoint(room)
             room.properties.energy.hvac = hvac
-        logger.info("WSHPwithDOAS GSHP → %d rooms", len(model.rooms))
+        logger.info(
+            "WSHP+GSHP -> %d rooms", len(model.rooms),
+        )
         return model
 
     def get_rooms_info(self) -> List[Dict[str, Any]]:
@@ -112,39 +141,52 @@ class RealHPModelPreparer:
             if r.floor_area >= 0.1
         )
 
-    # ── interní ──
+    # -- interni --
+
+    def _load_and_prepare(self) -> Model:
+        """Nacte a aplikuje program/setpoint/infiltraci."""
+        model = self._load_fresh()
+        ConstructionUpgrader().upgrade(model)
+        for room in model.rooms:
+            self._apply_program(room)
+            self._apply_setpoint(room)
+            self._apply_ped_infiltration(room)
+        return model
 
     def _load_fresh(self) -> Model:
         with open(self._path, "r", encoding="utf-8") as f:
             return Model.from_dict(json.load(f))
 
     def _apply_program(self, room: Room) -> None:
-        mix = BUILDING_TYPE_MAP.get(self._btype)
+        pt_id = BUILDING_TYPE_MAP.get(self._btype)
+        if pt_id is None:
+            pt_id = self._btype
         try:
-            pt = (
-                building_program_type_by_identifier(mix)
-                if mix
-                else program_type_by_identifier(self._btype)
-            )
+            pt = program_type_by_identifier(pt_id)
             room.properties.energy.program_type = pt
         except Exception:
-            try:
-                fb = program_type_by_identifier(
-                    "Generic Office Program",
-                )
-                room.properties.energy.program_type = fb
-            except Exception:
-                pass
+            pt = program_type_by_identifier(
+                "Generic Office Program",
+            )
+            room.properties.energy.program_type = pt
 
     def _apply_setpoint(self, room: Room) -> None:
         h = ScheduleRuleset.from_constant_value(
             f"{room.identifier}_HtgSP",
-            self._heat_sp, _type_lib.temperature,
+            self._heat_sp, _tl.temperature,
         )
         c = ScheduleRuleset.from_constant_value(
             f"{room.identifier}_ClgSP",
-            self._cool_sp, _type_lib.temperature,
+            self._cool_sp, _tl.temperature,
         )
         room.properties.energy.setpoint = Setpoint(
             f"{room.identifier}_SP", h, c,
         )
+
+    @staticmethod
+    def _apply_ped_infiltration(room: Room) -> None:
+        infil = Infiltration(
+            f"{room.identifier}_PED_Infiltration",
+            PED_INFILTRATION,
+        )
+        room.properties.energy.infiltration = infil

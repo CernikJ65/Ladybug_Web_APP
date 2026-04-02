@@ -61,19 +61,20 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       icon: <FaFire />,
       title: 'Potenciál tepelných čerpadel',
       description:
-        'Simulace a porovnání výroby energie čerpadel typu vzduch-voda a země-voda pro vytápění ',
+        'Simulace a porovnání výroby energie čerpadel typu vzduch-voda a země-voda pro vytápění.',
       color: '#14b8a6',
       tags: ['EnergyPlus', 'COP'],
     },
-    {
-      id: 'heatpump-real',
-      icon: <FaThermometerHalf />,
-      title: 'Celoroční simulace TČ',
-      description:
-        'Reálný HVAC (VRF / WSHP) s výkonovými křivkami. Vytápění i chlazení po celý rok.',
-      color: '#0891b2',
-      tags: ['VRF', 'WSHP', 'HVAC'],
-    },
+    // TODO: odkomentovat po prezentaci
+    // {
+    //   id: 'heatpump-real',
+    //   icon: <FaThermometerHalf />,
+    //   title: 'Celoroční simulace TČ',
+    //   description:
+    //     'Reálný HVAC (VRF / WSHP) s výkonovými křivkami. Vytápění i chlazení po celý rok.',
+    //   color: '#0891b2',
+    //   tags: ['VRF', 'WSHP', 'HVAC'],
+    // },
     {
       id: 'combined',
       icon: <FaBolt />,
