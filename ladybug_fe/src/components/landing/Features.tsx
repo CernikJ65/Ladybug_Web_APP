@@ -1,15 +1,15 @@
 /**
  * Feature karty — Light theme · Uniform grid · Clean hover.
  *
- * ZMĚNA: přidána karta 'heatpump-real' pro celoroční simulaci TČ.
+ * ZMĚNA: nové pořadí karet podle workflow uživatele.
  *
  * Soubor: ladybug_fe/src/components/landing/Features.tsx
  */
 import React, { useCallback, type ReactNode } from 'react';
 import {
   FaSun, FaWind, FaChartLine,
-  FaCog, FaCube, FaSolarPanel, FaFire, FaBolt,
-  FaThermometerHalf,
+  FaCube, FaSolarPanel, FaFire, FaBolt,
+  FaFileImport,
 } from 'react-icons/fa';
 
 interface Feature {
@@ -38,6 +38,15 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
   );
 
   const features: Feature[] = [
+    {
+      id: 'hbjson',
+      icon: <FaCube />,
+      title: '3D Vizualizace HBJSON',
+      description:
+        'Vizualizujte HBJSON oblasti pomocí interaktivní 3D vizualizace.',
+      color: '#8e44ad',
+      tags: ['Three.js', 'HBJSON'],
+    },
     {
       id: 'solar',
       icon: <FaSun />,
@@ -85,20 +94,13 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       tags: ['NPV', 'PED', 'Bilance'],
     },
     {
-      id: 'hbjson',
-      icon: <FaCube />,
-      title: '3D Vizualizace HBJSON',
+      id: 'converter',
+      icon: <FaFileImport />,
+      title: 'DWG / DXF → HBJSON',
       description:
-        'Vizualizujte HBJSON oblasti pomocí interaktivní 3D vizualizace.',
-      color: '#8e44ad',
-      tags: ['Three.js', 'HBJSON'],
-    },
-    {
-      id: 'parametric',
-      icon: <FaCog />,
-      title: '?',
-      description: '?',
-      color: '#9b59b6',
+        'Převeďte CAD soubory na Honeybee modely. Automatická extrakce budov a terénu.',
+      color: '#b45309',
+      tags: ['DWG', 'DXF', 'Honeybee'],
     },
     {
       id: 'wind',
@@ -124,9 +126,8 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       <div className="features-geo" aria-hidden="true" />
 
       <div className="features-header">
-        <span className="features-eyebrow">Moduly</span>
-        <h2 className="section-title">Funkce platformy</h2>
-     
+        
+        <h2 className="section-title">Analytické scénáře</h2>
       </div>
 
       <div className="features-grid">

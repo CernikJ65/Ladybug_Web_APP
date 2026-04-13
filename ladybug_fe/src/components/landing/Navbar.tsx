@@ -71,7 +71,6 @@ const Navbar: React.FC = () => {
           <a onClick={() => navigateTo('about')} style={{ cursor: 'pointer' }}>
             {t('navbar.about')}
           </a>
-
           <div className="lang-switcher" data-lang={i18n.language}>
             <button
               className={`lang-btn ${i18n.language === 'cs' ? 'active' : ''}`}
@@ -86,8 +85,6 @@ const Navbar: React.FC = () => {
               EN
             </button>
           </div>
-
-          <button className="nav-btn">{t('navbar.login')}</button>
         </div>
       </div>
     </nav>

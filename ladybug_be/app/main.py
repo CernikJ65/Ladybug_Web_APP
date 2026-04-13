@@ -1,14 +1,13 @@
 """
 FastAPI hlavní aplikace — registrace všech routerů.
 
-ZMĚNA: přidán router 'heatpump_real' pro celoroční simulaci
-s reálným HVAC (VRF / WSHP).
+ZMĚNA: přidán router 'converter' pro DWG/DXF → HBJSON konverzi.
 
 Soubor: ladybug_be/app/main.py
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import analysis, solar, heatpump, combined, heatpump_real
+from .routers import analysis, solar, heatpump, combined, heatpump_real, converter
 
 app = FastAPI(title="Ladybug Backend", version="0.1.0")
 
@@ -43,4 +42,9 @@ app.include_router(
     heatpump_real.router,
     prefix="/api/heatpump-real",
     tags=["heatpump-real"],
+)
+app.include_router(
+    converter.router,
+    prefix="/api/converter",
+    tags=["converter"],
 )

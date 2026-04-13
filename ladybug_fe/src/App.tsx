@@ -1,6 +1,6 @@
 /**
  * Hlavní App s routingem.
- * ZMĚNA: přidán 'heatpump-real' view pro celoroční simulaci TČ.
+ * ZMĚNA: přidán 'converter' view pro DWG/DXF → HBJSON.
  *
  * Soubor: ladybug_fe/src/App.tsx
  */
@@ -14,6 +14,7 @@ import HBJSONBuilderRaw from './components/analysis/builder/HbjsonBuilder';
 import HeatPumpAnalysis from './components/analysis/heatpump/HeatPumpAnalysis';
 import HeatPumpReal from './components/analysis/heatpump_real/HeatPumpReal';
 import EnergyOptimizer from './components/analysis/combined/EnergyOptimizer';
+import DwgConverter from './components/analysis/converter/DwgConverter';
 
 /* Tyto komponenty nemají explicitní Props typ — přetypujeme */
 const HBJSONViewer = HBJSONViewerRaw as FC<{ onBack: () => void }>;
@@ -22,20 +23,20 @@ const HBJSONBuilder = HBJSONBuilderRaw as FC<{ onBack: () => void }>;
 type ViewType =
   | 'landing' | 'solar' | 'solar-advanced'
   | 'hbjson' | 'builder' | 'heatpump'
-  | 'heatpump-real' | 'combined';
+  | 'heatpump-real' | 'combined' | 'converter';
 
 const hashToView: Record<string, ViewType> = {
   '': 'landing', features: 'landing', about: 'landing',
   solar: 'solar', 'solar-advanced': 'solar-advanced',
   hbjson: 'hbjson', builder: 'builder',
   heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
-  combined: 'combined',
+  combined: 'combined', converter: 'converter',
 };
 const viewToHash: Record<ViewType, string> = {
   landing: '', solar: 'solar', 'solar-advanced': 'solar-advanced',
   hbjson: 'hbjson', builder: 'builder',
   heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
-  combined: 'combined',
+  combined: 'combined', converter: 'converter',
 };
 const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   landing:          { cs: 'Ladybug Web',                                en: 'Ladybug Web' },
@@ -46,6 +47,7 @@ const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   heatpump:         { cs: 'Tepelná čerpadla – Ladybug Web',             en: 'Heat Pumps – Ladybug Web' },
   'heatpump-real':  { cs: 'Celoroční simulace TČ – Ladybug Web',       en: 'Year-Round HP Simulation – Ladybug Web' },
   combined:         { cs: 'Energetický optimalizátor – Ladybug Web',    en: 'Energy Optimizer – Ladybug Web' },
+  converter:        { cs: 'CAD Konvertor – Ladybug Web',                en: 'CAD Converter – Ladybug Web' },
 };
 
 function getHash(): string {
@@ -146,6 +148,9 @@ function App() {
       case 'combined':
         setCurrentView('combined');
         break;
+      case 'converter':
+        setCurrentView('converter');
+        break;
       case 'hbjson':
       case 'energy':
       case 'climate':
@@ -183,6 +188,9 @@ function App() {
       )}
       {currentView === 'combined' && (
         <EnergyOptimizer onBack={back} />
+      )}
+      {currentView === 'converter' && (
+        <DwgConverter onBack={back} />
       )}
       {currentView === 'landing' && (
         <LandingPage onFeatureClick={handleFeatureClick} />

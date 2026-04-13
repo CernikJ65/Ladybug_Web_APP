@@ -6,7 +6,7 @@
 import React from 'react';
 import {
   FaArrowRight, FaInfoCircle,
-  FaCloudSun, FaCube, FaFileExport, FaSun,
+  FaCloudSun, FaCube, FaSlidersH, FaSun,
 } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
@@ -31,15 +31,18 @@ const Hero: React.FC = () => {
           <FaSun className="badge-icon" />
           <span>{t('hero.badge')}</span>
         </div>
+
         <h1 className="hero-title">
           {t('hero.title')}
           <span className="gradient-text">
             {' '}{t('hero.titleHighlight')}
           </span>
         </h1>
+
         <p className="hero-description">
           {t('hero.description')}
         </p>
+
         <div className="hero-buttons">
           <button className="btn-primary"
             onClick={() => scrollTo('features')}>
@@ -83,7 +86,7 @@ const Hero: React.FC = () => {
 
         <div className="floating-card card-3">
           <div className="card-icon-wrapper temp">
-            <FaFileExport className="card-icon" />
+            <FaSlidersH className="card-icon" />
           </div>
           <div className="card-text">
             <div className="card-value">
