@@ -1,3 +1,11 @@
+/**
+ * Pokročilá solární analýza — orchestrátor.
+ *
+ * ZMĚNA: přidán useViewStateCache pro zachování výsledků
+ * po návratu z landing page.
+ *
+ * Soubor: ladybug_fe/src/components/analysis/solar/SolarAnalysisAdvanced.tsx
+ */
 import React, { useState } from 'react';
 import {
   FaSun, FaSpinner, FaArrowLeft, FaBolt,
@@ -5,6 +13,7 @@ import {
   FaFile, FaCloudUploadAlt, FaCheckCircle, FaSolarPanel,
   FaStar, FaThList, FaRulerCombined, FaChartBar,
 } from 'react-icons/fa';
+import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import PanelMapView, { type RoofMeta } from './PanelMapView';
 import './SolarAnalysisAdvanced.css';
 
@@ -63,6 +72,19 @@ interface AnalysisResult {
   };
 }
 
+interface CachedState {
+  hbjsonFile: File | null;
+  epwFile: File | null;
+  result: AnalysisResult | null;
+  error: string | null;
+  selIdx: number | null;
+  numPanels: number;
+  pvEff: number;
+  maxTilt: number;
+  modType: string;
+  mountType: string;
+}
+
 interface Props {
   onBack: () => void;
 }
@@ -89,6 +111,24 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [maxTilt, setMaxTilt]       = useState(60);
   const [modType, setModType]       = useState('Standard');
   const [mountType, setMountType]   = useState('FixedOpenRack');
+
+  /* Zachování stavu při návratu z landing page */
+  useViewStateCache<CachedState>(
+    'solar-advanced',
+    { hbjsonFile, epwFile, result, error, selIdx, numPanels, pvEff, maxTilt, modType, mountType },
+    (c: CachedState) => {
+      setHbjsonFile(c.hbjsonFile);
+      setEpwFile(c.epwFile);
+      setResult(c.result);
+      setError(c.error);
+      setSelIdx(c.selIdx);
+      setNumPanels(c.numPanels);
+      setPvEff(c.pvEff);
+      setMaxTilt(c.maxTilt);
+      setModType(c.modType);
+      setMountType(c.mountType);
+    }
+  );
 
   const currentPreset = MODULE_PRESETS[modType] ?? MODULE_PRESETS.Standard;
 

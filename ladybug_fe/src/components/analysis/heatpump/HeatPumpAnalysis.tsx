@@ -4,12 +4,14 @@
  * HBJSON + EPW → EnergyPlus simulace → SCOP → výroba tepla,
  * spotřeba elektřiny, provozní náklady, CO₂ úspory.
  *
- * Nový parametr heat_recovery pro volitelnou rekuperaci.
+ * ZMĚNA: přidán useViewStateCache pro zachování výsledků
+ * po návratu z landing page.
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump/HeatPumpAnalysis.tsx
  */
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import HPForm from './HPForm';
 import HPOverview from './HPOverview';
 import HPSection from './HPSection';
@@ -20,6 +22,20 @@ import './HeatPumpResults.css';
 const API = 'http://127.0.0.1:8000/api/heatpump';
 
 interface Props { onBack: () => void; }
+
+interface CachedState {
+  hbjson: File | null;
+  epw: File | null;
+  supplyTemp: number;
+  depth: number;
+  buildingType: string;
+  heatingSetpoint: number;
+  electricityPrice: number;
+  gridCo2: number;
+  heatRecovery: number;
+  result: AnalysisResult | null;
+  error: string | null;
+}
 
 const HeatPumpAnalysis: React.FC<Props> = ({ onBack }) => {
   const [hbjson, setHbjson] = useState<File | null>(null);
@@ -34,6 +50,29 @@ const HeatPumpAnalysis: React.FC<Props> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  /* Zachování stavu při návratu z landing page */
+  useViewStateCache<CachedState>(
+    'heatpump',
+    {
+      hbjson, epw, supplyTemp, depth, buildingType,
+      heatingSetpoint, electricityPrice, gridCo2, heatRecovery,
+      result, error,
+    },
+    (c: CachedState) => {
+      setHbjson(c.hbjson);
+      setEpw(c.epw);
+      setSupplyTemp(c.supplyTemp);
+      setDepth(c.depth);
+      setBuildingType(c.buildingType);
+      setHeatingSetpoint(c.heatingSetpoint);
+      setElectricityPrice(c.electricityPrice);
+      setGridCo2(c.gridCo2);
+      setHeatRecovery(c.heatRecovery);
+      setResult(c.result);
+      setError(c.error);
+    }
+  );
 
   const handleRun = async () => {
     if (!hbjson || !epw) {

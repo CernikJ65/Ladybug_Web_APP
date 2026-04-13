@@ -1,7 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { useViewCache } from '../context/ViewCacheContext';
 
-type ViewType = 'solar' | 'solar-advanced' | 'hbjson' | 'builder';
+type ViewType =
+  | 'solar'
+  | 'solar-advanced'
+  | 'hbjson'
+  | 'builder'
+  | 'heatpump'
+  | 'heatpump-real'
+  | 'combined';
 
 /**
  * Saves component state to cache on unmount, restores it on mount.

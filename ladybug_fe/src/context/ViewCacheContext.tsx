@@ -1,7 +1,14 @@
 import { createContext, useContext, useRef, useCallback } from 'react';
 import type { ReactNode } from 'react';
 
-type ViewType = 'solar' | 'solar-advanced' | 'hbjson' | 'builder';
+type ViewType =
+  | 'solar'
+  | 'solar-advanced'
+  | 'hbjson'
+  | 'builder'
+  | 'heatpump'
+  | 'heatpump-real'
+  | 'combined';
 
 interface ViewCacheContextType {
   getCache: <T>(view: ViewType) => T | null;
