@@ -258,6 +258,7 @@
   color: var(--saa-text-dim);
 }
 .saa-file-ok {
+  position: relative;
   padding: .35rem .85rem;
   background: var(--saa-green-pale);
   border-top: 1px solid #bbf7d0;
@@ -268,6 +269,34 @@
   align-items: center;
   gap: .3rem;
   font-family: var(--saa-mono);
+}
+
+/* ── File clear button (×) ── */
+
+.saa-file-clear {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(22, 101, 52, .12);
+  color: #166534;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .65rem;
+  transition: all .15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.saa-file-clear:hover {
+  background: #dc2626;
+  color: #fff;
+  transform: scale(1.1);
+}
+.saa-file-clear:active {
+  transform: scale(.95);
 }
 
 /* ── Panel count stepper ── */

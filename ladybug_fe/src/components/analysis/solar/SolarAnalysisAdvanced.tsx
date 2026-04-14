@@ -1,19 +1,10 @@
-/**
- * Pokročilá solární analýza — orchestrátor.
- *
- * ZMĚNA: přidán useViewStateCache pro zachování výsledků
- * po návratu z landing page.
- *
- * Soubor: ladybug_fe/src/components/analysis/solar/SolarAnalysisAdvanced.tsx
- */
 import React, { useState } from 'react';
 import {
   FaSun, FaSpinner, FaArrowLeft, FaBolt,
   FaBuilding, FaMapMarkerAlt, FaCog,
   FaFile, FaCloudUploadAlt, FaCheckCircle, FaSolarPanel,
-  FaStar, FaThList, FaRulerCombined, FaChartBar,
+  FaStar, FaThList, FaRulerCombined, FaChartBar, FaTimes,
 } from 'react-icons/fa';
-import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import PanelMapView, { type RoofMeta } from './PanelMapView';
 import './SolarAnalysisAdvanced.css';
 
@@ -72,19 +63,6 @@ interface AnalysisResult {
   };
 }
 
-interface CachedState {
-  hbjsonFile: File | null;
-  epwFile: File | null;
-  result: AnalysisResult | null;
-  error: string | null;
-  selIdx: number | null;
-  numPanels: number;
-  pvEff: number;
-  maxTilt: number;
-  modType: string;
-  mountType: string;
-}
-
 interface Props {
   onBack: () => void;
 }
@@ -112,30 +90,23 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [modType, setModType]       = useState('Standard');
   const [mountType, setMountType]   = useState('FixedOpenRack');
 
-  /* Zachování stavu při návratu z landing page */
-  useViewStateCache<CachedState>(
-    'solar-advanced',
-    { hbjsonFile, epwFile, result, error, selIdx, numPanels, pvEff, maxTilt, modType, mountType },
-    (c: CachedState) => {
-      setHbjsonFile(c.hbjsonFile);
-      setEpwFile(c.epwFile);
-      setResult(c.result);
-      setError(c.error);
-      setSelIdx(c.selIdx);
-      setNumPanels(c.numPanels);
-      setPvEff(c.pvEff);
-      setMaxTilt(c.maxTilt);
-      setModType(c.modType);
-      setMountType(c.mountType);
-    }
-  );
-
   const currentPreset = MODULE_PRESETS[modType] ?? MODULE_PRESETS.Standard;
 
   const handleModTypeChange = (value: string) => {
     const preset = MODULE_PRESETS[value] ?? MODULE_PRESETS.Standard;
     setModType(value);
     setPvEff(preset.default);
+  };
+
+  /** Společný handler pro oba FileBoxy – nastaví/vymaže soubor
+   *  a zároveň vyčistí předchozí výsledky a chybu. */
+  const handleFileChange = (
+    setter: React.Dispatch<React.SetStateAction<File | null>>
+  ) => (f: File | null) => {
+    setter(f);
+    setError(null);
+    setResult(null);
+    setSelIdx(null);
   };
 
   const run = async () => {
@@ -219,7 +190,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               sub="Geometrie budovy (.hbjson)"
               file={hbjsonFile}
               accept=".hbjson,.json"
-              onChange={f => { setHbjsonFile(f); setError(null); }}
+              onChange={handleFileChange(setHbjsonFile)}
               icon={<FaFile />}
             />
             <FileBox
@@ -228,7 +199,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               sub="Klimatická data (.epw)"
               file={epwFile}
               accept=".epw"
-              onChange={f => { setEpwFile(f); setError(null); }}
+              onChange={handleFileChange(setEpwFile)}
               icon={<FaCloudUploadAlt />}
             />
           </div>
@@ -464,9 +435,17 @@ function FileBox({
   sub: string;
   file: File | null;
   accept: string;
-  onChange: (f: File) => void;
+  onChange: (f: File | null) => void;
   icon: React.ReactNode;
 }) {
+  const handleClear = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange(null);
+    const input = document.getElementById(`saa-${id}`) as HTMLInputElement | null;
+    if (input) input.value = '';
+  };
+
   return (
     <div className={`saa-file-box ${file ? 'has-file' : ''}`}>
       <label htmlFor={`saa-${id}`}>
@@ -487,6 +466,15 @@ function FileBox({
         {file && (
           <div className="saa-file-ok">
             <FaCheckCircle /> {file.name}
+            <button
+              type="button"
+              className="saa-file-clear"
+              onClick={handleClear}
+              aria-label="Odstranit soubor"
+              title="Odstranit soubor"
+            >
+              <FaTimes />
+            </button>
           </div>
         )}
       </label>
