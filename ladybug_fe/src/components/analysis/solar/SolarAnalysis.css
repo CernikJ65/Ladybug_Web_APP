@@ -34,9 +34,6 @@
   padding: 2rem 2rem 4rem;
   font-family: var(--sa-font);
   color: var(--sa-text);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(240,165,0,.04) 0%, transparent 60%),
-    radial-gradient(circle at 80% 80%, rgba(56,189,248,.03) 0%, transparent 40%);
 }
 
 /* --- back --- */
@@ -322,12 +319,6 @@
   background: var(--sa-surface); border: 1px solid var(--sa-border);
   border-radius: var(--sa-radius); padding: 1.25rem; text-align: center;
   position: relative; overflow: hidden;
-}
-.sv-diagram-wrap::before {
-  content: ''; position: absolute; top: 50%; left: 50%;
-  width: 400px; height: 400px; transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(240,165,0,.04) 0%, transparent 70%);
-  pointer-events: none;
 }
 .sv-toggle {
   font-size: .78rem; color: var(--sa-text-muted); cursor: pointer;
