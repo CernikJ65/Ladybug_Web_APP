@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import * as THREE from 'three';
+import { FaArrowLeft } from 'react-icons/fa';
 import './HbjsonViewer.css';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -18,6 +19,7 @@ interface HBFace {
   display_name?: string;
   geometry: HBGeometry;
   face_type?: string;
+  boundary_condition?: { type: string; [key: string]: unknown };
 }
 
 interface HBRoom {
@@ -25,6 +27,7 @@ interface HBRoom {
   identifier: string;
   display_name?: string;
   faces: HBFace[];
+  user_data?: Record<string, unknown>;
 }
 
 interface HBShade {
@@ -56,8 +59,30 @@ interface RoomInfo {
   roofCount: number;
   area: number;
   height: number;
+  minX: number; maxX: number;
+  minY: number; maxY: number;
+  minZ: number; maxZ: number;
+  center: THREE.Vector3;
+  footprintEdges: Float32Array;
+  roofPoints: Float32Array;
+  roofWidth: number;
+  roofLength: number;
+  userBuildingId?: string;
+}
+
+interface BuildingInfo {
+  id: number;
+  name: string;
+  roomIds: number[];
+  faceCount: number;
+  area: number;
   minZ: number;
   maxZ: number;
+  height: number;
+  minX: number; maxX: number;
+  minY: number; maxY: number;
+  roofWidth: number;
+  roofLength: number;
   center: THREE.Vector3;
 }
 
@@ -67,9 +92,15 @@ interface ModelStats {
   units: string;
   faceCount: number;
   roomCount: number;
+  buildingCount: number;
   shadeCount: number;
   dimensions: { x: number; y: number; z: number };
-  totalArea: number;
+}
+
+type ViewMode = 'rooms' | 'buildings';
+
+interface Props {
+  onBack: () => void;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -79,6 +110,11 @@ interface ModelStats {
 const HOVER_CLR = [1.0, 1.0, 0.15] as const;
 const SELECT_CLR = [1.0, 0.45, 0.0] as const;
 const BOX_CLR = [0.6, 0.2, 0.95] as const;
+
+const ADJACENCY_TOL = 0.5;
+const COLLINEAR_TOL = 0.3;
+const ANGLE_SIN_TOL = 0.05;
+const MIN_SHARED_LEN = 0.5;
 
 function hbjsonToScreen(c: number[]): THREE.Vector3 {
   return new THREE.Vector3(c[0], c[2], -c[1]);
@@ -105,34 +141,270 @@ function computeFaceArea(boundary: number[][]): number {
   return area;
 }
 
+function orientedFootprintSize(xyPoints: Float32Array): { width: number; length: number } {
+  if (xyPoints.length < 6) return { width: 0, length: 0 };
+
+  const seen = new Set<string>();
+  const pts: [number, number][] = [];
+  for (let i = 0; i < xyPoints.length; i += 2) {
+    const x = xyPoints[i], y = xyPoints[i + 1];
+    const key = `${x.toFixed(3)},${y.toFixed(3)}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      pts.push([x, y]);
+    }
+  }
+  if (pts.length < 3) return { width: 0, length: 0 };
+
+  pts.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+  const cross = (O: [number, number], A: [number, number], B: [number, number]) =>
+    (A[0] - O[0]) * (B[1] - O[1]) - (A[1] - O[1]) * (B[0] - O[0]);
+
+  const lower: [number, number][] = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  const upper: [number, number][] = [];
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i];
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+    upper.push(p);
+  }
+  const hull = lower.slice(0, -1).concat(upper.slice(0, -1));
+  if (hull.length < 3) {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const p of pts) {
+      if (p[0] < minX) minX = p[0]; if (p[0] > maxX) maxX = p[0];
+      if (p[1] < minY) minY = p[1]; if (p[1] > maxY) maxY = p[1];
+    }
+    const w = maxX - minX, l = maxY - minY;
+    return { width: Math.min(w, l), length: Math.max(w, l) };
+  }
+
+  let bestArea = Infinity;
+  let bestW = 0, bestL = 0;
+  for (let i = 0; i < hull.length; i++) {
+    const p1 = hull[i], p2 = hull[(i + 1) % hull.length];
+    const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-6) continue;
+    const ux = dx / len, uy = dy / len;
+    const vx = -uy, vy = ux;
+
+    let minU = Infinity, maxU = -Infinity;
+    let minV = Infinity, maxV = -Infinity;
+    for (const p of hull) {
+      const u = ux * p[0] + uy * p[1];
+      const v = vx * p[0] + vy * p[1];
+      if (u < minU) minU = u; if (u > maxU) maxU = u;
+      if (v < minV) minV = v; if (v > maxV) maxV = v;
+    }
+    const along = maxU - minU;
+    const across = maxV - minV;
+    const area = along * across;
+    if (area < bestArea) {
+      bestArea = area;
+      bestW = Math.min(along, across);
+      bestL = Math.max(along, across);
+    }
+  }
+  return { width: bestW, length: bestL };
+}
+
 function heightColor(z: number, minZ: number, maxZ: number): THREE.Color {
   const t = Math.max(0, Math.min(1, (z - minZ) / (maxZ - minZ + 0.001)));
   const lightness = 0.45 + t * 0.35;
   return new THREE.Color().setHSL(0, 0, lightness);
 }
 
+/* ─── Shared-wall geometric clustering via Union-Find ──────── */
+
+function aabbsTouch(a: RoomInfo, b: RoomInfo, tol: number): boolean {
+  return (
+    a.maxX >= b.minX - tol && a.minX <= b.maxX + tol &&
+    a.maxY >= b.minY - tol && a.minY <= b.maxY + tol &&
+    a.maxZ >= b.minZ - tol && a.minZ <= b.maxZ + tol
+  );
+}
+
+function sharedSegmentLength(
+  ax1: number, ay1: number, ax2: number, ay2: number,
+  bx1: number, by1: number, bx2: number, by2: number
+): number {
+  const dx1 = ax2 - ax1, dy1 = ay2 - ay1;
+  const len1 = Math.hypot(dx1, dy1);
+  if (len1 < 1e-6) return 0;
+  const ux = dx1 / len1, uy = dy1 / len1;
+
+  const dx2 = bx2 - bx1, dy2 = by2 - by1;
+  const len2 = Math.hypot(dx2, dy2);
+  if (len2 < 1e-6) return 0;
+  const vx = dx2 / len2, vy = dy2 / len2;
+
+  const cross = Math.abs(ux * vy - uy * vx);
+  if (cross > ANGLE_SIN_TOL) return 0;
+
+  const px = bx1 - ax1, py = by1 - ay1;
+  const perpDist = Math.abs(-uy * px + ux * py);
+  if (perpDist > COLLINEAR_TOL) return 0;
+
+  const t1a = 0, t1b = len1;
+  const t2a = ux * (bx1 - ax1) + uy * (by1 - ay1);
+  const t2b = ux * (bx2 - ax1) + uy * (by2 - ay1);
+  const t2lo = Math.min(t2a, t2b), t2hi = Math.max(t2a, t2b);
+
+  return Math.max(0, Math.min(t1b, t2hi) - Math.max(t1a, t2lo));
+}
+
+function roomsShareWall(a: RoomInfo, b: RoomInfo): boolean {
+  const ea = a.footprintEdges, eb = b.footprintEdges;
+  for (let i = 0; i < ea.length; i += 4) {
+    for (let j = 0; j < eb.length; j += 4) {
+      const len = sharedSegmentLength(
+        ea[i], ea[i + 1], ea[i + 2], ea[i + 3],
+        eb[j], eb[j + 1], eb[j + 2], eb[j + 3]
+      );
+      if (len >= MIN_SHARED_LEN) return true;
+    }
+  }
+  return false;
+}
+
+function clusterRoomsIntoBuildings(rooms: RoomInfo[]): BuildingInfo[] {
+  const n = rooms.length;
+
+  const allHaveId = n > 0 && rooms.every(r => typeof r.userBuildingId === 'string' && r.userBuildingId.length > 0);
+  if (allHaveId) {
+    const groupsById = new Map<string, number[]>();
+    for (let i = 0; i < n; i++) {
+      const id = rooms[i].userBuildingId!;
+      if (!groupsById.has(id)) groupsById.set(id, []);
+      groupsById.get(id)!.push(i);
+    }
+    const out: BuildingInfo[] = [];
+    let bid = 0;
+    for (const [name, memberIds] of groupsById.entries()) {
+      let faceCount = 0, area = 0;
+      let minZ = Infinity, maxZ = -Infinity;
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+      let cx = 0, cy = 0, cz = 0;
+      const mergedRoof: number[] = [];
+      for (const rid of memberIds) {
+        const r = rooms[rid];
+        faceCount += r.faceCount; area += r.area;
+        minZ = Math.min(minZ, r.minZ); maxZ = Math.max(maxZ, r.maxZ);
+        minX = Math.min(minX, r.minX); maxX = Math.max(maxX, r.maxX);
+        minY = Math.min(minY, r.minY); maxY = Math.max(maxY, r.maxY);
+        cx += r.center.x; cy += r.center.y; cz += r.center.z;
+        for (let k = 0; k < r.roofPoints.length; k++) mergedRoof.push(r.roofPoints[k]);
+      }
+      const k = memberIds.length;
+      const obb = orientedFootprintSize(new Float32Array(mergedRoof));
+      out.push({
+        id: bid, name, roomIds: memberIds,
+        faceCount, area,
+        minZ, maxZ, height: maxZ - minZ,
+        minX, maxX, minY, maxY,
+        roofWidth: obb.width, roofLength: obb.length,
+        center: new THREE.Vector3(cx / k, cy / k, cz / k),
+      });
+      bid++;
+    }
+    return out;
+  }
+
+  const parent = Array.from({ length: n }, (_, i) => i);
+  const find = (i: number): number => {
+    while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; }
+    return i;
+  };
+  const union = (i: number, j: number) => {
+    const ri = find(i), rj = find(j);
+    if (ri !== rj) parent[ri] = rj;
+  };
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      if (!aabbsTouch(rooms[i], rooms[j], ADJACENCY_TOL)) continue;
+      if (roomsShareWall(rooms[i], rooms[j])) union(i, j);
+    }
+  }
+
+  const groups = new Map<number, number[]>();
+  for (let i = 0; i < n; i++) {
+    const root = find(i);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root)!.push(i);
+  }
+
+  const buildings: BuildingInfo[] = [];
+  let bid = 0;
+  for (const memberIds of groups.values()) {
+    let faceCount = 0, area = 0;
+    let minZ = Infinity, maxZ = -Infinity;
+    let minX = Infinity, maxX = -Infinity;
+    let minY = Infinity, maxY = -Infinity;
+    let cx = 0, cy = 0, cz = 0;
+    const mergedRoof: number[] = [];
+    for (const rid of memberIds) {
+      const r = rooms[rid];
+      faceCount += r.faceCount;
+      area += r.area;
+      minZ = Math.min(minZ, r.minZ);
+      maxZ = Math.max(maxZ, r.maxZ);
+      minX = Math.min(minX, r.minX);
+      maxX = Math.max(maxX, r.maxX);
+      minY = Math.min(minY, r.minY);
+      maxY = Math.max(maxY, r.maxY);
+      cx += r.center.x; cy += r.center.y; cz += r.center.z;
+      for (let k = 0; k < r.roofPoints.length; k++) mergedRoof.push(r.roofPoints[k]);
+    }
+    const k = memberIds.length;
+    const obb = orientedFootprintSize(new Float32Array(mergedRoof));
+    buildings.push({
+      id: bid,
+      name: `Budova_${bid + 1}`,
+      roomIds: memberIds,
+      faceCount,
+      area,
+      minZ,
+      maxZ,
+      height: maxZ - minZ,
+      minX, maxX, minY, maxY,
+      roofWidth: obb.width, roofLength: obb.length,
+      center: new THREE.Vector3(cx / k, cy / k, cz / k),
+    });
+    bid++;
+  }
+  return buildings;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    COMPONENT
    ═══════════════════════════════════════════════════════════════ */
 
-const HbjsonViewer: React.FC = () => {
+const HbjsonViewer: React.FC<Props> = ({ onBack }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const solidMeshRef = useRef<THREE.Mesh | null>(null);
-  const wireMeshRef = useRef<THREE.LineSegments | null>(null);
   const gridRef = useRef<THREE.GridHelper | null>(null);
   const groundRef = useRef<THREE.Mesh | null>(null);
 
   const originalColorsRef = useRef<Float32Array | null>(null);
   const triangleToRoomRef = useRef<Int32Array>(new Int32Array(0));
   const roomsDataRef = useRef<RoomInfo[]>([]);
+  const buildingsDataRef = useRef<BuildingInfo[]>([]);
+  const roomToBuildingRef = useRef<Int32Array>(new Int32Array(0));
   const originalDataRef = useRef<HBJSONData | null>(null);
 
-  const selectedRoomIdsRef = useRef<Set<number>>(new Set());
-  const hoveredRoomIdRef = useRef<number | null>(null);
+  const selectedIdsRef = useRef<Set<number>>(new Set());
+  const hoveredIdRef = useRef<number | null>(null);
+  const viewModeRef = useRef<ViewMode>('buildings');
 
   const raycasterRef = useRef(new THREE.Raycaster());
   const cameraTargetRef = useRef(new THREE.Vector3());
@@ -155,22 +427,24 @@ const HbjsonViewer: React.FC = () => {
 
   const buildModelFnRef = useRef<((data: HBJSONData) => void) | null>(null);
   const clearSelectionFnRef = useRef<(() => void) | null>(null);
-  const selectRoomFnRef = useRef<((id: number, additive: boolean) => void) | null>(null);
+  const selectByIdFnRef = useRef<((id: number, additive: boolean) => void) | null>(null);
   const exportSelectedFnRef = useRef<(() => void) | null>(null);
 
   const [stats, setStats] = useState<ModelStats | null>(null);
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
+  const [buildings, setBuildings] = useState<BuildingInfo[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [renderMode, setRenderMode] = useState<'solid' | 'wireframe' | 'both'>('solid');
   const [opacity, setOpacity] = useState(85);
   const [showGrid, setShowGrid] = useState(true);
   const [highlightHover, setHighlightHover] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('buildings');
+  const [panelOpen, setPanelOpen] = useState(true);
 
   /* ─── Color buffer helpers ─────────────────────────────────── */
 
-  const setRoomColor = useCallback((roomId: number, r: number, g: number, b: number) => {
+  const paintRoomVertices = useCallback((roomId: number, r: number, g: number, b: number) => {
     const mesh = solidMeshRef.current;
     if (!mesh) return;
     const attr = mesh.geometry.attributes.color as THREE.BufferAttribute;
@@ -179,14 +453,12 @@ const HbjsonViewer: React.FC = () => {
     const arr = attr.array as Float32Array;
     const end = room.vertexStart + room.vertexCount;
     for (let i = room.vertexStart; i < end; i++) {
-      arr[i * 3] = r;
-      arr[i * 3 + 1] = g;
-      arr[i * 3 + 2] = b;
+      arr[i * 3] = r; arr[i * 3 + 1] = g; arr[i * 3 + 2] = b;
     }
     attr.needsUpdate = true;
   }, []);
 
-  const restoreRoomColor = useCallback((roomId: number) => {
+  const restoreRoomVertices = useCallback((roomId: number) => {
     const mesh = solidMeshRef.current;
     const orig = originalColorsRef.current;
     if (!mesh || !orig) return;
@@ -196,21 +468,30 @@ const HbjsonViewer: React.FC = () => {
     const arr = attr.array as Float32Array;
     const end = room.vertexStart + room.vertexCount;
     for (let i = room.vertexStart; i < end; i++) {
-      arr[i * 3] = orig[i * 3];
-      arr[i * 3 + 1] = orig[i * 3 + 1];
-      arr[i * 3 + 2] = orig[i * 3 + 2];
+      arr[i * 3] = orig[i * 3]; arr[i * 3 + 1] = orig[i * 3 + 1]; arr[i * 3 + 2] = orig[i * 3 + 2];
     }
     attr.needsUpdate = true;
   }, []);
 
-  const restoreAllColors = useCallback(() => {
-    const mesh = solidMeshRef.current;
-    const orig = originalColorsRef.current;
-    if (!mesh || !orig) return;
-    const attr = mesh.geometry.attributes.color as THREE.BufferAttribute;
-    (attr.array as Float32Array).set(orig);
-    attr.needsUpdate = true;
-  }, []);
+  const paintEntity = useCallback((entityId: number, r: number, g: number, b: number) => {
+    if (viewModeRef.current === 'buildings') {
+      const b_ = buildingsDataRef.current[entityId];
+      if (!b_) return;
+      for (const rid of b_.roomIds) paintRoomVertices(rid, r, g, b);
+    } else {
+      paintRoomVertices(entityId, r, g, b);
+    }
+  }, [paintRoomVertices]);
+
+  const restoreEntity = useCallback((entityId: number) => {
+    if (viewModeRef.current === 'buildings') {
+      const b_ = buildingsDataRef.current[entityId];
+      if (!b_) return;
+      for (const rid of b_.roomIds) restoreRoomVertices(rid);
+    } else {
+      restoreRoomVertices(entityId);
+    }
+  }, [restoreRoomVertices]);
 
   /* ─── Main Three.js effect ─────────────────────────────────── */
 
@@ -280,15 +561,9 @@ const HbjsonViewer: React.FC = () => {
         scene.remove(solidMeshRef.current);
         solidMeshRef.current = null;
       }
-      if (wireMeshRef.current) {
-        wireMeshRef.current.geometry.dispose();
-        (wireMeshRef.current.material as THREE.Material).dispose();
-        scene.remove(wireMeshRef.current);
-        wireMeshRef.current = null;
-      }
 
-      selectedRoomIdsRef.current.clear();
-      hoveredRoomIdRef.current = null;
+      selectedIdsRef.current.clear();
+      hoveredIdRef.current = null;
       setSelectedIds(new Set());
       setHoveredId(null);
 
@@ -298,6 +573,7 @@ const HbjsonViewer: React.FC = () => {
       if (hbRooms.length === 0 && hbShades.length === 0) {
         setStats(null);
         setRooms([]);
+        setBuildings([]);
         return;
       }
 
@@ -311,14 +587,12 @@ const HbjsonViewer: React.FC = () => {
       const positions: number[] = [];
       const normals: number[] = [];
       const colors: number[] = [];
-      const wirePositions: number[] = [];
       const triToRoom: number[] = [];
       const roomInfos: RoomInfo[] = [];
 
-      let totalArea = 0;
       let totalFaces = 0;
 
-      const addFace = (boundary: number[][], faceType: string | undefined, roomId: number) => {
+      const addFace = (boundary: number[][], _faceType: string | undefined, roomId: number) => {
         if (boundary.length < 3) return;
         const tris = triangulateBoundary(boundary);
         if (!tris) return;
@@ -326,26 +600,21 @@ const HbjsonViewer: React.FC = () => {
         const avgZ = boundary.reduce((s, c) => s + c[2], 0) / boundary.length;
         const clr = heightColor(avgZ, globalMinZ, globalMaxZ);
 
-        // Compute ONE normal for the entire face from first 3 boundary points
-        // This prevents non-planar faces from looking "twisted"
         const p0 = hbjsonToScreen(boundary[0]);
         const p1 = hbjsonToScreen(boundary[1]);
         const p2 = hbjsonToScreen(boundary[2]);
         const faceNormal = new THREE.Vector3()
           .crossVectors(p1.clone().sub(p0), p2.clone().sub(p0));
-        if (faceNormal.lengthSq() < 1e-8) return; // degenerate face
+        if (faceNormal.lengthSq() < 1e-8) return;
         faceNormal.normalize();
 
         for (let t = 0; t < tris.length; t += 3) {
           const a = hbjsonToScreen(tris[t]);
           const b = hbjsonToScreen(tris[t + 1]);
           const c = hbjsonToScreen(tris[t + 2]);
-
-          // Skip degenerate triangles
           const triArea = new THREE.Vector3()
             .crossVectors(b.clone().sub(a), c.clone().sub(a)).length();
           if (triArea < 1e-6) continue;
-
           positions.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z);
           normals.push(
             faceNormal.x, faceNormal.y, faceNormal.z,
@@ -356,13 +625,6 @@ const HbjsonViewer: React.FC = () => {
           triToRoom.push(roomId);
         }
 
-        for (let i = 0; i < boundary.length; i++) {
-          const p1 = hbjsonToScreen(boundary[i]);
-          const p2 = hbjsonToScreen(boundary[(i + 1) % boundary.length]);
-          wirePositions.push(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
-        }
-
-        totalArea += computeFaceArea(boundary);
         totalFaces++;
       };
 
@@ -370,8 +632,13 @@ const HbjsonViewer: React.FC = () => {
         const room = hbRooms[ri];
         const vertStart = positions.length / 3;
         let area = 0, wallC = 0, floorC = 0, roofC = 0;
+        let rMinX = Infinity, rMaxX = -Infinity;
+        let rMinY = Infinity, rMaxY = -Infinity;
         let rMinZ = Infinity, rMaxZ = -Infinity;
         let cx = 0, cy = 0, cz = 0, ptCount = 0;
+
+        const fpEdges: number[] = [];
+        const roofPts: number[] = [];
 
         for (const face of room.faces) {
           const b = face.geometry.boundary;
@@ -379,15 +646,42 @@ const HbjsonViewer: React.FC = () => {
           addFace(b, face.face_type, ri);
           area += computeFaceArea(b);
           if (face.face_type === 'Wall') wallC++;
-          else if (face.face_type === 'Floor') floorC++;
+          else if (face.face_type === 'Floor') {
+            floorC++;
+            if (fpEdges.length === 0) {
+              for (let k = 0; k < b.length; k++) {
+                const p1 = b[k], p2 = b[(k + 1) % b.length];
+                fpEdges.push(p1[0], p1[1], p2[0], p2[1]);
+              }
+            }
+            for (const c of b) roofPts.push(c[0], c[1]);
+          }
           else if (face.face_type === 'RoofCeiling') roofC++;
           for (const c of b) {
+            rMinX = Math.min(rMinX, c[0]); rMaxX = Math.max(rMaxX, c[0]);
+            rMinY = Math.min(rMinY, c[1]); rMaxY = Math.max(rMaxY, c[1]);
             rMinZ = Math.min(rMinZ, c[2]); rMaxZ = Math.max(rMaxZ, c[2]);
             cx += c[0]; cy += c[1]; cz += c[2]; ptCount++;
           }
         }
 
+        if (fpEdges.length === 0) {
+          for (const face of room.faces) {
+            if (face.face_type !== 'Wall') continue;
+            const b = face.geometry.boundary;
+            const sorted = [...b].sort((u, v) => u[2] - v[2]);
+            if (sorted.length >= 2) {
+              fpEdges.push(sorted[0][0], sorted[0][1], sorted[1][0], sorted[1][1]);
+            }
+          }
+        }
+
         const vertCount = positions.length / 3 - vertStart;
+        const ud = (room.user_data || {}) as Record<string, unknown>;
+        const ubid = typeof ud['building_id'] === 'string' ? (ud['building_id'] as string) : undefined;
+        const fpArr = new Float32Array(fpEdges);
+        const roofPtsArr = new Float32Array(roofPts);
+        const obb = orientedFootprintSize(roofPtsArr);
         roomInfos.push({
           id: ri,
           name: room.display_name || room.identifier || `Room_${ri}`,
@@ -399,11 +693,17 @@ const HbjsonViewer: React.FC = () => {
           roofCount: roofC,
           area,
           height: rMaxZ - rMinZ,
-          minZ: rMinZ,
-          maxZ: rMaxZ,
+          minX: rMinX, maxX: rMaxX,
+          minY: rMinY, maxY: rMaxY,
+          minZ: rMinZ, maxZ: rMaxZ,
           center: ptCount > 0
             ? new THREE.Vector3(cx / ptCount, cz / ptCount, -cy / ptCount)
-            : new THREE.Vector3()
+            : new THREE.Vector3(),
+          footprintEdges: fpArr,
+          roofPoints: roofPtsArr,
+          roofWidth: obb.width,
+          roofLength: obb.length,
+          userBuildingId: ubid,
         });
       }
 
@@ -418,6 +718,15 @@ const HbjsonViewer: React.FC = () => {
       originalColorsRef.current = new Float32Array(colArr);
       triangleToRoomRef.current = new Int32Array(triToRoom);
       roomsDataRef.current = roomInfos;
+
+      const buildingsList = clusterRoomsIntoBuildings(roomInfos);
+      buildingsDataRef.current = buildingsList;
+
+      const r2b = new Int32Array(roomInfos.length);
+      for (const b of buildingsList) {
+        for (const rid of b.roomIds) r2b[rid] = b.id;
+      }
+      roomToBuildingRef.current = r2b;
 
       const geom = new THREE.BufferGeometry();
       geom.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
@@ -436,15 +745,6 @@ const HbjsonViewer: React.FC = () => {
       solid.receiveShadow = true;
       scene.add(solid);
       solidMeshRef.current = solid;
-
-      const wireGeom = new THREE.BufferGeometry();
-      wireGeom.setAttribute('position', new THREE.Float32BufferAttribute(wirePositions, 3));
-      const wire = new THREE.LineSegments(wireGeom,
-        new THREE.LineBasicMaterial({ color: 0x666666, transparent: true, opacity: 0.25 })
-      );
-      wire.visible = false;
-      scene.add(wire);
-      wireMeshRef.current = wire;
 
       const box = new THREE.Box3().setFromBufferAttribute(geom.attributes.position as THREE.BufferAttribute);
       const center = box.getCenter(new THREE.Vector3());
@@ -470,44 +770,45 @@ const HbjsonViewer: React.FC = () => {
       initialCamRef.current = { pos: camera.position.clone(), target: center.clone() };
 
       setRooms([...roomInfos]);
+      setBuildings([...buildingsList]);
       setStats({
         name: data.display_name || data.identifier || 'Model',
         version: data.version || '?',
         units: data.units || 'Meters',
         faceCount: totalFaces,
         roomCount: hbRooms.length,
+        buildingCount: buildingsList.length,
         shadeCount: hbShades.length,
         dimensions: { x: size.x, y: size.y, z: size.z },
-        totalArea
       });
     };
 
     /* ─── Selection logic ──────────────────────────────────── */
 
-    const selectRoom = (roomId: number, additive: boolean) => {
-      const prev = selectedRoomIdsRef.current;
+    const selectEntity = (entityId: number, additive: boolean) => {
+      const prev = selectedIdsRef.current;
 
       if (!additive) {
-        prev.forEach(id => restoreRoomColor(id));
+        prev.forEach(id => restoreEntity(id));
         prev.clear();
       }
 
-      if (prev.has(roomId)) {
-        prev.delete(roomId);
-        restoreRoomColor(roomId);
+      if (prev.has(entityId)) {
+        prev.delete(entityId);
+        restoreEntity(entityId);
       } else {
-        prev.add(roomId);
-        setRoomColor(roomId, ...SELECT_CLR);
+        prev.add(entityId);
+        paintEntity(entityId, ...SELECT_CLR);
       }
 
       const next = new Set(prev);
-      selectedRoomIdsRef.current = next;
+      selectedIdsRef.current = next;
       setSelectedIds(next);
     };
 
     const clearSelection = () => {
-      selectedRoomIdsRef.current.forEach(id => restoreRoomColor(id));
-      selectedRoomIdsRef.current.clear();
+      selectedIdsRef.current.forEach(id => restoreEntity(id));
+      selectedIdsRef.current.clear();
       setSelectedIds(new Set());
     };
 
@@ -523,33 +824,37 @@ const HbjsonViewer: React.FC = () => {
       clearSelection();
       const newSel = new Set<number>();
 
-      for (const room of roomsDataRef.current) {
-        const projected = room.center.clone().project(camera);
+      const entities = viewModeRef.current === 'buildings'
+        ? buildingsDataRef.current.map(b => ({ id: b.id, center: b.center }))
+        : roomsDataRef.current.map(r => ({ id: r.id, center: r.center }));
+
+      for (const ent of entities) {
+        const projected = ent.center.clone().project(camera);
         const sx = (projected.x + 1) / 2 * w + rect.left;
         const sy = (-projected.y + 1) / 2 * h + rect.top;
         if (sx >= minX && sx <= maxX && sy >= minY && sy <= maxY) {
-          newSel.add(room.id);
-          setRoomColor(room.id, ...BOX_CLR);
+          newSel.add(ent.id);
+          paintEntity(ent.id, ...BOX_CLR);
         }
       }
 
-      selectedRoomIdsRef.current = newSel;
+      selectedIdsRef.current = newSel;
       setSelectedIds(new Set(newSel));
     };
 
-    const hoverRoom = (roomId: number | null) => {
-      if (hoveredRoomIdRef.current === roomId) return;
+    const hoverEntity = (entityId: number | null) => {
+      if (hoveredIdRef.current === entityId) return;
 
-      const prev = hoveredRoomIdRef.current;
-      if (prev !== null && !selectedRoomIdsRef.current.has(prev)) {
-        restoreRoomColor(prev);
+      const prev = hoveredIdRef.current;
+      if (prev !== null && !selectedIdsRef.current.has(prev)) {
+        restoreEntity(prev);
       }
 
-      hoveredRoomIdRef.current = roomId;
-      setHoveredId(roomId);
+      hoveredIdRef.current = entityId;
+      setHoveredId(entityId);
 
-      if (roomId !== null && !selectedRoomIdsRef.current.has(roomId)) {
-        setRoomColor(roomId, ...HOVER_CLR);
+      if (entityId !== null && !selectedIdsRef.current.has(entityId)) {
+        paintEntity(entityId, ...HOVER_CLR);
       }
     };
 
@@ -562,26 +867,58 @@ const HbjsonViewer: React.FC = () => {
       }
     };
 
-    /* ─── Export ────────────────────────────────────────────── */
+    /* ─── Export: pass-through + building_id ──────────────── */
 
     const exportSelected = () => {
       const orig = originalDataRef.current;
-      if (!orig || selectedRoomIdsRef.current.size === 0) return;
+      if (!orig || selectedIdsRef.current.size === 0) return;
 
-      const selIds = selectedRoomIdsRef.current;
-      const exportRooms = (orig.rooms || []).filter((_, i) => selIds.has(i));
-      const exportData: HBJSONData = {
+      const roomToBuildingName = new Map<number, string>();
+      const selRoomIds = new Set<number>();
+
+      if (viewModeRef.current === 'buildings') {
+        for (const bid of selectedIdsRef.current) {
+          const b = buildingsDataRef.current[bid];
+          if (!b) continue;
+          for (const rid of b.roomIds) {
+            selRoomIds.add(rid);
+            roomToBuildingName.set(rid, b.name);
+          }
+        }
+      } else {
+        for (const rid of selectedIdsRef.current) {
+          selRoomIds.add(rid);
+          const bid = roomToBuildingRef.current[rid];
+          const bn = buildingsDataRef.current[bid]?.name ?? `Budova_${bid + 1}`;
+          roomToBuildingName.set(rid, bn);
+        }
+      }
+
+      const exportRooms = (orig.rooms || [])
+        .map((r, i) => ({ r, i }))
+        .filter(({ i }) => selRoomIds.has(i))
+        .map(({ r, i }) => ({
+          ...r,
+          user_data: {
+            ...(r.user_data || {}),
+            building_id: roomToBuildingName.get(i) ?? `Budova_${i + 1}`,
+          },
+        }));
+
+      const buildingCount = new Set(roomToBuildingName.values()).size;
+      const label = `${buildingCount}_buildings_${exportRooms.length}_rooms`;
+
+      const exportData = {
         ...orig,
-        display_name: `${orig.display_name || 'Model'}_export_${exportRooms.length}_rooms`,
+        display_name: `${orig.display_name || 'Model'}_export_${label}`,
         rooms: exportRooms,
-        orphaned_shades: []
       };
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `export_${exportRooms.length}_rooms.hbjson`;
+      a.download = `export_${label}.hbjson`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -591,6 +928,15 @@ const HbjsonViewer: React.FC = () => {
     /* ─── Event handlers ───────────────────────────────────── */
 
     const canvas = renderer.domElement;
+
+    const triHitToEntityId = (faceIndex: number): number => {
+      const roomId = triangleToRoomRef.current[faceIndex];
+      if (roomId < 0) return -1;
+      if (viewModeRef.current === 'buildings') {
+        return roomToBuildingRef.current[roomId] ?? -1;
+      }
+      return roomId;
+    };
 
     const onMouseDown = (e: MouseEvent) => {
       if (e.button === 0 && e.shiftKey) {
@@ -641,14 +987,14 @@ const HbjsonViewer: React.FC = () => {
         const hits = raycasterRef.current.intersectObject(solidMeshRef.current);
 
         if (hits.length > 0 && hits[0].faceIndex != null) {
-          const roomId = triangleToRoomRef.current[hits[0].faceIndex!];
-          if (roomId >= 0) {
-            hoverRoom(roomId);
+          const eid = triHitToEntityId(hits[0].faceIndex!);
+          if (eid >= 0) {
+            hoverEntity(eid);
             canvas.style.cursor = 'pointer';
             return;
           }
         }
-        hoverRoom(null);
+        hoverEntity(null);
         canvas.style.cursor = 'grab';
         return;
       }
@@ -707,9 +1053,9 @@ const HbjsonViewer: React.FC = () => {
       const hits = raycasterRef.current.intersectObject(solidMeshRef.current);
 
       if (hits.length > 0 && hits[0].faceIndex != null) {
-        const roomId = triangleToRoomRef.current[hits[0].faceIndex!];
-        if (roomId >= 0) {
-          selectRoom(roomId, e.ctrlKey || e.metaKey);
+        const eid = triHitToEntityId(hits[0].faceIndex!);
+        if (eid >= 0) {
+          selectEntity(eid, e.ctrlKey || e.metaKey);
           return;
         }
       }
@@ -783,11 +1129,9 @@ const HbjsonViewer: React.FC = () => {
     };
     animate();
 
-    /* ─── Expose functions via typed refs for UI handlers ──── */
-
     buildModelFnRef.current = buildModel;
     clearSelectionFnRef.current = clearSelection;
-    selectRoomFnRef.current = selectRoom;
+    selectByIdFnRef.current = selectEntity;
     exportSelectedFnRef.current = exportSelected;
 
     return () => {
@@ -805,7 +1149,7 @@ const HbjsonViewer: React.FC = () => {
       scene.clear();
       if (container.contains(canvas)) container.removeChild(canvas);
     };
-  }, [setRoomColor, restoreRoomColor, restoreAllColors]);
+  }, [paintEntity, restoreEntity]);
 
   /* ─── UI handlers ────────────────────────────────────────── */
 
@@ -841,13 +1185,6 @@ const HbjsonViewer: React.FC = () => {
     mat.needsUpdate = true;
   }, []);
 
-  const handleRenderMode = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    const mode = e.target.value as typeof renderMode;
-    setRenderMode(mode);
-    if (solidMeshRef.current) solidMeshRef.current.visible = mode !== 'wireframe';
-    if (wireMeshRef.current) wireMeshRef.current.visible = mode !== 'solid';
-  }, []);
-
   const handleGrid = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setShowGrid(e.target.checked);
     if (gridRef.current) gridRef.current.visible = e.target.checked;
@@ -858,14 +1195,44 @@ const HbjsonViewer: React.FC = () => {
     highlightHoverRef.current = e.target.checked;
   }, []);
 
+  const handleViewMode = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    const mode = e.target.value as ViewMode;
+    clearSelectionFnRef.current?.();
+    viewModeRef.current = mode;
+    setViewMode(mode);
+    hoveredIdRef.current = null;
+    setHoveredId(null);
+  }, []);
+
   const selCount = selectedIds.size;
-  const selRoom = selCount === 1 ? roomsDataRef.current[Array.from(selectedIds)[0]] : null;
+  const selRoom = (viewMode === 'rooms' && selCount === 1)
+    ? roomsDataRef.current[Array.from(selectedIds)[0]]
+    : null;
+  const selBuilding = (viewMode === 'buildings' && selCount === 1)
+    ? buildingsDataRef.current[Array.from(selectedIds)[0]]
+    : null;
 
   /* ─── JSX ────────────────────────────────────────────────── */
 
   return (
     <div className="hbjson-viewer">
-      <div className="hbjson-viewer__panel">
+      <button
+        className="hbjson-viewer__back"
+        onClick={onBack}
+        aria-label="Zpět"
+      >
+        <FaArrowLeft /> Zpět
+      </button>
+
+      <button
+        className={`hbjson-viewer__toggle${panelOpen ? ' open' : ''}`}
+        onClick={() => setPanelOpen(p => !p)}
+        aria-label={panelOpen ? 'Skrýt panel' : 'Zobrazit panel'}
+      >
+        {panelOpen ? '×' : '☰'}
+      </button>
+
+      <div className={`hbjson-viewer__panel${panelOpen ? '' : ' collapsed'}`}>
         <h3>HBJSON Viewer</h3>
 
         <div className="hbjson-viewer__file-input">
@@ -875,11 +1242,10 @@ const HbjsonViewer: React.FC = () => {
 
         <div className="hbjson-viewer__controls">
           <div className="hbjson-viewer__field">
-            <label>Zobrazení</label>
-            <select value={renderMode} onChange={handleRenderMode}>
-              <option value="solid">Plné plochy</option>
-              <option value="wireframe">Drátěný model</option>
-              <option value="both">Kombinované</option>
+            <label>Pohled</label>
+            <select value={viewMode} onChange={handleViewMode}>
+              <option value="buildings">Budovy</option>
+              <option value="rooms">Místnosti</option>
             </select>
           </div>
 
@@ -908,19 +1274,44 @@ const HbjsonViewer: React.FC = () => {
 
         {selCount > 0 && (
           <div className="hbjson-viewer__selection">
-            <h4>{selCount === 1 ? 'Vybraná budova' : `Výběr: ${selCount} budov`}</h4>
-            {selRoom ? (
+            <h4>
+              {viewMode === 'buildings'
+                ? (selCount === 1 ? 'Vybraná budova' : `Výběr: ${selCount} budov`)
+                : (selCount === 1 ? 'Vybraná místnost' : `Výběr: ${selCount} místností`)}
+            </h4>
+
+            {selRoom && (
               <div className="hbjson-viewer__sel-detail">
                 <span><b>Název:</b> {selRoom.name}</span>
                 <span><b>Ploch:</b> {selRoom.faceCount} (W:{selRoom.wallCount} F:{selRoom.floorCount} R:{selRoom.roofCount})</span>
-                <span><b>Plocha:</b> {selRoom.area.toFixed(1)} m²</span>
-                <span><b>Výška:</b> {selRoom.height.toFixed(1)} m ({selRoom.minZ.toFixed(1)}–{selRoom.maxZ.toFixed(1)})</span>
+                <span><b>Výška:</b> {selRoom.height.toFixed(1)} m</span>
+                <span><b>Rozměr střechy:</b> {selRoom.roofLength.toFixed(1)} × {selRoom.roofWidth.toFixed(1)} m</span>
               </div>
-            ) : (
+            )}
+
+            {selBuilding && (
               <div className="hbjson-viewer__sel-detail">
-                <span><b>Budov:</b> {selCount}</span>
-                <span><b>Ploch:</b> {Array.from(selectedIds).reduce((s, id) => s + (roomsDataRef.current[id]?.faceCount || 0), 0)}</span>
-                <span><b>Plocha:</b> {Array.from(selectedIds).reduce((s, id) => s + (roomsDataRef.current[id]?.area || 0), 0).toFixed(0)} m²</span>
+                <span><b>Název:</b> {selBuilding.name}</span>
+                <span><b>Místností:</b> {selBuilding.roomIds.length}</span>
+                <span><b>Ploch:</b> {selBuilding.faceCount}</span>
+                <span><b>Výška:</b> {selBuilding.height.toFixed(1)} m</span>
+                <span><b>Rozměr střechy:</b> {selBuilding.roofLength.toFixed(1)} × {selBuilding.roofWidth.toFixed(1)} m</span>
+              </div>
+            )}
+
+            {!selRoom && !selBuilding && (
+              <div className="hbjson-viewer__sel-detail">
+                {viewMode === 'buildings' ? (
+                  <>
+                    <span><b>Budov:</b> {selCount}</span>
+                    <span><b>Místností:</b> {Array.from(selectedIds).reduce((s: number, id) => s + (buildingsDataRef.current[id]?.roomIds.length || 0), 0)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span><b>Místností:</b> {selCount}</span>
+                    <span><b>Ploch:</b> {Array.from(selectedIds).reduce((s: number, id) => s + (roomsDataRef.current[id]?.faceCount || 0), 0)}</span>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -929,21 +1320,40 @@ const HbjsonViewer: React.FC = () => {
         {stats && (
           <div className="hbjson-viewer__stats">
             <span><b>Model:</b> {stats.name} <small>v{stats.version}</small></span>
-            <span><b>Budov:</b> {stats.roomCount} &nbsp; <b>Terén:</b> {stats.shadeCount}</span>
-            <span><b>Ploch:</b> {stats.faceCount.toLocaleString()} &nbsp; <b>Plocha:</b> {stats.totalArea.toFixed(0)} m²</span>
+            <span><b>Budov:</b> {stats.buildingCount} &nbsp; <b>Místností:</b> {stats.roomCount} &nbsp; <b>Terén:</b> {stats.shadeCount}</span>
+            <span><b>Ploch:</b> {stats.faceCount.toLocaleString()}</span>
             <span><b>Rozměr:</b> {stats.dimensions.x.toFixed(0)}×{stats.dimensions.z.toFixed(0)}×{stats.dimensions.y.toFixed(0)} m</span>
           </div>
         )}
 
-        {rooms.length > 0 && (
+        {viewMode === 'buildings' && buildings.length > 0 && (
           <div className="hbjson-viewer__room-list-wrap">
-            <h4>Budovy ({rooms.length})</h4>
+            <h4>Budovy ({buildings.length})</h4>
+            <div className="hbjson-viewer__room-list">
+              {buildings.slice(0, 200).map(b => (
+                <div
+                  key={b.id}
+                  className={`hbjson-viewer__room-item${selectedIds.has(b.id) ? ' sel' : ''}${hoveredId === b.id ? ' hov' : ''}`}
+                  onClick={(e) => selectByIdFnRef.current?.(b.id, e.ctrlKey || e.metaKey)}
+                >
+                  <span className="hbjson-viewer__room-name">{b.name}</span>
+                  <span className="hbjson-viewer__room-meta">{b.roomIds.length}m · {b.height.toFixed(0)}m</span>
+                </div>
+              ))}
+              {buildings.length > 200 && <div className="hbjson-viewer__room-more">…a dalších {buildings.length - 200}</div>}
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'rooms' && rooms.length > 0 && (
+          <div className="hbjson-viewer__room-list-wrap">
+            <h4>Místnosti ({rooms.length})</h4>
             <div className="hbjson-viewer__room-list">
               {rooms.slice(0, 200).map(r => (
                 <div
                   key={r.id}
                   className={`hbjson-viewer__room-item${selectedIds.has(r.id) ? ' sel' : ''}${hoveredId === r.id ? ' hov' : ''}`}
-                  onClick={(e) => selectRoomFnRef.current?.(r.id, e.ctrlKey || e.metaKey)}
+                  onClick={(e) => selectByIdFnRef.current?.(r.id, e.ctrlKey || e.metaKey)}
                 >
                   <span className="hbjson-viewer__room-name">{r.name}</span>
                   <span className="hbjson-viewer__room-meta">{r.faceCount}f · {r.height.toFixed(0)}m</span>
@@ -956,7 +1366,7 @@ const HbjsonViewer: React.FC = () => {
 
         <div className="hbjson-viewer__help">
           <b>Ovládání</b>
-          Klik = výběr budovy · Ctrl+klik = přidat do výběru<br />
+          Klik = výběr {viewMode === 'buildings' ? 'budovy' : 'místnosti'} · Ctrl+klik = přidat do výběru<br />
           Shift + tažení = box select<br />
           Tažení = rotace · Pravé tl. = posuv · Kolečko = zoom<br />
           Šipky / WASD = pohyb · R = reset · Esc = zrušit

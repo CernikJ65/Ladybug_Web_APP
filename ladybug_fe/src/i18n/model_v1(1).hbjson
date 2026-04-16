@@ -1,0 +1,286 @@
+{
+  "type": "Model",
+  "identifier": "SimpleModel_v1",
+  "version": "2.0.4",
+  "units": "Meters",
+  "tolerance": 0.01,
+  "rooms": [
+    {
+      "type": "Room",
+      "identifier": "Room_01",
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                4,
+                0
+              ],
+              [
+                5,
+                4,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged",
+              "construction": "Beton 300"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Wall_South",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                5,
+                0,
+                3
+              ],
+              [
+                0,
+                0,
+                3
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged",
+              "construction": "Beton 300"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Wall_East",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                5,
+                0,
+                0
+              ],
+              [
+                5,
+                4,
+                0
+              ],
+              [
+                5,
+                4,
+                3
+              ],
+              [
+                5,
+                0,
+                3
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged",
+              "construction": "Beton 300"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Wall_North",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                5,
+                4,
+                0
+              ],
+              [
+                0,
+                4,
+                0
+              ],
+              [
+                0,
+                4,
+                3
+              ],
+              [
+                5,
+                4,
+                3
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged",
+              "construction": "Beton 300"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Wall_West",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                4,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                3
+              ],
+              [
+                0,
+                4,
+                3
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged",
+              "construction": "Beton 300"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                0,
+                3
+              ],
+              [
+                5,
+                0,
+                3
+              ],
+              [
+                5,
+                4,
+                3
+              ],
+              [
+                0,
+                4,
+                3
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged",
+              "construction": "Beton 300"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged"
+        }
+      }
+    }
+  ],
+  "properties": {
+    "type": "ModelProperties",
+    "energy": {
+      "type": "ModelEnergyProperties",
+      "materials": [
+        {
+          "type": "EnergyMaterial",
+          "identifier": "Beton",
+          "thickness": 0.3,
+          "conductivity": 1.95,
+          "density": 2240.0,
+          "specific_heat": 900.0
+        }
+      ],
+      "constructions": [
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "Beton 300",
+          "materials": [
+            "Beton"
+          ]
+        }
+      ]
+    }
+  }
+}

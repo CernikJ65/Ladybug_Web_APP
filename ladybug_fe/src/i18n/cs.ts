@@ -7,11 +7,11 @@ export default {
   },
   hero: {
     badge: 'Ladybug Tools Web Platform',
-    title: 'Ladybug Simulace',
-    titleHighlight: 've vašem prohlížeči',
+    title: 'PED analýzy nad Ladybug Tools',
+    titleHighlight: 've webovém prostředí',
     description:
       'Webová platforma zpřístupňující vybrané funkce ekosystému Ladybug Tools přímo ve webovém prohlížeči, bez nutnosti znalosti programování či tehcnické složitosti knihovny.',
-    btnFeatures: 'Přehled funkcí',
+    btnFeatures: 'Přehled scénářů',
     btnMore: 'Více informací',
     card1Value: 'Analýza EPW',
     card1Label: 'Klimatická data',
