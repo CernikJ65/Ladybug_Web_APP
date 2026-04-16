@@ -9,7 +9,7 @@ import { ViewCacheProvider } from './context/ViewCacheContext';
 import LandingPage from './components/LandingPage';
 import SolarAnalysis from './components/analysis/solar/SolarAnalysis';
 import SolarAnalysisAdvanced from './components/analysis/solar/SolarAnalysisAdvanced';
-import HBJSONViewerRaw from './components/analysis/Hbjsonviewer';
+import HBJSONViewerRaw from './components/analysis/hbjson_visualization/Hbjsonviewer';
 import HBJSONBuilderRaw from './components/analysis/builder/HbjsonBuilder';
 import HeatPumpAnalysis from './components/analysis/heatpump/HeatPumpAnalysis';
 import HeatPumpReal from './components/analysis/heatpump_real/HeatPumpReal';
