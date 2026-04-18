@@ -37,7 +37,7 @@ const W = 720; const H = 340;
 const PAD = { top: 20, right: 30, bottom: 35, left: 45 };
 const CW = W - PAD.left - PAD.right;
 const CH = H - PAD.top - PAD.bottom;
-const H_MIN = 4; const H_MAX = 21;
+const H_MIN = 3; const H_MAX = 22;
 const A_MAX = 70;
 
 const toX = (hour: number) => PAD.left + ((hour - H_MIN) / (H_MAX - H_MIN)) * CW;
@@ -46,7 +46,7 @@ const toY = (alt: number) => PAD.top + CH - (alt / A_MAX) * CH;
 const arcToPath = (pts: SunPoint[]): string =>
   pts.filter(p => {
     const h = p.hour ?? 0;
-    return h >= H_MIN && h <= H_MAX && p.altitude > 0 && p.altitude < 90;
+    return h >= H_MIN && h <= H_MAX && p.altitude >= 0 && p.altitude < 90;
   })
     .map((p, i) => `${i ? 'L' : 'M'}${toX(p.hour ?? 0).toFixed(1)},${toY(Math.min(p.altitude, A_MAX)).toFixed(1)}`)
     .join(' ');
@@ -84,7 +84,7 @@ const SunpathView: React.FC<Props> = ({ data }) => {
 
   return (
     <div className="sv">
-      <h3 className="tv-title"><FaCompass /> Výška slunce během dne</h3>
+      <h3 className="tv-title"><FaCompass />Pozice slunce 21. dne v měsíci</h3>
       <div className="sv-diagram-wrap">
         <svg viewBox={`0 0 ${W} ${H}`} className="sv-svg"
           onMouseMove={handleMove}
@@ -193,7 +193,7 @@ const SunpathView: React.FC<Props> = ({ data }) => {
       </div>
 
       {/* DÉLKA DNE – tabulka */}
-      <h3 className="tv-title"><FaSun /> Východ, západ a délka dne</h3>
+      <h3 className="tv-title"><FaSun /> Východ a západ slunce a délka dne (21. den v měsíci) </h3>
       <div className="tv-table-wrap">
         <table className="tv-table">
           <thead>
@@ -214,7 +214,7 @@ const SunpathView: React.FC<Props> = ({ data }) => {
       </div>
 
       {/* DÉLKA DNE – bars */}
-      <h3 className="tv-title"><FaSun /> Délka dne v průběhu roku</h3>
+      <h3 className="tv-title"><FaSun /> Délka 21. dne v průběhu roku</h3>
       <div className="tv-bars">
         {day_length.map(d => (
           <div className="tv-bar-row" key={d.month}>

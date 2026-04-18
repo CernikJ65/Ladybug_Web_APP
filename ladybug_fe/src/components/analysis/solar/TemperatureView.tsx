@@ -74,11 +74,11 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
     <div className="tv">
       <div className="tv-stats">
         {[
-          { v: `${s.annual_avg}°`, l: 'Průměr roku' },
+          { v: `${s.annual_avg}°`, l: 'Průměrná teplota' },
           { v: `${s.annual_min}°`, l: 'Minimum' },
           { v: `${s.annual_max}°`, l: 'Maximum' },
           { v: `${s.comfort_pct}%`, l: 'Komfort 18–26 °C', sub: `${fmt(s.comfort_hours)} h` },
-          { v: `${fmt(s.frost_hours)}`, l: 'Mrazových hodin', sub: '< 0 °C' },
+          { v: `${fmt(s.frost_hours)}`, l: 'Mrazivé hodiny pod nulu' },
           { v: climate_zone, l: 'ASHRAE zóna' },
         ].map((c, i) => (
           <div className="tv-stat" key={i}>

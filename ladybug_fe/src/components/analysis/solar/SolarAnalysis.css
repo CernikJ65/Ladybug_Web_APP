@@ -215,6 +215,7 @@
   font-size: .68rem; color: var(--sa-text-muted); font-weight: 600;
   text-transform: uppercase; letter-spacing: .06em; margin-top: .3rem;
 }
+.tv-stat-lbl .unit { text-transform: none; letter-spacing: 0; }
 .tv-stat-sub { font-size: .72rem; color: var(--sa-text-dim); margin-top: .1rem; }
 
 /* ==========================================================

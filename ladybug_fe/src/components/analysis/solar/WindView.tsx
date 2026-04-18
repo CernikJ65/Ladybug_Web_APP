@@ -90,8 +90,8 @@ const WindView: React.FC<Props> = ({ data }) => {
     <div className="sv">
       <div className="tv-stats" data-tour="wind-stats">
         {[
-          { v: `${summary.avg_speed}`, l: 'Průměrná rychlost větru m/s' },
-          { v: `${summary.max_speed}`, l: 'Maximální rychlost větru m/s' },
+          { v: `${summary.avg_speed}`, l: <>Průměrná rychlost větru <span className="unit">m/s</span></> },
+          { v: `${summary.max_speed}`, l: <>Maximální rychlost větru <span className="unit">m/s</span></> },
           { v: summary.prevailing_dir, l: 'Převládající směr větru' },
           {
             v: `${summary.calm_pct}%`, l: 'Kolik % času tvořilo bezvětří',

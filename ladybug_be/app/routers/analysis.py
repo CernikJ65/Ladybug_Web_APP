@@ -3,11 +3,6 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 import tempfile
 import os
 
-from ..models import WindAnalysisResponse
-from ..services.epw_loader import EPWLoader
-from ..services.wind_rose_analyzer import WindRoseAnalyzer
-from ..services.wind_rose_plotter import WindRosePlotter
-
 router = APIRouter()
 
 
@@ -28,42 +23,7 @@ def _cleanup(*paths: str) -> None:
 
 
 # ------------------------------------------------------------------
-# 1. Větrná růžice (existující)
-# ------------------------------------------------------------------
-
-@router.post("/wind-rose", response_model=WindAnalysisResponse)
-async def analyze_wind_rose(file: UploadFile = File(...)):
-    """Nahraje EPW soubor a vytvoří větrnou růžici."""
-    if not file.filename.endswith('.epw'):
-        raise HTTPException(status_code=400, detail="Pouze EPW soubory jsou podporovány")
-
-    tmp_path = _save_temp(await file.read(), ".epw")
-
-    try:
-        loader = EPWLoader(tmp_path)
-        epw_data = loader.load()
-        location_info = loader.get_location_info()
-
-        analyzer = WindRoseAnalyzer(epw_data)
-        analyzer.create_wind_rose(direction_count=16)
-        statistics = analyzer.get_statistics()
-
-        plotter = WindRosePlotter(analyzer.wind_rose, epw_data)
-        plot_base64 = plotter.create_plot()
-
-        return WindAnalysisResponse(
-            location=location_info,
-            statistics=statistics,
-            plot_base64=plot_base64
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Chyba při analýze: {str(e)}")
-    finally:
-        _cleanup(tmp_path)
-
-
-# ------------------------------------------------------------------
-# 2. Teplotní analýza (nové)
+# 1. Teplotní analýza
 # ------------------------------------------------------------------
 
 @router.post("/temperature")
@@ -100,7 +60,7 @@ async def analyze_temperature(file: UploadFile = File(...)):
 
 
 # ------------------------------------------------------------------
-# 3. Sluneční dráha (nové)
+# 2. Sluneční dráha
 # ------------------------------------------------------------------
 
 @router.post("/sunpath")
@@ -137,12 +97,12 @@ async def analyze_sunpath(file: UploadFile = File(...)):
 
 
 # ------------------------------------------------------------------
-# 4. Rozšířená větrná analýza (nové)
+# 3. Rozšířená větrná analýza
 # ------------------------------------------------------------------
 
 @router.post("/wind-advanced")
 async def analyze_wind_advanced(file: UploadFile = File(...)):
-    """SVG wind rose data, měsíční rychlosti, Beaufort distribuce."""
+    """Větrná růžice, měsíční rychlosti, Beaufort, výškový profil."""
     if not file.filename or not file.filename.endswith(".epw"):
         raise HTTPException(400, "Pouze EPW soubory (.epw)")
 
