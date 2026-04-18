@@ -1,12 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   FaCloudSun, FaUpload, FaSpinner, FaArrowLeft,
-  FaWind, FaThermometerHalf, FaCompass,
+  FaWind, FaThermometerHalf, FaCompass, FaTimes,
 } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import WindView, { type WindData } from './WindView';
 import TemperatureView, { type TemperatureData } from './TemperatureView';
 import SunpathView, { type SunpathData } from './SunpathView';
+import HelpButton from '../../help/HelpButton';
+import TourOverlay from '../../help/TourOverlay';
+import { getEpwSteps } from '../../help/content/epwSteps';
 import './SolarAnalysis.css';
 
 /* ---------- typy ---------- */
@@ -42,6 +45,15 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
   const [sunpathData, setSunpathData] = useState<SunpathData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('wind');
+  const [tourOpen, setTourOpen] = useState(false);
+
+  /* Memoizace kroků průvodce — zabrání resetu při každém renderu rodiče.
+     Přepočítá se jen při změně aktivní záložky nebo při nahrání dat. */
+  const hasLocation = location !== null;
+  const tourSteps = useMemo(
+    () => getEpwSteps(activeTab, hasLocation),
+    [activeTab, hasLocation],
+  );
 
   useViewStateCache<CachedState>(
     'solar',
@@ -52,6 +64,18 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
       setSunpathData(c.sunpathData); setError(c.error);
     }
   );
+
+  const handleRemoveFile = () => {
+    setFile(null);
+    setFileName(null);
+    setLocation(null);
+    setWindData(null);
+    setTempData(null);
+    setSunpathData(null);
+    setError(null);
+    const input = document.getElementById('epw-upload') as HTMLInputElement | null;
+    if (input) input.value = '';
+  };
 
   const handleUpload = async () => {
     if (!file) { setError('Vyberte EPW soubor'); return; }
@@ -102,6 +126,13 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="sa-page">
+      <HelpButton onClick={() => setTourOpen(true)} />
+      <TourOverlay
+        isActive={tourOpen}
+        onClose={() => setTourOpen(false)}
+        steps={tourSteps}
+      />
+
       <button onClick={onBack} className="back-button"><FaArrowLeft /> Zpět na přehled</button>
 
       <div className="analysis-header">
@@ -117,6 +148,17 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
         <label htmlFor="epw-upload" className="upload-label">
           <FaUpload size={32} color="#f0a500" />
           <p>{fileName || 'Klikněte pro výběr EPW souboru'}</p>
+          {file && (
+            <button
+              type="button"
+              className="upload-clear"
+              onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(); }}
+              aria-label="Odstranit soubor"
+              title="Odstranit soubor"
+            >
+              <FaTimes />
+            </button>
+          )}
         </label>
         {file && (
           <button onClick={handleUpload} disabled={loading} className="upload-button">

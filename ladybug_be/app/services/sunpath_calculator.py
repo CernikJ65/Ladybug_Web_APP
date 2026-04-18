@@ -1,12 +1,17 @@
 """
-Sluneční dráha z EPW — Sunpath.calculate_sun().
+Sluneční dráha z EPW — Sunpath.calculate_sun() + calculate_sunrise_sunset().
 
+Využité Ladybug funkce:
   - Sunpath.from_location(epw.location)
+  - Sunpath.calculate_sun(month, day, hour) → Sun
+  - Sunpath.calculate_sunrise_sunset(month, day, depression) → dict
   - Sun.altitude, Sun.azimuth (stupně v Ladybug 1.x+)
+
+Soubor: ladybug_be/app/services/sunpath_calculator.py
 """
 from __future__ import annotations
 
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List
 
 from ladybug.epw import EPW
 from ladybug.sunpath import Sunpath
@@ -58,40 +63,42 @@ class SunpathCalculator:
         return arcs
 
     def _day_length_table(self) -> List[Dict[str, Any]]:
+        """Tabulka východu, západu a délky dne přes Ladybug.
+
+        Sunpath.calculate_sunrise_sunset() s depression=0 definuje
+        východ/západ jako okamžik, kdy střed slunce prochází matematickým
+        horizontem (altitude = 0°). Tím se chování shoduje s původní
+        implementací, která hledala první minutu s altitude > 0.
+        """
         table = []
         for month in range(1, 13):
-            sr = self._find_sun_up(month, 21, 3.0, 12.0)
-            ss = self._find_sun_down(month, 21, 12.0, 23.0)
-            length = (ss - sr) if (sr is not None and ss is not None) else 0
-            noon = self._sp.calculate_sun(month, 21, 12.0)
+            riseset = self._sp.calculate_sunrise_sunset(
+                month, 21, depression=0,
+            )
+            sr_dt = riseset.get("sunrise")
+            ss_dt = riseset.get("sunset")
+
+            noon = self._sp.calculate_sun(month, 21, 12)
+
+            if sr_dt is not None and ss_dt is not None:
+                sr_float = sr_dt.hour + sr_dt.minute / 60
+                ss_float = ss_dt.hour + ss_dt.minute / 60
+                length = ss_float - sr_float
+            else:
+                length = 0
+
             table.append({
                 "month": month,
                 "name": MONTH_NAMES_CZ[month - 1],
-                "sunrise": self._fmt(sr),
-                "sunset": self._fmt(ss),
+                "sunrise": self._fmt_dt(sr_dt),
+                "sunset": self._fmt_dt(ss_dt),
                 "day_length_h": round(length, 2),
                 "noon_altitude": round(noon.altitude, 1),
             })
         return table
 
-    def _find_sun_up(self, m: int, d: int, start: float, end: float) -> Optional[float]:
-        h = start
-        while h < end:
-            if self._sp.calculate_sun(m, d, h).altitude > 0:
-                return round(h, 3)
-            h += 1 / 60
-        return None
-
-    def _find_sun_down(self, m: int, d: int, start: float, end: float) -> Optional[float]:
-        h = start
-        while h < end:
-            if self._sp.calculate_sun(m, d, h).altitude <= 0:
-                return round(h - 1 / 60, 3)
-            h += 1 / 60
-        return None
-
     @staticmethod
-    def _fmt(h: Optional[float]) -> str:
-        if h is None:
+    def _fmt_dt(dt) -> str:
+        if dt is None:
             return "--:--"
-        return f"{int(h):02d}:{int((h - int(h)) * 60):02d}"
+        return f"{dt.hour:02d}:{dt.minute:02d}"

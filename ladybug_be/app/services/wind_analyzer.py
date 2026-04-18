@@ -1,11 +1,11 @@
 """
 Větrná analýza z EPW — WindRose + WindProfile, žádné fallbacky.
 
+Využité Ladybug funkce:
   - WindRose(direction, speed, 16) → histogram_data, prevailing_direction
-  - WindProfile(terrain, 10) → calculate_wind(speed, height)
   - collection.average_monthly(), filter_by_analysis_period()
 
-Soubor: ladybug_be/app/services/wind_analyzer_advanced.py
+Soubor: ladybug_be/app/services/wind_analyzer.py
 """
 from __future__ import annotations
 
@@ -31,14 +31,6 @@ BEAUFORT = [
     (13.9, "6 Prudký"), (17.2, "7 Bouřlivý"), (999, "8+ Vichřice"),
 ]
 
-# Power law exponent α pro různé terény (EN 1991-1-4)
-TERRAIN_ALPHA = {
-    "Vodní plocha": 0.10,
-    "Otevřená rovina": 0.14,
-    "Předměstí": 0.22,
-    "Město": 0.33,
-}
-
 
 def _fl(v: object) -> float:
     return float(v[0]) if isinstance(v, (list, tuple)) else float(v)
@@ -59,7 +51,6 @@ class WindAnalyzerAdvanced:
             "direction_frequency": self._direction_freq(),
             "monthly_speed": self._monthly_speed(),
             "beaufort": self._beaufort(),
-            "wind_profile": self._wind_heights(),
             "summary": self._summary(),
         }
 
@@ -114,11 +105,7 @@ class WindAnalyzerAdvanced:
         return result
 
     def _beaufort(self) -> List[Dict[str, Any]]:
-        """Beaufortova stupnice — počet hodin a procenta.
-
-        Každá hodina spadne právě do jednoho binu,
-        takže součet procent je vždy 100 %.
-        """
+        """Beaufortova stupnice — počet hodin a procenta."""
         counts = [0] * len(BEAUFORT)
         for ws in self._ws:
             for bi, (thr, _) in enumerate(BEAUFORT):
@@ -138,28 +125,6 @@ class WindAnalyzerAdvanced:
             }
             for i in range(len(BEAUFORT))
         ]
-
-    def _wind_heights(self) -> Dict[str, Any]:
-        """Větrný profil — power law: v(h) = v_ref × (h/h_ref)^α
-
-        EPW = 10 m na letišti. α závisí na terénu (EN 1991-1-4).
-        """
-        avg10 = sum(self._ws) / self._n
-        h_ref = 10.0
-        heights = [2, 5, 10, 20]
-
-        terrains = []
-        for name, alpha in TERRAIN_ALPHA.items():
-            speeds = {
-                f"{h}m": round(avg10 * (h / h_ref) ** alpha, 2)
-                for h in heights
-            }
-            terrains.append({"name": name, "speeds": speeds})
-
-        return {
-            "heights": heights,
-            "terrains": terrains,
-        }
 
     def _summary(self) -> Dict[str, Any]:
         pd = _fl(self._rose.prevailing_direction)

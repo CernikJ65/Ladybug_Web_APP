@@ -4,21 +4,52 @@
  *
  * Soubor: ladybug_fe/src/App.tsx
  */
-import { useState, useEffect, useCallback, type FC } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense, type FC } from 'react';
 import { ViewCacheProvider } from './context/ViewCacheContext';
 import LandingPage from './components/LandingPage';
-import SolarAnalysis from './components/analysis/solar/SolarAnalysis';
-import SolarAnalysisAdvanced from './components/analysis/solar/SolarAnalysisAdvanced';
-import HBJSONViewerRaw from './components/analysis/hbjson_visualization/Hbjsonviewer';
-import HBJSONBuilderRaw from './components/analysis/builder/HbjsonBuilder';
-import HeatPumpAnalysis from './components/analysis/heatpump/HeatPumpAnalysis';
-import HeatPumpReal from './components/analysis/heatpump_real/HeatPumpReal';
-import EnergyOptimizer from './components/analysis/combined/EnergyOptimizer';
-import DwgConverter from './components/analysis/converter/DwgConverter';
 
-/* Tyto komponenty nemají explicitní Props typ — přetypujeme */
-const HBJSONViewer = HBJSONViewerRaw as FC<{ onBack: () => void }>;
-const HBJSONBuilder = HBJSONBuilderRaw as FC<{ onBack: () => void }>;
+type BackProps = { onBack: () => void };
+
+const SolarAnalysis = lazy(() => import('./components/analysis/solar/SolarAnalysis'));
+const SolarAnalysisAdvanced = lazy(() => import('./components/analysis/solar/SolarAnalysisAdvanced'));
+const HBJSONViewer = lazy(async () => {
+  const m = await import('./components/analysis/hbjson_visualization/Hbjsonviewer');
+  return { default: m.default as FC<BackProps> };
+});
+const HBJSONBuilder = lazy(async () => {
+  const m = await import('./components/analysis/builder/HbjsonBuilder');
+  return { default: m.default as FC<BackProps> };
+});
+const HeatPumpAnalysis = lazy(() => import('./components/analysis/heatpump/HeatPumpAnalysis'));
+const HeatPumpReal = lazy(() => import('./components/analysis/heatpump_real/HeatPumpReal'));
+const EnergyOptimizer = lazy(() => import('./components/analysis/combined/EnergyOptimizer'));
+const DwgConverter = lazy(() => import('./components/analysis/converter/DwgConverter'));
+
+const RouteFallback: FC = () => (
+  <div
+    style={{
+      position: 'fixed',
+      inset: 0,
+      background: '#0c1117',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        width: 36,
+        height: 36,
+        border: '3px solid rgba(240, 165, 0, 0.18)',
+        borderTopColor: '#f0a500',
+        borderRadius: '50%',
+        animation: 'rf-spin 0.8s linear infinite',
+      }}
+    />
+    <style>{`@keyframes rf-spin { to { transform: rotate(360deg); } }`}</style>
+  </div>
+);
 
 type ViewType =
   | 'landing' | 'solar' | 'solar-advanced'
@@ -168,32 +199,20 @@ function App() {
 
   return (
     <ViewCacheProvider>
-      {currentView === 'solar' && (
-        <SolarAnalysis onBack={back} />
-      )}
-      {currentView === 'solar-advanced' && (
-        <SolarAnalysisAdvanced onBack={back} />
-      )}
-      {currentView === 'hbjson' && (
-        <HBJSONViewer onBack={back} />
-      )}
-      {currentView === 'builder' && (
-        <HBJSONBuilder onBack={back} />
-      )}
-      {currentView === 'heatpump' && (
-        <HeatPumpAnalysis onBack={back} />
-      )}
-      {currentView === 'heatpump-real' && (
-        <HeatPumpReal onBack={back} />
-      )}
-      {currentView === 'combined' && (
-        <EnergyOptimizer onBack={back} />
-      )}
-      {currentView === 'converter' && (
-        <DwgConverter onBack={back} />
-      )}
       {currentView === 'landing' && (
         <LandingPage onFeatureClick={handleFeatureClick} />
+      )}
+      {currentView !== 'landing' && (
+        <Suspense fallback={<RouteFallback />}>
+          {currentView === 'solar' && <SolarAnalysis onBack={back} />}
+          {currentView === 'solar-advanced' && <SolarAnalysisAdvanced onBack={back} />}
+          {currentView === 'hbjson' && <HBJSONViewer onBack={back} />}
+          {currentView === 'builder' && <HBJSONBuilder onBack={back} />}
+          {currentView === 'heatpump' && <HeatPumpAnalysis onBack={back} />}
+          {currentView === 'heatpump-real' && <HeatPumpReal onBack={back} />}
+          {currentView === 'combined' && <EnergyOptimizer onBack={back} />}
+          {currentView === 'converter' && <DwgConverter onBack={back} />}
+        </Suspense>
       )}
     </ViewCacheProvider>
   );

@@ -1,12 +1,15 @@
 """
 Teplotní analýza z EPW — nativní Ladybug metody, žádné fallbacky.
 
+Využité Ladybug funkce:
   - collection.average_monthly(), percentile_monthly()
   - collection.average_monthly_per_hour()
   - collection.filter_by_conditional_statement()
   - collection.filter_by_analysis_period()
   - collection.group_by_month()
   - EPW.ashrae_climate_zone
+
+Soubor: ladybug_be/app/services/temperature_analyzer.py
 """
 from __future__ import annotations
 
@@ -90,16 +93,13 @@ class TemperatureAnalyzer:
         }
 
     def _diurnal_profiles(self) -> Dict[str, Any]:
-        """Typický den leden vs červenec — filter + průměr per hodina."""
+        """Typický den leden vs červenec — filter + average_monthly_per_hour."""
         profiles = {}
         for month, key in [(1, "january"), (7, "july")]:
             ap = AnalysisPeriod(month, 1, 0, month, 31, 23)
-            data = list(self._temp.filter_by_analysis_period(ap).values)
-            days = len(data) // 24
-            hourly = [
-                round(sum(data[d * 24 + h] for d in range(days) if d * 24 + h < len(data)) / days, 1)
-                for h in range(24)
-            ]
+            filtered = self._temp.filter_by_analysis_period(ap)
+            mph = filtered.average_monthly_per_hour()
+            hourly = [round(mph[h], 1) for h in range(24)]
             profiles[key] = {
                 "name": MONTH_NAMES_CZ[month - 1],
                 "temperatures": hourly,
