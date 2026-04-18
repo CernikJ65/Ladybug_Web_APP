@@ -32,7 +32,10 @@ const TourOverlay: React.FC<Props> = ({ isActive, onClose, steps }) => {
   // při každém renderu rodiče, ale reset chceme jen při skutečném otevření.
   useEffect(() => {
     if (!isActive) {
+      // Reset i idx a visible — komponenta zůstává mountovaná, takže
+      // bez resetu by reopen krátce ukázal poslední krok ze starého stavu.
       setSpot(null); setTip(null);
+      setIdx(0); setVisible([]);
       return;
     }
     const avail = steps.filter(s => document.querySelector(s.selector));

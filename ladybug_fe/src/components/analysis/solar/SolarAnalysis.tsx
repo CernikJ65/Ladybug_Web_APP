@@ -138,7 +138,7 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
       <div className="analysis-header">
         <FaCloudSun size={48} color="#f0a500" />
         <h1>Analýza EPW dat o počasí</h1>
-        <p>Nahrajte EPW soubor — větrná růžice, teplotní profily i sluneční dráha</p>
+        <p>Nahrajte EPW soubor, pro provedení analýzy větru, teploty a sluneční dráhy</p>
       </div>
 
       <div className="upload-area">

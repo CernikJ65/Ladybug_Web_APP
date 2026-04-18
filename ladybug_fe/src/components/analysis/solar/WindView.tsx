@@ -90,11 +90,11 @@ const WindView: React.FC<Props> = ({ data }) => {
     <div className="sv">
       <div className="tv-stats" data-tour="wind-stats">
         {[
-          { v: `${summary.avg_speed}`, l: 'Průměr m/s' },
-          { v: `${summary.max_speed}`, l: 'Maximum m/s' },
-          { v: summary.prevailing_dir, l: 'Převládající směr' },
+          { v: `${summary.avg_speed}`, l: 'Průměrná rychlost větru m/s' },
+          { v: `${summary.max_speed}`, l: 'Maximální rychlost větru m/s' },
+          { v: summary.prevailing_dir, l: 'Převládající směr větru' },
           {
-            v: `${summary.calm_pct}%`, l: 'Bezvětří',
+            v: `${summary.calm_pct}%`, l: 'Kolik % času tvořilo bezvětří',
             sub: `${summary.calm_hours} h`,
           },
         ].map((c, i) => (
@@ -228,7 +228,7 @@ const WindView: React.FC<Props> = ({ data }) => {
 
       {/* MĚSÍČNÍ RYCHLOSTI */}
       <h3 className="tv-title">
-        <FaWind /> Měsíční průměrná rychlost
+        <FaWind /> Průmerná rychlost větru pro jednotlivé měsíce
       </h3>
       <div className="tv-bars" data-tour="wind-monthly">
         {monthly_speed.map(m => (
