@@ -1,14 +1,12 @@
 """
-Router pro celoroční simulaci TČ s reálným HVAC.
+Router pro celorocni simulaci TC.
 
-Endpoint přijímá HBJSON + EPW a vrací celoroční výsledky
-dvou reálných HVAC systémů:
-  - VRFwithDOAS (vzduch-voda TČ)
-  - WSHPwithDOAS GSHP (země-voda TČ)
+Prijima HBJSON + EPW + typ budovy + (volitelne) setpointy.
+Vraci celorocni srovnani:
+  - ASHP (vzduch-voda): VRF (heatcool, bez DOAS)
+  - GSHP (zeme-voda): WSHP + WSHP_GSHP (heatcool, bez DOAS)
 
-Na rozdíl od /api/heatpump tento endpoint nepočítá COP
-z Carnotova cyklu — EnergyPlus simuluje reálné výkonové
-křivky HVAC zařízení včetně chlazení v létě.
+Setpointy: pokud neposlany, pouzije Ladybug default z programu.
 
 Soubor: ladybug_be/app/routers/heatpump_real.py
 """
@@ -32,14 +30,13 @@ async def analyze_real_heatpump(
     heating_setpoint_c: float = Form(20.0),
     cooling_setpoint_c: float = Form(26.0),
     heat_recovery: float = Form(0.0),
-    electricity_price: float = Form(6.0),
-    grid_co2_kg_per_mwh: float = Form(450.0),
+    heating_only: bool = Form(False),
 ):
-    """Celoroční simulace TČ s reálným HVAC."""
+    """Celorocni simulace TC s realnym HVAC."""
     _validate(
-        hbjson_file, epw_file, heating_setpoint_c,
-        cooling_setpoint_c, heat_recovery,
-        electricity_price, grid_co2_kg_per_mwh,
+        hbjson_file, epw_file, building_type,
+        heating_setpoint_c, cooling_setpoint_c, heat_recovery,
+        heating_only,
     )
     hbjson_path = _save(await hbjson_file.read(), ".hbjson")
     epw_path = _save(await epw_file.read(), ".epw")
@@ -52,15 +49,14 @@ async def analyze_real_heatpump(
             hbjson_path=hbjson_path,
             epw_path=epw_path,
             building_type=building_type,
-            heating_sp=heating_setpoint_c,
-            cooling_sp=cooling_setpoint_c,
+            heating_setpoint_c=heating_setpoint_c,
+            cooling_setpoint_c=cooling_setpoint_c,
             heat_recovery=heat_recovery,
-            electricity_price=electricity_price,
-            grid_co2=grid_co2_kg_per_mwh,
+            heating_only=heating_only,
         )
         return analyzer.analyze()
     except ImportError as e:
-        raise HTTPException(500, f"Chybí knihovny: {e}")
+        raise HTTPException(500, f"Chybi knihovny: {e}")
     except HTTPException:
         raise
     except Exception as e:
@@ -70,29 +66,32 @@ async def analyze_real_heatpump(
 
 
 def _validate(
-    hbjson_file, epw_file, heat_sp, cool_sp,
-    heat_recovery, price, co2,
+    hbjson_file, epw_file, building_type,
+    heat_sp, cool_sp, heat_recovery, heating_only,
 ):
     if not hbjson_file.filename or not hbjson_file.filename.endswith(
         (".hbjson", ".json")
     ):
-        raise HTTPException(400, "Přípona .hbjson nebo .json")
+        raise HTTPException(400, "Pripona .hbjson nebo .json")
     if not epw_file.filename or not epw_file.filename.endswith(".epw"):
         raise HTTPException(400, "Pouze .epw soubory")
-    if not 16.0 <= heat_sp <= 25.0:
-        raise HTTPException(400, "Setpoint vytápění: 16–25 °C")
-    if not 22.0 <= cool_sp <= 30.0:
-        raise HTTPException(400, "Setpoint chlazení: 22–30 °C")
-    if heat_sp >= cool_sp:
+    if building_type not in VALID_BUILDING_TYPES:
         raise HTTPException(
-            400, "Setpoint vytápění musí být < chlazení",
+            400,
+            f"Neznamy typ budovy. Vyber z: "
+            f"{', '.join(VALID_BUILDING_TYPES)}",
         )
+    if not 16.0 <= heat_sp <= 25.0:
+        raise HTTPException(400, "Setpoint vytapeni: 16-25 C")
+    if not heating_only:
+        if not 22.0 <= cool_sp <= 30.0:
+            raise HTTPException(400, "Setpoint chlazeni: 22-30 C")
+        if heat_sp >= cool_sp:
+            raise HTTPException(
+                400, "Setpoint vytapeni musi byt < chlazeni",
+            )
     if not 0.0 <= heat_recovery <= 0.95:
-        raise HTTPException(400, "Rekuperace: 0.0–0.95")
-    if price < 0:
-        raise HTTPException(400, "Cena elektřiny ≥ 0")
-    if co2 < 0:
-        raise HTTPException(400, "CO₂ intenzita ≥ 0")
+        raise HTTPException(400, "Rekuperace: 0.0-0.95")
 
 
 def _save(content: bytes, suffix: str) -> str:

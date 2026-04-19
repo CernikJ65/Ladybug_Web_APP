@@ -1,8 +1,9 @@
 /**
  * Celoroční simulace TČ s reálným HVAC — orchestrátor.
  *
- * HBJSON + EPW → EnergyPlus s VRFwithDOAS / WSHPwithDOAS →
- * celoroční výsledky včetně chlazení v létě.
+ * Tok: HBJSON + EPW + typ budovy + setpointy + rekuperace
+ *   rekuperace 0 → VRF / WSHP_GSHP (bez ventilace, čisté HP)
+ *   rekuperace > 0 → VRFwithDOAS / WSHPwithDOAS s ERV
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpReal.tsx
  */
@@ -10,6 +11,7 @@ import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import HPRealForm from './HPRealForm';
 import HPRealOverview from './HPRealOverview';
+import HPRealDemand from './HPRealDemand';
 import HPRealSection from './HPRealSection';
 import type { RealHPResult } from './hpRealUtils';
 import './HeatPumpReal.css';
@@ -25,9 +27,8 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
   const [buildingType, setBuildingType] = useState('Residential');
   const [heatingSp, setHeatingSp] = useState(20);
   const [coolingSp, setCoolingSp] = useState(26);
-  const [heatRecovery, setHeatRecovery] = useState(0.0);
-  const [price, setPrice] = useState(6.0);
-  const [co2, setCo2] = useState(450);
+  const [heatRecovery, setHeatRecovery] = useState(0);
+  const [heatingOnly, setHeatingOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RealHPResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +48,7 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
     fd.append('heating_setpoint_c', heatingSp.toString());
     fd.append('cooling_setpoint_c', coolingSp.toString());
     fd.append('heat_recovery', heatRecovery.toString());
-    fd.append('electricity_price', price.toString());
-    fd.append('grid_co2_kg_per_mwh', co2.toString());
+    fd.append('heating_only', heatingOnly.toString());
     try {
       const res = await fetch(`${API}/analyze`, {
         method: 'POST', body: fd,
@@ -74,8 +74,8 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
         <span className="hp-hero-badge">Reálný HVAC · EnergyPlus</span>
         <h1>Celoroční simulace TČ</h1>
         <p>
-          VRF a WSHP systémy s realistickými výkonovými
-          křivkami — vytápění i chlazení po celý rok
+          Per-zone terminály — 1 tepelné čerpadlo na místnost.
+          Vzduch-voda vs. země-voda přes Ladybug HVAC šablony.
         </p>
       </header>
 
@@ -84,13 +84,14 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
         buildingType={buildingType}
         heatingSp={heatingSp} coolingSp={coolingSp}
         heatRecovery={heatRecovery}
-        price={price} co2={co2} loading={loading}
+        heatingOnly={heatingOnly}
+        loading={loading}
         onHbjson={setHbjson} onEpw={setEpw}
         onBuildingType={setBuildingType}
         onHeatingSp={setHeatingSp}
         onCoolingSp={setCoolingSp}
         onHeatRecovery={setHeatRecovery}
-        onPrice={setPrice} onCo2={setCo2}
+        onHeatingOnly={setHeatingOnly}
         onRun={handleRun}
       />
 
@@ -99,8 +100,13 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
       {result && (
         <div className="hp-results">
           <HPRealOverview result={result} />
-          <HPRealSection data={result.vrf} color="vrf" />
-          <HPRealSection data={result.wshp} color="wshp" />
+          <HPRealDemand demand={result.building_demand}
+            area={result.model_info.total_floor_area_m2}
+            heatingOnly={result.parameters.heating_only} />
+          <HPRealSection data={result.ashp} color="ashp"
+            heatingOnly={result.parameters.heating_only} />
+          <HPRealSection data={result.gshp} color="gshp"
+            heatingOnly={result.parameters.heating_only} />
         </div>
       )}
     </div>

@@ -5,9 +5,11 @@ Podporuje dva zdroje střech:
   1. Room faces s typem RoofCeiling (honeybee rooms)
   2. Orphaned shades – horizontální plochy ve výšce
 
-Kontrola orientace: Vector3D.angle() mezi normálou a svislicí.
-To správně vyloučí i plochy s normálou směřující primárně do strany
-(např. tilt 80° kde normal.z je stále kladné ale plocha je téměř stěna).
+Orientace se čte z nativních vlastností Face3D:
+  - `Face3D.tilt` — úhel od svislice v radiánech (0 = nahoru, π = dolů)
+  - `Face3D.azimuth` — radiány, 0 = +Y, clockwise
+
+Plocha s tilt > π/2 směřuje dolů → flip a znovu přečíst tilt.
 """
 from __future__ import annotations
 
@@ -17,9 +19,6 @@ from typing import List, Dict, Any, Optional
 
 from honeybee.model import Model
 from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.pointvector import Vector3D
-
-UP_VECTOR = Vector3D(0, 0, 1)
 
 COMPASS = [
     (337.5, 360, "North"), (0, 22.5, "North"),
@@ -128,27 +127,20 @@ class RoofDetector:
         source: str,
     ) -> Optional[RoofInfo]:
         """
-        Validuje plochu jako střechu.
+        Validuje plochu jako střechu pomocí nativních Face3D vlastností.
 
-        Kontrola orientace: Vector3D.angle() mezi normálou
-        a UP_VECTOR (0,0,1). Výsledek je úhel ve stupních:
-          - 0° = dokonale horizontální (plochá střecha)
-          - 90° = vertikální stěna
-          - >90° = plocha směřuje dolů
+        `Face3D.tilt` vrací úhel normály od svislice v radiánech:
+          - 0      = dokonale horizontální (plochá střecha)
+          - π/2    = vertikální stěna
+          - > π/2  = plocha směřuje dolů (flip a znovu)
 
         Tilt > max_tilt → vyloučeno (není vhodné pro panely).
-        Tilt > 90° → plocha směřuje dolů → flip + recheck.
         """
-        # Úhel normály od svislice — ladybug_geometry Vector3D.angle()
-        angle_from_up = math.degrees(UP_VECTOR.angle(geom.normal))
-
-        # Normála směřuje dolů (>90°) → otočíme plochu
-        if angle_from_up > 90:
+        # Normála směřuje dolů → otočíme plochu
+        if geom.tilt > math.pi / 2:
             geom = geom.flip()
-            angle_from_up = math.degrees(UP_VECTOR.angle(geom.normal))
 
-        # Tilt = úhel od horizontu
-        tilt = angle_from_up
+        tilt = math.degrees(geom.tilt)
         if tilt > max_tilt:
             return None
 
@@ -156,7 +148,7 @@ class RoofDetector:
         if area < min_area:
             return None
 
-        azimuth = math.degrees(geom.azimuth) if hasattr(geom, "azimuth") else 0
+        azimuth = math.degrees(geom.azimuth)
         c = geom.center
         return RoofInfo(
             identifier=identifier,

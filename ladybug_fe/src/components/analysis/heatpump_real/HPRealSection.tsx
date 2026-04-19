@@ -1,14 +1,19 @@
 /**
- * Detailní výsledky jednoho HVAC systému (VRF nebo WSHP).
+ * Detailní výsledky jednoho TČ.
  *
- * Duo karty: vytápění / chlazení / obnovitelné / elektřina.
- * Měsíční sloupcový graf, COP strip, ekonomika.
+ * UI je rozděleno do 3 karet tak, aby bylo jasné co TČ "dělá":
+ *   1. VYROBÍ TEPLO — thermal dodaný do zón (kWh)
+ *   2. VYROBÍ CHLAD — thermal dodaný do zón (kWh)
+ *   3. SPOTŘEBUJE ELEKTŘINU — součet meterů
+ *      (Heating + Cooling + Fans + Pumps + HeatRejection)
+ *
+ * COP vidíme ve třech variantách: topení, chlazení, celoroční.
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HPRealSection.tsx
  */
 import React from 'react';
 import {
-  FaSun, FaSnowflake,
+  FaBolt, FaFire, FaSnowflake,
   FaWind, FaMountain,
 } from 'react-icons/fa';
 import type { HPSystemResult } from './hpRealUtils';
@@ -16,7 +21,8 @@ import { fmt } from './hpRealUtils';
 
 interface Props {
   data: HPSystemResult;
-  color: 'vrf' | 'wshp';
+  color: 'ashp' | 'gshp';
+  heatingOnly?: boolean;
 }
 
 const MO = [
@@ -24,90 +30,141 @@ const MO = [
   'Čvc','Srp','Zář','Říj','Lis','Pro',
 ];
 
-const HPRealSection: React.FC<Props> = ({ data, color }) => {
-  const m = data.energy_metrics;
-  const isVrf = color === 'vrf';
+const HPRealSection: React.FC<Props> = ({
+  data, color, heatingOnly = false,
+}) => {
+  const isAshp = color === 'ashp';
   const maxBar = Math.max(
     ...data.monthly_heating_kwh,
-    ...data.monthly_cooling_kwh, 1,
+    ...(heatingOnly ? [] : data.monthly_cooling_kwh),
+    ...data.monthly_electricity_kwh, 1,
   );
+  const breakdown = Object.entries(data.electricity_breakdown)
+    .sort(([, a], [, b]) => b - a);
 
   return (
     <section className="hp-card">
       <div className="hp-card-head">
-        {isVrf
+        {isAshp
           ? <FaWind className="hp-card-icon" />
           : <FaMountain className="hp-card-icon" />}
         <div>
           <h2>{data.label}</h2>
           <p className="hp-card-sub">
-            ASHRAE 2019 · COP {data.annual_cop}
+            ASHRAE 2019 · 1 TČ na místnost · COP celoroční {data.cop_annual}
           </p>
         </div>
       </div>
 
-      {/* ── Duo karty ── */}
-      <div className="hp-duo">
-        <DuoCard
-          pill={<><FaSun /> Vytápění</>}
-          from="tepelná potřeba"
-          value={data.annual_heating_kwh}
-          note="Teplo dodané HVAC do budovy"
-          accent="produced" />
-        <DuoCard
-          pill={<><FaSnowflake /> Chlazení</>}
-          from="chladicí potřeba"
-          value={data.annual_cooling_kwh}
-          note="Chlad dodaný HVAC do budovy"
-          accent="consumed" />
+      {/* ── 3 karty: Vyrobí teplo / Vyrobí chlad / Spotřebuje ── */}
+      <div className="hp-trio">
+        <div className="hp-duo-card duo-heat">
+          <div className="hp-duo-head">
+            <span className="hp-duo-pill heat">
+              <FaFire /> Vyrobí teplo
+            </span>
+          </div>
+          <div className="hp-duo-big">{fmt(data.annual_heating_kwh)}</div>
+          <span className="hp-duo-unit">kWh tepla / rok</span>
+          <p className="hp-duo-note">
+            <FaBolt /> spotřebuje {fmt(data.annual_heat_elec_kwh)} kWh el.
+            <br />
+            COP topení <strong>{data.cop_heating.toFixed(2)}</strong>
+          </p>
+        </div>
+
+        {!heatingOnly && (
+          <div className="hp-duo-card duo-cool">
+            <div className="hp-duo-head">
+              <span className="hp-duo-pill cool">
+                <FaSnowflake /> Vyrobí chlad
+              </span>
+            </div>
+            <div className="hp-duo-big">{fmt(data.annual_cooling_kwh)}</div>
+            <span className="hp-duo-unit">kWh chladu / rok</span>
+            <p className="hp-duo-note">
+              <FaBolt /> spotřebuje {fmt(data.annual_cool_elec_kwh)} kWh el.
+              <br />
+              COP chlazení <strong>{data.cop_cooling.toFixed(2)}</strong>
+            </p>
+          </div>
+        )}
+
+        <div className="hp-duo-card duo-consumed">
+          <div className="hp-duo-head">
+            <span className="hp-duo-pill consumed">
+              <FaBolt /> Spotřebuje
+            </span>
+          </div>
+          <div className="hp-duo-big">{fmt(data.annual_electricity_kwh)}</div>
+          <span className="hp-duo-unit">kWh elektřiny / rok</span>
+          <p className="hp-duo-note">
+            vč. ventilátorů, čerpadel a věže
+            <br />
+            COP celoroční <strong>{data.cop_annual.toFixed(2)}</strong>
+          </p>
+        </div>
       </div>
 
-      {/* ── KPI ── */}
+      {/* ── COP KPI řada ── */}
       <div className="hp-kpi-row">
         <div className="hp-kpi">
-          <span className="hp-kpi-val">
-            {fmt(data.annual_renewable_kwh)}
-          </span>
-          <span className="hp-kpi-lbl">OZE kWh/rok</span>
+          <span className="hp-kpi-val">{data.cop_heating.toFixed(2)}</span>
+          <span className="hp-kpi-lbl">COP topení</span>
         </div>
+        {!heatingOnly && (
+          <div className="hp-kpi">
+            <span className="hp-kpi-val">{data.cop_cooling.toFixed(2)}</span>
+            <span className="hp-kpi-lbl">COP chlazení (EER)</span>
+          </div>
+        )}
         <div className="hp-kpi">
-          <span className="hp-kpi-val">
-            {fmt(data.annual_electricity_kwh)}
-          </span>
-          <span className="hp-kpi-lbl">Elektřina kWh</span>
-        </div>
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">{data.annual_cop}</span>
+          <span className="hp-kpi-val">{data.cop_annual.toFixed(2)}</span>
           <span className="hp-kpi-lbl">COP celoroční</span>
         </div>
       </div>
 
       <div className="hp-context">
-        Obnovitelná energie = dodané teplo + chlad − elektřina.
-        Z {fmt(data.annual_heating_kwh + data.annual_cooling_kwh)} kWh
-        celkové potřeby TČ spotřebuje
-        jen {fmt(data.annual_electricity_kwh)} kWh
-        elektřiny — {fmt(data.annual_renewable_kwh)} kWh pochází
-        z prostředí zdarma.
+        TČ dodá do zón
+        <strong> {fmt(data.annual_heating_kwh)} kWh </strong>
+        tepla
+        {!heatingOnly && (
+          <> a <strong>{fmt(data.annual_cooling_kwh)} kWh </strong>
+          chladu</>
+        )}
+        . Na to potřebuje
+        <strong> {fmt(data.annual_electricity_kwh)} kWh </strong>
+        elektřiny
+        {heatingOnly ? (
+          <>.</>
+        ) : (
+          <> — z toho{' '}
+          <strong>{fmt(data.annual_heat_elec_kwh)} kWh</strong> na topení
+          a <strong>{fmt(data.annual_cool_elec_kwh)} kWh</strong> na chlazení.</>
+        )}
       </div>
 
-      {/* ── Měsíční výkon ── */}
-      <h3 className="hp-sub-title">Měsíční vytápění a chlazení</h3>
+      {/* ── Měsíční: teplo/chlad/elektrina ── */}
+      <h3 className="hp-sub-title">Měsíčně: produkce vs spotřeba</h3>
       <div className="hpr-stacked-bars">
         {MO.map((mo, i) => {
           const h = data.monthly_heating_kwh[i];
           const c = data.monthly_cooling_kwh[i];
-          const hPct = (h / maxBar) * 100;
-          const cPct = (c / maxBar) * 100;
+          const e = data.monthly_electricity_kwh[i];
           return (
-            <div key={i} className="hpr-bar-col">
-              <div className="hpr-bar-stack">
+            <div key={i} className="hpr-bar-col hpr-bar-col--pair">
+              <div className="hpr-pair-bars">
                 <div className="hpr-bar-heat"
-                  style={{ height: `${hPct}%` }}
-                  title={`${mo}: ${fmt(h)} kWh vytáp.`} />
-                <div className="hpr-bar-cool"
-                  style={{ height: `${cPct}%` }}
-                  title={`${mo}: ${fmt(c)} kWh chlaz.`} />
+                  style={{ height: `${(h / maxBar) * 100}%` }}
+                  title={`${mo}: teplo ${fmt(h)} kWh`} />
+                {!heatingOnly && (
+                  <div className="hpr-bar-cool"
+                    style={{ height: `${(c / maxBar) * 100}%` }}
+                    title={`${mo}: chlad ${fmt(c)} kWh`} />
+                )}
+                <div className="hpr-bar-elec"
+                  style={{ height: `${(e / maxBar) * 100}%` }}
+                  title={`${mo}: elektrina ${fmt(e)} kWh`} />
               </div>
               <span className="hp-bar-lbl">{mo}</span>
             </div>
@@ -115,14 +172,17 @@ const HPRealSection: React.FC<Props> = ({ data, color }) => {
         })}
       </div>
       <div className="hpr-legend">
-        <span className="hpr-leg-heat">Vytápění</span>
-        <span className="hpr-leg-cool">Chlazení</span>
+        <span className="hpr-leg-heat">Vyrobené teplo</span>
+        {!heatingOnly && (
+          <span className="hpr-leg-cool">Vyrobený chlad</span>
+        )}
+        <span className="hpr-leg-elec">Spotřeba el.</span>
       </div>
 
       {/* ── Měsíční COP ── */}
-      <h3 className="hp-sub-title">Měsíční COP</h3>
+      <h3 className="hp-sub-title">Měsíční COP (celkové)</h3>
       <div className="hp-cop-strip">
-        {data.monthly_cop.map((c, i) => (
+        {data.monthly_cop_total.map((c, i) => (
           <div key={i} className="hp-cop-chip">
             <span className="hp-cop-v">{c.toFixed(1)}</span>
             <span className="hp-cop-m">{MO[i]}</span>
@@ -130,43 +190,24 @@ const HPRealSection: React.FC<Props> = ({ data, color }) => {
         ))}
       </div>
 
-      {/* ── Ekonomika ── */}
-      <h3 className="hp-sub-title">Ekonomika</h3>
-      <div className="hp-kpi-row">
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">{fmt(m.annual_cost_czk)}</span>
-          <span className="hp-kpi-lbl">Náklady CZK/rok</span>
-        </div>
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">{fmt(m.savings_czk)}</span>
-          <span className="hp-kpi-lbl">Úspora vs přímotop</span>
-        </div>
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">{fmt(m.co2_savings_kg)} kg</span>
-          <span className="hp-kpi-lbl">Úspora CO₂</span>
-        </div>
-      </div>
+      {/* ── Rozpad elektřiny (end-use metery) ── */}
+      {breakdown.length > 0 && (
+        <>
+          <h3 className="hp-sub-title">
+            Rozpad elektřiny podle funkce (end-use metery)
+          </h3>
+          <div className="hp-breakdown">
+            {breakdown.map(([name, val]) => (
+              <div key={name} className="hp-breakdown-row">
+                <span className="hp-breakdown-name">{name}</span>
+                <span className="hp-breakdown-val">{fmt(val)} kWh</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </section>
   );
 };
-
-/* ── Duo karta ── */
-
-const DuoCard: React.FC<{
-  pill: React.ReactNode; from: string;
-  value: number; note: string; accent: string;
-}> = ({ pill, from, value, note, accent }) => (
-  <div className={`hp-duo-card duo-${accent}`}>
-    <div className="hp-duo-head">
-      <span className={`hp-duo-pill ${accent === 'consumed' ? 'consumed' : ''}`}>
-        {pill}
-      </span>
-      <span className="hp-duo-from">{from}</span>
-    </div>
-    <div className="hp-duo-big">{fmt(value)}</div>
-    <span className="hp-duo-unit">kWh / rok</span>
-    <p className="hp-duo-note">{note}</p>
-  </div>
-);
 
 export default HPRealSection;

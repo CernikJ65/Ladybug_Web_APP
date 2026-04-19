@@ -5,3 +5,58 @@
    ========================================================== */
 
 @import '../heatpump/HeatPumpAnalysis.css';
+
+.hp-form-note {
+  margin: -0.25rem 0 0.9rem;
+  font-size: .78rem;
+  line-height: 1.4;
+  color: var(--hp-text-muted, #64748b);
+}
+
+.hp-toggle {
+  display: flex; align-items: center; gap: .55rem;
+  width: 100%;
+  margin: .1rem 0 .9rem;
+  padding: .65rem .85rem;
+  background: var(--hp-surface);
+  border: 1.5px solid var(--hp-border-light);
+  border-radius: var(--hp-radius);
+  cursor: pointer; user-select: none;
+  transition: all .2s;
+  font-family: var(--hp-font);
+}
+.hp-toggle:hover {
+  background: var(--hp-surface-2);
+  border-color: var(--hp-teal);
+  box-shadow: 0 0 24px var(--hp-teal-glow);
+}
+.hp-toggle.active {
+  background: var(--hp-surface-2);
+  border-color: var(--hp-teal);
+  border-style: solid;
+}
+.hp-toggle-box {
+  flex: none;
+  width: 18px; height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--hp-border-light);
+  background: var(--hp-bg);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.hp-toggle.active .hp-toggle-box {
+  border-color: var(--hp-teal);
+  background: var(--hp-teal);
+  color: var(--hp-bg);
+}
+.hp-toggle-check {
+  font-size: .7rem; font-weight: 800;
+  line-height: 1;
+  font-family: var(--hp-mono);
+}
+.hp-toggle-text {
+  font-size: .78rem; font-weight: 600;
+  color: var(--hp-text-muted);
+  letter-spacing: .01em;
+}
+.hp-toggle.active .hp-toggle-text { color: var(--hp-text); }

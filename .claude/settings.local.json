@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "C:\\Users\\reffy\\ladybug-tools\\ladybug",
+      "C:\\Users\\reffy\\ladybug-tools\\honeybee-core",
+      "C:\\Users\\reffy\\ladybug-tools\\honeybee-energy"
+    ],
+    "allow": [
+      "Bash(xargs grep *)"
+    ]
+  }
+}

@@ -23,19 +23,18 @@ router = APIRouter()
 def _roof_world_bounds(geometry) -> dict:
     """
     Vrátí světový bounding box střechy v XY rovině.
+    Používá nativní Face3D.min / Face3D.max (Point3D) z ladybug_geometry.
     Používá se ve frontendu pro správné měřítko vizualizace panelů.
     """
     try:
-        verts = geometry.vertices  # List[Point3D]
-        xs = [v.x for v in verts]
-        ys = [v.y for v in verts]
+        mn, mx = geometry.min, geometry.max
         return {
-            "min_x": round(min(xs), 3),
-            "max_x": round(max(xs), 3),
-            "min_y": round(min(ys), 3),
-            "max_y": round(max(ys), 3),
-            "width_m": round(max(xs) - min(xs), 3),
-            "depth_m": round(max(ys) - min(ys), 3),
+            "min_x": round(mn.x, 3),
+            "max_x": round(mx.x, 3),
+            "min_y": round(mn.y, 3),
+            "max_y": round(mx.y, 3),
+            "width_m": round(mx.x - mn.x, 3),
+            "depth_m": round(mx.y - mn.y, 3),
         }
     except Exception:
         return {

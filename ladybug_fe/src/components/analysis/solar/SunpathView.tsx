@@ -43,13 +43,33 @@ const A_MAX = 70;
 const toX = (hour: number) => PAD.left + ((hour - H_MIN) / (H_MAX - H_MIN)) * CW;
 const toY = (alt: number) => PAD.top + CH - (alt / A_MAX) * CH;
 
-const arcToPath = (pts: SunPoint[]): string =>
-  pts.filter(p => {
+const arcToPath = (pts: SunPoint[]): string => {
+  const visible = pts.filter(p => {
     const h = p.hour ?? 0;
     return h >= H_MIN && h <= H_MAX && p.altitude >= 0 && p.altitude < 90;
-  })
+  });
+  if (visible.length < 2) return '';
+
+  const extended = [...visible];
+  const [p0, p1] = [extended[0], extended[1]];
+  const [pN2, pN1] = [extended[extended.length - 2], extended[extended.length - 1]];
+
+  // Linearni extrapolace — hodina, kdy by krivka protnula alt=0
+  if (p0.altitude > 0 && p1.altitude > p0.altitude) {
+    const slope = (p1.altitude - p0.altitude) / ((p1.hour ?? 0) - (p0.hour ?? 0));
+    const hourAtZero = (p0.hour ?? 0) - p0.altitude / slope;
+    extended.unshift({ hour: hourAtZero, altitude: 0, azimuth: p0.azimuth });
+  }
+  if (pN1.altitude > 0 && pN2.altitude > pN1.altitude) {
+    const slope = (pN1.altitude - pN2.altitude) / ((pN1.hour ?? 0) - (pN2.hour ?? 0));
+    const hourAtZero = (pN1.hour ?? 0) - pN1.altitude / slope;
+    extended.push({ hour: hourAtZero, altitude: 0, azimuth: pN1.azimuth });
+  }
+
+  return extended
     .map((p, i) => `${i ? 'L' : 'M'}${toX(p.hour ?? 0).toFixed(1)},${toY(Math.min(p.altitude, A_MAX)).toFixed(1)}`)
     .join(' ');
+};
 
 interface TooltipInfo { x: number; y: number; month: string; hour: number; alt: number; }
 
@@ -115,20 +135,18 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             <g key={h}>
               <line x1={toX(h)} y1={PAD.top} x2={toX(h)} y2={H - PAD.bottom}
                 stroke="rgba(94,122,148,.08)" strokeWidth={0.5} />
-              {h % 2 === 0 && (
-                <text x={toX(h)} y={H - PAD.bottom + 16} textAnchor="middle"
-                  fontSize="9" fill="rgba(94,122,148,.5)"
-                  fontFamily="'JetBrains Mono', monospace">{h}:00</text>
-              )}
+              <text x={toX(h)} y={H - PAD.bottom + 16} textAnchor="middle"
+                fontSize="8" fill="rgba(94,122,148,.5)"
+                fontFamily="'JetBrains Mono', monospace">{h}:00</text>
             </g>
           ))}
 
           {/* Axis labels */}
           <text x={W / 2} y={H - 2} textAnchor="middle"
-            fontSize="10" fill="rgba(94,122,148,.4)"
+            fontSize="13" fill="#ffffff"
             fontFamily="'Outfit', sans-serif">Hodina dne</text>
           <text x={12} y={H / 2} textAnchor="middle"
-            fontSize="10" fill="rgba(94,122,148,.4)"
+            fontSize="13" fill="#ffffff"
             fontFamily="'Outfit', sans-serif"
             transform={`rotate(-90, 12, ${H / 2})`}>Výška °</text>
 

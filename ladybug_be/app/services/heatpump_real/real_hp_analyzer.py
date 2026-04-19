@@ -1,32 +1,26 @@
 """
-Orchestrator celorocni simulace TC — ASHP vs GSHP.
+Orchestrator celorocni simulace TC.
 
-Pipeline:
-  1. RealHPModelPreparer.prepare_ashp()
-     -> FCUwithDOAS + centralni ASHP
-  2. RealHPModelPreparer.prepare_gshp()
-     -> WSHPwithDOAS + zemni smycka
-  3. RealHPSimulator x2
-     -> hodinova data pres Ladybug API
-  4. Rozpad: TC elektrina vs pomocna (DOAS, cerpadla)
-  5. Dva COP: system_cop a hp_cop
+Vystup obsahuje:
+  1. Tepelnou potrebu budovy (= co HVAC dodal do zon)
+  2. ASHP (vzduch-voda): produkce teplo/chlad, spotreba elektriny
+  3. GSHP (zeme-voda): to same
 
-Ladybug funkce:
-  - data_collections_by_output_name() -> kolekce v kWh
-  - HourlyContinuousCollection + operator
-  - collection.total_monthly() -> mesicni soucty
+Data plynou z EnergyPlus end-use meteru:
+  Heating:Electricity, Cooling:Electricity,
+  Fans:Electricity, Pumps:Electricity, HeatRejection:Electricity
+
+Z techto meteru pocitame zvlast COP topeni a COP chlazeni.
 
 Soubor: ladybug_be/app/services/heatpump_real/real_hp_analyzer.py
 """
 from __future__ import annotations
 
-from typing import Dict, Any, List
+from typing import Dict, Any, Optional, List
 
 from ..epw_climate_extractor import EPWClimateExtractor
 from .real_hp_model_preparer import RealHPModelPreparer
 from .real_hp_simulator import RealHPSimulator
-
-VINTAGE = "ASHRAE_2019"
 
 
 class RealHPAnalyzer:
@@ -37,51 +31,38 @@ class RealHPAnalyzer:
         hbjson_path: str,
         epw_path: str,
         building_type: str = "Office",
-        heating_sp: float = 20.0,
-        cooling_sp: float = 26.0,
+        heating_setpoint_c: Optional[float] = None,
+        cooling_setpoint_c: Optional[float] = None,
         heat_recovery: float = 0.0,
-        electricity_price: float = 6.0,
-        grid_co2: float = 450.0,
+        heating_only: bool = False,
     ):
         self._epw_path = epw_path
         self._climate = EPWClimateExtractor(epw_path)
         self._preparer = RealHPModelPreparer(
             hbjson_path, building_type,
-            heating_sp, cooling_sp, heat_recovery,
+            heating_setpoint_c, cooling_setpoint_c,
+            heat_recovery, heating_only,
         )
         self._btype = building_type
-        self._heat_sp = heating_sp
-        self._cool_sp = cooling_sp
         self._hr = heat_recovery
-        self._price = electricity_price
-        self._co2 = grid_co2
+        self._heating_only = heating_only
 
     def analyze(self) -> Dict[str, Any]:
-        """Kompletni analyza ASHP vs GSHP."""
         rooms = self._preparer.get_rooms_info()
         area = self._preparer.get_total_floor_area()
         dds = self._climate.get_design_days()
         sim = RealHPSimulator(self._epw_path, dds)
 
-        print("\n>>> ASHP simulace <<<")
-        ashp_model = self._preparer.prepare_ashp()
-        ashp_res = sim.simulate(ashp_model)
+        print("\n>>> ASHP (vzduch-voda) <<<")
+        ashp_res = sim.simulate(self._preparer.prepare_ashp())
 
-        print("\n>>> GSHP simulace <<<")
-        gshp_model = self._preparer.prepare_gshp()
-        gshp_res = sim.simulate(gshp_model)
+        print("\n>>> GSHP (zeme-voda) <<<")
+        gshp_res = sim.simulate(self._preparer.prepare_gshp())
 
-        ashp_out = self._build(
-            "ASHP (vzduch-voda)", ashp_res, area,
-        )
-        gshp_out = self._build(
-            "GSHP (zeme-voda)", gshp_res, area,
-        )
+        demand = self._building_demand(ashp_res, area)
 
         return {
-            "location": (
-                self._climate.get_location_info()
-            ),
+            "location": self._climate.get_location_info(),
             "climate_summary": (
                 self._climate.get_climate_summary()
             ),
@@ -89,128 +70,128 @@ class RealHPAnalyzer:
                 "room_count": len(rooms),
                 "total_floor_area_m2": round(area, 2),
                 "building_type": self._btype,
+                "ladybug_program": (
+                    self._preparer.get_program_name()
+                ),
             },
-            "parameters": self._params(),
-            "ashp": ashp_out,
-            "gshp": gshp_out,
-            "comparison": self._compare(
-                ashp_out, gshp_out,
+            "parameters": {
+                "heat_recovery": self._hr,
+                "heating_only": self._heating_only,
+                "setpoints_applied": (
+                    self._preparer.get_applied_setpoints()
+                ),
+                "setpoints_ladybug_default": (
+                    self._preparer.get_program_setpoints()
+                ),
+            },
+            "building_demand": demand,
+            "ashp": self._build(
+                "ASHP (vzduch-voda)", ashp_res,
+            ),
+            "gshp": self._build(
+                "GSHP (zeme-voda)", gshp_res,
             ),
         }
 
-    def _build(
-        self, label: str, res: Dict, area: float,
+    @staticmethod
+    def _building_demand(
+        res: Dict, area: float,
     ) -> Dict[str, Any]:
-        """Sestavi vysledky jednoho systemu."""
-        ht = res["total_heating_kwh"]
-        ct = res["total_cooling_kwh"]
-        total_e = res["total_electricity_kwh"]
-        hp_e = res["hp_electricity_kwh"]
-        aux_e = res["aux_electricity_kwh"]
+        """Tepelna potreba budovy = co HVAC dodal do zon.
 
-        thermal = ht + ct
-        renewable = max(thermal - total_e, 0.0)
-        co2_f = self._co2 / 1000.0
+        Bere data z ASHP simulace — obe HVAC sizovane na stejnou
+        potrebu, takze teplo/chlad dodane do zon se shoduji.
+        """
+        ht = res["annual_heating_kwh"]
+        ct = res["annual_cooling_kwh"]
+        return {
+            "annual_heating_kwh": ht,
+            "annual_cooling_kwh": ct,
+            "annual_total_kwh": round(ht + ct, 1),
+            "specific_heating_kwh_m2": round(
+                ht / area if area > 0 else 0.0, 1,
+            ),
+            "specific_cooling_kwh_m2": round(
+                ct / area if area > 0 else 0.0, 1,
+            ),
+            "monthly_heating_kwh": res["monthly_heating_kwh"],
+            "monthly_cooling_kwh": res["monthly_cooling_kwh"],
+        }
 
-        sys_cop = thermal / total_e if total_e > 0 else 0
-        hp_cop = thermal / hp_e if hp_e > 0 else 0
+    @staticmethod
+    def _build(
+        label: str, res: Dict,
+    ) -> Dict[str, Any]:
+        """Sestavi vysledky jednoho systemu + COPs z end-use meteru."""
+        ht = res["annual_heating_kwh"]
+        ct = res["annual_cooling_kwh"]
+        heat_e = res["annual_heat_elec_kwh"]
+        cool_e = res["annual_cool_elec_kwh"]
+        fan_e = res["annual_fan_elec_kwh"]
+        pump_e = res["annual_pump_elec_kwh"]
+        hr_e = res["annual_heatrej_elec_kwh"]
+        total_e = res["annual_electricity_kwh"]
 
+        # COPs dle end-use: heating delivered / heating electricity
+        cop_heat = round(ht / heat_e, 2) if heat_e > 0 else 0.0
+        cop_cool = round(ct / cool_e, 2) if cool_e > 0 else 0.0
+        cop_year = round(
+            (ht + ct) / total_e, 2,
+        ) if total_e > 0 else 0.0
+
+        # Mesicni COP topeni (hlavni diagnostika)
         m_h = res["monthly_heating_kwh"]
         m_c = res["monthly_cooling_kwh"]
+        m_he = res["monthly_heat_elec_kwh"]
+        m_ce = res["monthly_cool_elec_kwh"]
         m_e = res["monthly_electricity_kwh"]
-        m_hp = res["monthly_hp_elec_kwh"]
 
-        m_ren = [
-            round(h + c - e, 1)
+        m_cop_heat = [
+            round(h / e, 2) if e > 0 else 0.0
+            for h, e in zip(m_h, m_he)
+        ]
+        m_cop_cool = [
+            round(c / e, 2) if e > 0 else 0.0
+            for c, e in zip(m_c, m_ce)
+        ]
+        m_cop_total = [
+            round((h + c) / e, 2) if e > 0 else 0.0
             for h, c, e in zip(m_h, m_c, m_e)
         ]
-        m_sys_cop = [
-            round((h + c) / e, 2)
-            if e > 0 else 0.0
-            for h, c, e in zip(m_h, m_c, m_e)
-        ]
-        m_hp_cop = [
-            round((h + c) / hp, 2)
-            if hp > 0 else 0.0
-            for h, c, hp in zip(m_h, m_c, m_hp)
-        ]
 
-        savings = max(thermal - total_e, 0.0)
+        breakdown = {
+            "Topení (kompresor + el. backup)": round(heat_e, 1),
+            "Chlazení (chiller / DX)": round(cool_e, 1),
+            "Ventilátory": round(fan_e, 1),
+            "Čerpadla": round(pump_e, 1),
+            "Chladicí věž": round(hr_e, 1),
+        }
+        # Odfiltruj nuly
+        breakdown = {
+            k: v for k, v in breakdown.items() if v > 0.1
+        }
 
         return {
             "label": label,
-            "annual_heating_kwh": round(ht, 1),
-            "annual_cooling_kwh": round(ct, 1),
-            "annual_electricity_kwh": round(
-                total_e, 1,
-            ),
-            "hp_electricity_kwh": round(hp_e, 1),
-            "aux_electricity_kwh": round(aux_e, 1),
-            "annual_renewable_kwh": round(
-                renewable, 1,
-            ),
-            "system_cop": round(sys_cop, 2),
-            "hp_cop": round(hp_cop, 2),
+            "annual_heating_kwh": ht,
+            "annual_cooling_kwh": ct,
+            "annual_produced_kwh": round(ht + ct, 1),
+            "annual_electricity_kwh": total_e,
+            "annual_heat_elec_kwh": round(heat_e, 1),
+            "annual_cool_elec_kwh": round(cool_e, 1),
+            "annual_fan_elec_kwh": round(fan_e, 1),
+            "annual_pump_elec_kwh": round(pump_e, 1),
+            "annual_heatrej_elec_kwh": round(hr_e, 1),
+            "cop_heating": cop_heat,
+            "cop_cooling": cop_cool,
+            "cop_annual": cop_year,
             "monthly_heating_kwh": m_h,
             "monthly_cooling_kwh": m_c,
+            "monthly_heat_elec_kwh": m_he,
+            "monthly_cool_elec_kwh": m_ce,
             "monthly_electricity_kwh": m_e,
-            "monthly_hp_elec_kwh": m_hp,
-            "monthly_renewable_kwh": m_ren,
-            "monthly_system_cop": m_sys_cop,
-            "monthly_hp_cop": m_hp_cop,
-            "hp_breakdown": res.get(
-                "hp_breakdown", {},
-            ),
-            "aux_breakdown": res.get(
-                "aux_breakdown", {},
-            ),
-            "available_outputs": res.get(
-                "available_outputs", [],
-            ),
-            "energy_metrics": {
-                "savings_vs_direct_kwh": round(
-                    savings, 1,
-                ),
-                "savings_czk": round(
-                    savings * self._price, 0,
-                ),
-                "co2_savings_kg": round(
-                    savings * co2_f, 1,
-                ),
-                "annual_cost_czk": round(
-                    total_e * self._price, 0,
-                ),
-                "cost_direct_czk": round(
-                    thermal * self._price, 0,
-                ),
-                "specific_demand_kwh_m2": round(
-                    ht / area if area > 0 else 0, 1,
-                ),
-            },
-        }
-
-    def _compare(self, ashp, gshp) -> Dict[str, Any]:
-        ar = ashp["annual_renewable_kwh"]
-        gr = gshp["annual_renewable_kwh"]
-        better = "GSHP" if gr > ar else "ASHP"
-        diff = abs(gr - ar)
-        base = min(ar, gr) if min(ar, gr) > 0 else 1
-        return {
-            "better_type": better,
-            "difference_kwh": round(diff, 1),
-            "advantage_pct": round(
-                diff / base * 100, 1,
-            ),
-        }
-
-    def _params(self) -> Dict[str, Any]:
-        return {
-            "heating_setpoint_c": self._heat_sp,
-            "cooling_setpoint_c": self._cool_sp,
-            "heat_recovery": self._hr,
-            "electricity_price_czk": self._price,
-            "grid_co2_kg_per_mwh": self._co2,
-            "hvac_vintage": VINTAGE,
-            "ashp_system": "FCUwithDOAS + ASHP",
-            "gshp_system": "WSHPwithDOAS + GSHP",
+            "monthly_cop_heating": m_cop_heat,
+            "monthly_cop_cooling": m_cop_cool,
+            "monthly_cop_total": m_cop_total,
+            "electricity_breakdown": breakdown,
         }

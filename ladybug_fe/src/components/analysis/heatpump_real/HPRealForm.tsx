@@ -1,8 +1,9 @@
 /**
- * Formulář — setpointy jako Apple-style slidery.
+ * Formulář — soubory, typ budovy + setpointy + rekuperace.
  *
- * Bez supply_temp_c — reálný HVAC nepotřebuje teplotu
- * topné vody, EnergyPlus ji řeší interně dle vintage.
+ * Rekuperace přepíná typ šablony:
+ *   0 %   → VRF / WSHP_GSHP (bez DOAS, čistý kompresor)
+ *   > 0 % → VRFwithDOAS / WSHPwithDOAS (s ventilací + ERV)
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HPRealForm.tsx
  */
@@ -17,15 +18,15 @@ interface Props {
   buildingType: string;
   heatingSp: number; coolingSp: number;
   heatRecovery: number;
-  price: number; co2: number; loading: boolean;
+  heatingOnly: boolean;
+  loading: boolean;
   onHbjson: (f: File | null) => void;
   onEpw: (f: File | null) => void;
   onBuildingType: (v: string) => void;
   onHeatingSp: (v: number) => void;
   onCoolingSp: (v: number) => void;
   onHeatRecovery: (v: number) => void;
-  onPrice: (v: number) => void;
-  onCo2: (v: number) => void;
+  onHeatingOnly: (v: boolean) => void;
   onRun: () => void;
 }
 
@@ -75,6 +76,10 @@ const HPRealForm: React.FC<Props> = (p) => (
       <span className="hp-step-num">2</span>
       <span className="hp-step-title">Typ budovy</span>
     </div>
+    <p className="hp-form-note">
+      Ventilace a vnitřní zisky (obsazenost, osvětlení, spotřebiče)
+      se přebírají z Ladybug programu dle typu budovy.
+    </p>
     <div className="hp-type-grid">
       {BUILDS.map(b => (
         <button key={b.v}
@@ -87,46 +92,51 @@ const HPRealForm: React.FC<Props> = (p) => (
       ))}
     </div>
 
-    {/* ── 3. Setpointy + parametry ── */}
+    {/* ── 3. Setpointy + rekuperace ── */}
     <div className="hp-form-step">
       <span className="hp-step-num">3</span>
-      <span className="hp-step-title">Teplotní a ekonomické parametry</span>
+      <span className="hp-step-title">Setpointy a rekuperace</span>
     </div>
+    <p className="hp-form-note">
+      <strong>Rekuperace vyp.</strong>: simulace řeší jen topení
+      a chlazení, větrání se neřeší (jen netěsnostmi). Ukazuje
+      čistý výkon tepelného čerpadla, jako by se měřilo na
+      zkušebně.<br />
+      <strong>Rekuperace zap.</strong>: k domu se přidá rozvod
+      čerstvého vzduchu s výměníkem, který ze vzduchu odcházejícího
+      z budovy zachytí část tepla a ohřeje jím přicházející vzduch
+      zvenku. Reálnější pro obývaný dům. 70–80 % je běžná účinnost
+      kvalitní jednotky. Celoroční COP mírně klesne (o 0,3–0,5).
+    </p>
+
+    <button type="button"
+      className={`hp-toggle ${p.heatingOnly ? 'active' : ''}`}
+      onClick={() => p.onHeatingOnly(!p.heatingOnly)}>
+      <span className="hp-toggle-box">
+        {p.heatingOnly && <span className="hp-toggle-check">✓</span>}
+      </span>
+      <span className="hp-toggle-text">
+        Zajímá mě jen vytápění (ignorovat chlazení)
+      </span>
+    </button>
 
     <div className="hp-params-grid">
       <Slider label="Setpoint vytápění" min={16} max={25} step={0.5}
         value={p.heatingSp}
         display={`${p.heatingSp} °C`}
         onChange={p.onHeatingSp} />
-      <Slider label="Setpoint chlazení" min={22} max={30} step={0.5}
-        value={p.coolingSp}
-        display={`${p.coolingSp} °C`}
-        onChange={p.onCoolingSp} />
-      <Slider label="Rekuperace (ZZT)" min={0} max={0.95} step={0.05}
+      {!p.heatingOnly && (
+        <Slider label="Setpoint chlazení" min={22} max={30} step={0.5}
+          value={p.coolingSp}
+          display={`${p.coolingSp} °C`}
+          onChange={p.onCoolingSp} />
+      )}
+      <Slider label="Rekuperace (ERV)" min={0} max={0.95} step={0.05}
         value={p.heatRecovery}
         display={p.heatRecovery === 0
-          ? 'Vyp.'
+          ? 'Vyp. (bez ventilace)'
           : `${Math.round(p.heatRecovery * 100)} %`}
         onChange={p.onHeatRecovery} />
-
-      <div className="hp-field">
-        <label>Cena elektřiny</label>
-        <div className="hp-input-wrap">
-          <input type="number" min={1} max={20} step={0.5}
-            value={p.price}
-            onChange={e => p.onPrice(+e.target.value)} />
-          <span className="hp-input-unit">CZK/kWh</span>
-        </div>
-      </div>
-      <div className="hp-field">
-        <label>CO₂ intenzita sítě</label>
-        <div className="hp-input-wrap">
-          <input type="number" min={0} max={1000} step={10}
-            value={p.co2}
-            onChange={e => p.onCo2(+e.target.value)} />
-          <span className="hp-input-unit">kg/MWh</span>
-        </div>
-      </div>
     </div>
 
     <button className="hp-run" onClick={p.onRun}

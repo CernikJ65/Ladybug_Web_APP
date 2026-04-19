@@ -51,18 +51,22 @@
   min-height: 0;
 }
 
+.hpr-bar-elec {
+  width: 100%;
+  background: linear-gradient(0deg, #15803d, #4ade80);
+  border-radius: 0;
+  transition: height .5s cubic-bezier(.4, 0, .2, 1);
+  min-height: 0;
+}
+
 .hpr-bar-heat:hover,
-.hpr-bar-cool:hover {
+.hpr-bar-cool:hover,
+.hpr-bar-elec:hover {
   opacity: .85;
 }
 
-/* Pokud je chlazení nahoře, zakulatit horní rohy */
-.hpr-bar-cool:last-child {
-  border-radius: 4px 4px 0 0;
-}
-
-/* Pokud je chlazení 0 a jen heat, heat má horní rohy */
-.hpr-bar-heat:first-child:last-child {
+/* Posledni prvek ve sloupku zakulaceny */
+.hpr-bar-col .hpr-bar-stack > div:last-child {
   border-radius: 4px 4px 0 0;
 }
 
@@ -80,7 +84,8 @@
 }
 
 .hpr-leg-heat::before,
-.hpr-leg-cool::before {
+.hpr-leg-cool::before,
+.hpr-leg-elec::before {
   content: '';
   display: inline-block;
   width: 10px;
@@ -98,7 +103,146 @@
   background: linear-gradient(135deg, #0369a1, #38bdf8);
 }
 
+.hpr-leg-elec::before {
+  background: linear-gradient(135deg, #15803d, #4ade80);
+}
+
+/* ── Produkce bar (fialovo-oranzovy gradient) ── */
+
+.hpr-bar-produced {
+  width: 100%;
+  background: linear-gradient(0deg, #c2410c, #fb923c);
+  border-radius: 4px 4px 0 0;
+  transition: height .5s cubic-bezier(.4, 0, .2, 1);
+  min-height: 0;
+}
+
+.hpr-bar-produced:hover {
+  opacity: .85;
+}
+
+.hpr-leg-produced::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: .35rem;
+  vertical-align: middle;
+  background: linear-gradient(135deg, #c2410c, #fb923c);
+}
+
+/* ── Parove sloupky: vyroba vedle spotreby ── */
+
+.hpr-bar-col--pair {
+  justify-content: flex-end;
+}
+
+.hpr-pair-bars {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+}
+
+.hpr-pair-bars > div {
+  flex: 1;
+}
+
+/* ── Duo karty: vyrobi / spotrebuje ── */
+
+.hp-duo-card.duo-produced {
+  border-left: 3px solid #fb923c;
+}
+
+.hp-duo-card.duo-consumed {
+  border-left: 3px solid #4ade80;
+}
+
+.hp-duo-sep {
+  opacity: .4;
+  margin: 0 .25rem;
+}
+
+/* ── Breakdown tabulka ── */
+
+.hp-breakdown {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 1rem;
+  font-family: var(--hp-mono, monospace);
+  font-size: .72rem;
+}
+
+.hp-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  padding: .5rem .75rem;
+  background: var(--hp-surface, rgba(255,255,255,.03));
+  border-radius: 6px;
+  color: var(--hp-text, inherit);
+}
+
+.hp-breakdown-name {
+  color: var(--hp-text-muted, #64748b);
+  font-weight: 500;
+  margin-right: 1rem;
+  word-break: break-word;
+}
+
+.hp-breakdown-val {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Trio karty: teplo / chlad / elektrina ── */
+
+.hp-trio {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .8rem;
+  margin-bottom: 1rem;
+}
+
+.hp-duo-card.duo-heat {
+  border-left: 3px solid #f59e0b;
+  border: 1px solid rgba(245, 158, 11, .2);
+  border-left-width: 3px;
+}
+
+.hp-duo-card.duo-cool {
+  border-left: 3px solid #38bdf8;
+  border: 1px solid rgba(56, 189, 248, .2);
+  border-left-width: 3px;
+}
+
+.hp-duo-card.duo-heat:hover {
+  border-color: rgba(245, 158, 11, .4);
+}
+
+.hp-duo-card.duo-cool:hover {
+  border-color: rgba(56, 189, 248, .4);
+}
+
+.hp-duo-pill.heat {
+  background: rgba(245, 158, 11, .12);
+  color: #f59e0b;
+}
+
+.hp-duo-pill.cool {
+  background: rgba(56, 189, 248, .12);
+  color: #38bdf8;
+}
+
 /* ── Responsive ── */
+
+@media (max-width: 860px) {
+  .hp-trio {
+    grid-template-columns: 1fr;
+  }
+}
 
 @media (max-width: 640px) {
   .hpr-stacked-bars {

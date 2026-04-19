@@ -19,7 +19,8 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from honeybee.shade import Shade
-from ladybug_geometry.geometry2d.pointvector import Point2D
+from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
+from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Point3D
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.plane import Plane
@@ -252,15 +253,14 @@ class PanelPlacer:
     @staticmethod
     def _panel_inside(poly2d, center: Point2D, hw: float, hh: float) -> bool:
         """
-        Zkontroluje, že střed i všechny čtyři rohy panelu jsou uvnitř polygonu.
-        Zabraňuje přesahování panelů přes okraj střechy.
+        Zkontroluje, že obdélník panelu leží celý uvnitř polygonu střechy.
+        Využívá nativní Polygon2D.from_rectangle + is_polygon_inside z ladybug_geometry.
         """
-        if not poly2d.is_point_inside(center):
-            return False
-        corners = [
-            Point2D(center.x - hw, center.y - hh),
-            Point2D(center.x + hw, center.y - hh),
-            Point2D(center.x + hw, center.y + hh),
-            Point2D(center.x - hw, center.y + hh),
-        ]
-        return all(poly2d.is_point_inside(c) for c in corners)
+        base = Point2D(center.x - hw, center.y - hh)
+        panel_rect = Polygon2D.from_rectangle(
+            base_point=base,
+            height_vector=Vector2D(0, 1),
+            base=2 * hw,
+            height=2 * hh,
+        )
+        return poly2d.is_polygon_inside(panel_rect)

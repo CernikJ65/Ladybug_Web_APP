@@ -10,6 +10,7 @@ import {
   FaSun, FaWind, FaChartLine,
   FaCube, FaSolarPanel, FaFire, FaBolt,
   FaFileImport,
+  FaThermometerQuarter,
 } from 'react-icons/fa';
 
 interface Feature {
@@ -75,15 +76,15 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       tags: ['EnergyPlus', 'COP'],
     },
     // TODO: odkomentovat po prezentaci
-    // {
-    //   id: 'heatpump-real',
-    //   icon: <FaThermometerHalf />,
-    //   title: 'Celoroční simulace TČ',
-    //   description:
-    //     'Reálný HVAC (VRF / WSHP) s výkonovými křivkami. Vytápění i chlazení po celý rok.',
-    //   color: '#0891b2',
-    //   tags: ['VRF', 'WSHP', 'HVAC'],
-    // },
+     {
+       id: 'heatpump-real',
+       icon: <FaThermometerQuarter />,
+     title: 'Celoroční simulace TČ',
+       description:
+         'Reálný HVAC (VRF / WSHP) s výkonovými křivkami. Vytápění i chlazení po celý rok.',
+       color: '#0891b2',
+       tags: ['VRF', 'WSHP', 'HVAC'],
+     },
     {
       id: 'combined',
       icon: <FaBolt />,
