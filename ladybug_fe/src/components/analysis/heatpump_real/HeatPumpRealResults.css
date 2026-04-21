@@ -1,6 +1,7 @@
 /* ==========================================================
    HeatPumpRealResults.css — Výsledkové styly
-   Importuje existující HP Results design, přidává stacked bary.
+   Importuje existující HP Results design, přidává stacked bary
+   a Apple-style rozpad elektřiny.
    Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpRealResults.css
    ========================================================== */
 
@@ -65,7 +66,7 @@
   opacity: .85;
 }
 
-/* Posledni prvek ve sloupku zakulaceny */
+/* Poslední prvek ve sloupku zakulacený */
 .hpr-bar-col .hpr-bar-stack > div:last-child {
   border-radius: 4px 4px 0 0;
 }
@@ -107,32 +108,7 @@
   background: linear-gradient(135deg, #15803d, #4ade80);
 }
 
-/* ── Produkce bar (fialovo-oranzovy gradient) ── */
-
-.hpr-bar-produced {
-  width: 100%;
-  background: linear-gradient(0deg, #c2410c, #fb923c);
-  border-radius: 4px 4px 0 0;
-  transition: height .5s cubic-bezier(.4, 0, .2, 1);
-  min-height: 0;
-}
-
-.hpr-bar-produced:hover {
-  opacity: .85;
-}
-
-.hpr-leg-produced::before {
-  content: '';
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  margin-right: .35rem;
-  vertical-align: middle;
-  background: linear-gradient(135deg, #c2410c, #fb923c);
-}
-
-/* ── Parove sloupky: vyroba vedle spotreby ── */
+/* ── Párové sloupky: výroba vedle spotřeby ── */
 
 .hpr-bar-col--pair {
   justify-content: flex-end;
@@ -151,53 +127,7 @@
   flex: 1;
 }
 
-/* ── Duo karty: vyrobi / spotrebuje ── */
-
-.hp-duo-card.duo-produced {
-  border-left: 3px solid #fb923c;
-}
-
-.hp-duo-card.duo-consumed {
-  border-left: 3px solid #4ade80;
-}
-
-.hp-duo-sep {
-  opacity: .4;
-  margin: 0 .25rem;
-}
-
-/* ── Breakdown tabulka ── */
-
-.hp-breakdown {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 1rem;
-  font-family: var(--hp-mono, monospace);
-  font-size: .72rem;
-}
-
-.hp-breakdown-row {
-  display: flex;
-  justify-content: space-between;
-  padding: .5rem .75rem;
-  background: var(--hp-surface, rgba(255,255,255,.03));
-  border-radius: 6px;
-  color: var(--hp-text, inherit);
-}
-
-.hp-breakdown-name {
-  color: var(--hp-text-muted, #64748b);
-  font-weight: 500;
-  margin-right: 1rem;
-  word-break: break-word;
-}
-
-.hp-breakdown-val {
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* ── Trio karty: teplo / chlad / elektrina ── */
+/* ── Trio karty: teplo / chlad / elektřina ── */
 
 .hp-trio {
   display: grid;
@@ -207,15 +137,17 @@
 }
 
 .hp-duo-card.duo-heat {
-  border-left: 3px solid #f59e0b;
   border: 1px solid rgba(245, 158, 11, .2);
-  border-left-width: 3px;
+  border-left: 3px solid #f59e0b;
 }
 
 .hp-duo-card.duo-cool {
-  border-left: 3px solid #38bdf8;
   border: 1px solid rgba(56, 189, 248, .2);
-  border-left-width: 3px;
+  border-left: 3px solid #38bdf8;
+}
+
+.hp-duo-card.duo-consumed {
+  border-left: 3px solid #4ade80;
 }
 
 .hp-duo-card.duo-heat:hover {
@@ -236,6 +168,83 @@
   color: #38bdf8;
 }
 
+/* ── Apple-style rozpad elektřiny ── */
+
+.hpe-wrap {
+  margin: .5rem 0 1.25rem;
+}
+
+.hpe-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  margin-bottom: .9rem;
+}
+
+.hpe-bar-seg {
+  height: 100%;
+  transition: opacity .2s;
+}
+
+.hpe-bar-seg:hover { opacity: .82; }
+
+.hpe-rows {
+  display: grid;
+  gap: .3rem;
+}
+
+.hpe-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: .8rem;
+  align-items: center;
+  padding: .55rem .85rem;
+  border-radius: 8px;
+  background: var(--hp-surface);
+  border: 1px solid var(--hp-border);
+  font-family: var(--hp-font);
+  font-size: .78rem;
+  transition: border-color .2s;
+}
+
+.hpe-row:hover {
+  border-color: var(--hp-border-light);
+}
+
+.hpe-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.hpe-name {
+  color: var(--hp-text-muted);
+  font-weight: 500;
+  letter-spacing: .005em;
+}
+
+.hpe-pct {
+  color: var(--hp-text-dim);
+  font-family: var(--hp-mono);
+  font-size: .72rem;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: right;
+}
+
+.hpe-val {
+  color: var(--hp-text);
+  font-family: var(--hp-mono);
+  font-weight: 700;
+  font-size: .8rem;
+  min-width: 100px;
+  text-align: right;
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 860px) {
@@ -248,4 +257,9 @@
   .hpr-stacked-bars {
     height: 100px;
   }
+  .hpe-row {
+    grid-template-columns: auto 1fr auto;
+    gap: .5rem;
+  }
+  .hpe-val { display: none; }
 }

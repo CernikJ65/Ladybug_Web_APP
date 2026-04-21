@@ -12,19 +12,32 @@ Oba případy jsou ošetřeny v _kwh_from_item().
 from __future__ import annotations
 
 import os
+import re
 import shutil
+import subprocess
+import sys
 import tempfile
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Callable, Optional
 
 from honeybee.model import Model
 from honeybee_energy.generator.pv import PVProperties
 from honeybee_energy.simulation.parameter import SimulationParameter
-from honeybee_energy.run import run_idf
+from honeybee_energy.run import (
+    run_idf, prepare_idf_for_simulation, output_energyplus_files, folders,
+)
 from honeybee_energy.writer import model_to_idf
 from honeybee_energy.writer import energyplus_idf_version
 from ladybug.sql import SQLiteResult
 
 from .panel_placer import PanelPosition
+
+
+_EP_PROGRESS_RE = re.compile(
+    r'(Starting|Continuing)\s+Simulation\s+at', re.IGNORECASE
+)
+# EnergyPlus typicky pošle 1× "Starting Simulation at 01/01" + 12× "Continuing
+# Simulation at MM/DD" pro roční run. Pokud přijde víc, cappujeme na 0.97.
+_EP_EXPECTED_EVENTS = 13
 
 
 class PVSimulator:
@@ -62,11 +75,14 @@ class PVSimulator:
         self,
         panels: List[PanelPosition],
         building_model: Model,
+        on_progress: Optional[Callable[[float], None]] = None,
     ) -> Dict[str, Any]:
         """
         Spustí EnergyPlus simulaci a vrátí výsledky.
 
-        run_idf vrací tuple: (sql_path, zsz, rdd, html, err_path)
+        `on_progress(fraction)` — volitelný callback, dostává 0.0–1.0 podle
+        počtu dokončených měsíců (parsuje se ze stdoutu EP). Když není
+        zadán, spadne se na běžné `run_idf`.
         """
         if not building_model.rooms:
             raise RuntimeError(
@@ -110,9 +126,20 @@ class PVSimulator:
                 f.write(idf_str + "\n\n")
                 f.write(sim_str)
 
-            result = run_idf(idf_path, self.epw_path)
-            sql_path = result[0] if isinstance(result, tuple) else None
-            err_path = result[4] if isinstance(result, tuple) and len(result) > 4 else None
+            if on_progress is not None:
+                directory = self._run_ep_with_progress(
+                    idf_path, self.epw_path, on_progress
+                )
+                sql_path, _zsz, _rdd, _html, err_path = \
+                    output_energyplus_files(directory)
+            else:
+                result = run_idf(idf_path, self.epw_path)
+                sql_path = result[0] if isinstance(result, tuple) else None
+                err_path = (
+                    result[4]
+                    if isinstance(result, tuple) and len(result) > 4
+                    else None
+                )
 
             if not sql_path or not os.path.isfile(sql_path):
                 raise RuntimeError(
@@ -124,6 +151,92 @@ class PVSimulator:
 
         finally:
             shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    @staticmethod
+    def _run_ep_with_progress(
+        idf_path: str,
+        epw_path: str,
+        on_progress: Callable[[float], None],
+    ) -> str:
+        """
+        Spustí EnergyPlus přímo přes subprocess, zachytí stdout a volá
+        `on_progress(fraction)` při každém ukončeném měsíci.
+
+        Vrací adresář, kde EP běžel (stejný kontrakt jako interní helpery
+        v honeybee_energy.run).
+        """
+        directory = prepare_idf_for_simulation(idf_path, epw_path)
+
+        # Stejný trick jako v run_idf — přejmenovat .stat soubor, aby ho
+        # EP nenašel a nehazardoval warningem.
+        stat_file, renamed_stat = None, None
+        if epw_path is not None:
+            epw_folder = os.path.dirname(epw_path)
+            try:
+                for wf in os.listdir(epw_folder):
+                    if wf.endswith('.stat'):
+                        stat_file = os.path.join(epw_folder, wf)
+                        renamed_stat = os.path.join(
+                            epw_folder, wf.replace('.stat', '.hide')
+                        )
+                        try:
+                            os.rename(stat_file, renamed_stat)
+                        except Exception:
+                            stat_file = None
+                        break
+            except Exception:
+                stat_file = None
+
+        try:
+            cmds = [folders.energyplus_exe, '-i', folders.energyplus_idd_path]
+            if epw_path is not None:
+                cmds.extend(['-w', os.path.abspath(epw_path)])
+            cmds.append('-x')  # expand objects
+
+            popen_kwargs: Dict[str, Any] = {
+                'cwd': directory,
+                'stdout': subprocess.PIPE,
+                'stderr': subprocess.STDOUT,
+                'text': True,
+                'bufsize': 1,
+            }
+            if os.name == 'nt':
+                popen_kwargs['creationflags'] = 0x08000000  # CREATE_NO_WINDOW
+
+            process = subprocess.Popen(cmds, **popen_kwargs)
+
+            counter = 0
+            try:
+                assert process.stdout is not None
+                for line in process.stdout:
+                    # Přeposlat EP výstup do naší konzole, ať je viditelný
+                    # stejně jako před zapojením progress parseru.
+                    sys.stdout.write(line)
+                    sys.stdout.flush()
+
+                    if _EP_PROGRESS_RE.search(line):
+                        counter += 1
+                        frac = min(counter / _EP_EXPECTED_EVENTS, 0.97)
+                        try:
+                            on_progress(frac)
+                        except Exception:
+                            pass
+            finally:
+                process.wait()
+
+            try:
+                on_progress(1.0)
+            except Exception:
+                pass
+
+        finally:
+            if stat_file is not None and renamed_stat is not None:
+                try:
+                    os.rename(renamed_stat, stat_file)
+                except Exception:
+                    pass
+
+        return directory
 
     def _parse_results(
         self, sql_path: str, panels: List[PanelPosition]

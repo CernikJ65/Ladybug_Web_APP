@@ -46,14 +46,7 @@ class SolarRadiationCalculator:
         panels: List[PanelPosition],
         building_context: Optional[List[Face3D]] = None,
     ) -> List[float]:
-        """
-        Spočítá roční radiaci (kWh/m²) pro každý panel.
-
-        Context = pouze stěny budovy.
-        Panely NEJSOU v context_geometry — vzájemné stínění panelů
-        je na 60° střeše příliš agresivní a dává nereálně nízké hodnoty.
-        Stínění mezi řadami řeší row_spacing v PanelPlacer (Sunpath).
-        """
+        
         if not self.sky_matrix:
             raise ValueError("Nejdříve zavolejte load_and_prepare().")
         if not panels:

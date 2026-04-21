@@ -6,6 +6,9 @@ import {
   FaStar, FaThList, FaRulerCombined, FaChartBar, FaTimes,
 } from 'react-icons/fa';
 import PanelMapView, { type RoofMeta } from './PanelMapView';
+import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
+import { useSimulationProgress } from '../../../hooks/useSimulationProgress';
+import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import './SolarAnalysisAdvanced.css';
 
 /* ───── Typy ───── */
@@ -63,6 +66,19 @@ interface AnalysisResult {
   };
 }
 
+interface CachedState {
+  hbjsonFile: File | null;
+  epwFile: File | null;
+  result: AnalysisResult | null;
+  error: string | null;
+  selIdx: number | null;
+  numPanels: number;
+  pvEff: number;
+  maxTilt: number;
+  modType: string;
+  mountType: string;
+}
+
 interface Props {
   onBack: () => void;
 }
@@ -89,6 +105,27 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [maxTilt, setMaxTilt]       = useState(60);
   const [modType, setModType]       = useState('Standard');
   const [mountType, setMountType]   = useState('FixedOpenRack');
+  const [jobId, setJobId]           = useState<string | null>(null);
+
+  const progress = useSimulationProgress(loading ? jobId : null);
+
+  /* Zachování stavu při návratu z landing page */
+  useViewStateCache<CachedState>(
+    'solar-advanced',
+    { hbjsonFile, epwFile, result, error, selIdx, numPanels, pvEff, maxTilt, modType, mountType },
+    (c: CachedState) => {
+      setHbjsonFile(c.hbjsonFile);
+      setEpwFile(c.epwFile);
+      setResult(c.result);
+      setError(c.error);
+      setSelIdx(c.selIdx);
+      setNumPanels(c.numPanels);
+      setPvEff(c.pvEff);
+      setMaxTilt(c.maxTilt);
+      setModType(c.modType);
+      setMountType(c.mountType);
+    }
+  );
 
   const currentPreset = MODULE_PRESETS[modType] ?? MODULE_PRESETS.Standard;
 
@@ -111,6 +148,11 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 
   const run = async () => {
     if (!hbjsonFile || !epwFile) { setError('Vyberte oba soubory'); return; }
+    const newJobId =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setJobId(newJobId);
     setLoading(true); setError(null); setResult(null);
 
     const fd = new FormData();
@@ -121,6 +163,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     fd.append('max_tilt', maxTilt.toString());
     fd.append('module_type', modType);
     fd.append('mounting_type', mountType);
+    fd.append('job_id', newJobId);
 
     try {
       const res = await fetch('http://127.0.0.1:8000/api/solar/optimize-panels', {
@@ -161,6 +204,12 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="saa-page">
+      <SimulationProgressOverlay
+        open={loading}
+        progress={progress}
+        title="Optimalizace solárních panelů"
+      />
+
       {/* Hero */}
       <header className="saa-hero">
         <button className="saa-back" onClick={onBack}>

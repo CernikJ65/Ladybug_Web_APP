@@ -126,16 +126,18 @@ class TemperatureAnalyzer:
         """Roční souhrn.
 
         Průměr/minimum/maximum přes nativní properties kolekce
-        (.average, .min, .max), které Ladybug počítá interně
-        nad celou analysis_period. Počty komfortních, mrazových
-        a horkých hodin přes jednu iteraci hodnot, aby se
-        zabránilo potenciálně prázdným filtrovaným kolekcím
-        (filter_by_conditional_statement vyhodí výjimku,
-        pokud žádná hodina podmínku nesplňuje).
+        (.average, .min, .max). Komfortní hodiny (18–26 °C) přes
+        Ladybug filter_by_conditional_statement — u komfortního
+        pásma se reálně nestane, že by kolekce byla prázdná
+        (prakticky každá lokalita na Zemi má alespoň pár hodin
+        v tomto rozsahu). U mrazových/horkých hodin naopak
+        prázdná kolekce reálně hrozí (tropy nikdy nemají < 0 °C,
+        polární oblasti nikdy > 30 °C), proto zůstává iterace
+        nad .values, která vrátí nulu bezpečně.
         """
-        vals = list(self._temp.values)
-        n = len(vals)
-        comfort = sum(1 for t in vals if 18 <= t <= 26)
+        n = len(self._temp)
+        comfort = len(self._temp.filter_by_conditional_statement("18 <= a <= 26"))
+        vals = self._temp.values
         frost = sum(1 for t in vals if t < 0)
         hot = sum(1 for t in vals if t > 30)
         return {

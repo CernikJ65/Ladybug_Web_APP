@@ -9,7 +9,8 @@ Použité moduly a funkce:
         mocninový profil rychlosti větru s korektním zohledněním rozdílu
         mezi meteorologickým (EPW = country, 10 m) a cílovým terénem
   - HourlyContinuousCollection
-        group_by_month(), properties .average, .max, .values
+        average_monthly(), group_by_month(), histogram()
+        properties .average, .max, .values
 
 Soubor: ladybug_be/app/services/wind_analyzer.py
 """
@@ -18,6 +19,7 @@ from __future__ import annotations
 from typing import Dict, Any, List, Tuple
 
 from ladybug.epw import EPW
+from ladybug.datacollection import HourlyContinuousCollection
 from ladybug.windrose import WindRose
 from ladybug.windprofile import WindProfile
 
@@ -74,24 +76,24 @@ class WindAnalyzerAdvanced:
         }
 
     def _direction_freq(self) -> Dict[str, Any]:
+        """Frekvence směrů a rozložení rychlostí.
+
+        Směrové binování zajišťuje WindRose.histogram_data (16 sektorů).
+        Rozložení rychlostí uvnitř každého směrového binu počítá Ladybug
+        static metoda HourlyContinuousCollection.histogram — vrátí list
+        listů hodnot pro každý SP_BINS interval, takže stačí zavolat len().
+        """
         hist = self._rose.histogram_data
         sector = 22.5
-        nb = len(SP_BINS) - 1
         dirs = []
         mx = 0
         for i, speeds in enumerate(hist):
-            bins = [0] * nb
-            for s in speeds:
-                v = _fl(s)
-                for bi in range(nb):
-                    if SP_BINS[bi] <= v < SP_BINS[bi + 1]:
-                        bins[bi] += 1
-                        break
-            total = len(speeds)
+            flat = [_fl(s) for s in speeds]
+            sp_hist = HourlyContinuousCollection.histogram(flat, SP_BINS)
+            bins = [len(b) for b in sp_hist]
+            total = len(flat)
             mx = max(mx, total)
-            avg = round(
-                sum(_fl(s) for s in speeds) / total, 2,
-            ) if total else 0
+            avg = round(sum(flat) / total, 2) if total else 0
             dirs.append({
                 "index": i,
                 "label": DIR_16[i],
@@ -108,17 +110,23 @@ class WindAnalyzerAdvanced:
         }
 
     def _monthly_speed(self) -> List[Dict[str, Any]]:
+        """Měsíční průměry a maxima rychlosti větru.
+
+        Průměr přes Ladybug average_monthly() — vrací MonthlyCollection
+        o 12 hodnotách, takže odpadá ruční sum(vals)/len(vals). Pro maximum
+        zůstává group_by_month(), protože Ladybug nemá max_monthly property.
+        """
+        avg_monthly = self._ws_coll.average_monthly()
         grouped = self._ws_coll.group_by_month()
-        result = []
-        for i in range(12):
-            vals = list(grouped[i + 1])
-            result.append({
+        return [
+            {
                 "month": i + 1,
                 "name": MONTH_NAMES_CZ[i],
-                "avg_speed": round(sum(vals) / len(vals), 2),
-                "max_speed": round(max(vals), 1),
-            })
-        return result
+                "avg_speed": round(avg_monthly[i], 2),
+                "max_speed": round(max(grouped[i + 1]), 1),
+            }
+            for i in range(12)
+        ]
 
     def _beaufort(self) -> List[Dict[str, Any]]:
         """Beaufortova stupnice iterací hodnot kolekce.

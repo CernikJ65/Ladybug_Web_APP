@@ -1,5 +1,5 @@
 """
-Sluneční dráha z EPW — maximální využití Ladybug API, bez fallbacků.
+Sluneční dráha z EPW — maximální využití Ladybug API, 
 
 Použité moduly a funkce:
   - ladybug.sunpath.Sunpath

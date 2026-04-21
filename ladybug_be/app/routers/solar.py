@@ -14,8 +14,12 @@ Klíčové urychlení: EnergyPlus dostane jen (num_panels + 1) panelů,
 ne všechny stovky možných pozic.
 """
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.concurrency import run_in_threadpool
+from typing import Optional
 import tempfile
 import os
+
+from ..services.progress import progress_scope, report_progress
 
 router = APIRouter()
 
@@ -57,6 +61,7 @@ async def optimize_panels(
     max_tilt: float = Form(60.0),
     module_type: str = Form("Standard"),
     mounting_type: str = Form("FixedOpenRack"),
+    job_id: Optional[str] = Form(None),
 ):
     """Optimalizuje rozmístění FV panelů na střechách."""
     if not hbjson_file.filename.endswith((".hbjson", ".json")):
@@ -70,14 +75,60 @@ async def optimize_panels(
     epw_path = _save_temp(await epw_file.read(), ".epw")
 
     try:
-        from ..services.roof_detector import RoofDetector
-        from ..services.panel_placer import PanelPlacer
-        from ..services.solar_calculator import SolarRadiationCalculator
-        from ..services.panel_optimizer import PanelOptimizer
-        from ..services.tilt_optimizer import TiltOptimizer
-        from ..services.pv_simulator import PVSimulator
+        # Celá pipeline je CPU-bound a synchronní → pustit ji v threadpoolu,
+        # aby FastAPI event loop mohl mezitím obsluhovat polling progressu.
+        return await run_in_threadpool(
+            _run_solar_pipeline,
+            hbjson_path,
+            epw_path,
+            num_panels,
+            pv_efficiency,
+            system_losses,
+            panel_width,
+            panel_height,
+            panel_spacing,
+            max_tilt,
+            module_type,
+            mounting_type,
+            job_id,
+        )
+    except ImportError as e:
+        raise HTTPException(500, f"Chybí knihovny: {e}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Chyba: {str(e)}")
+    finally:
+        _cleanup(hbjson_path, epw_path)
+
+
+def _run_solar_pipeline(
+    hbjson_path: str,
+    epw_path: str,
+    num_panels: int,
+    pv_efficiency: float,
+    system_losses: float,
+    panel_width: float,
+    panel_height: float,
+    panel_spacing: float,
+    max_tilt: float,
+    module_type: str,
+    mounting_type: str,
+    job_id: Optional[str],
+) -> dict:
+    """Synchronní část — pouští se v threadpoolu, aby neblokovala event loop."""
+    from ..services.roof_detector import RoofDetector
+    from ..services.panel_placer import PanelPlacer
+    from ..services.solar_calculator import SolarRadiationCalculator
+    from ..services.panel_optimizer import PanelOptimizer
+    from ..services.tilt_optimizer import TiltOptimizer
+    from ..services.pv_simulator import PVSimulator
+
+    with progress_scope(job_id):
+        report_progress("init", 2)
 
         # 1. Detekce střech
+        report_progress("roofs", 6)
         detector = RoofDetector(hbjson_path)
         roofs = detector.detect_roofs(max_tilt=max_tilt)
         if not roofs:
@@ -86,15 +137,18 @@ async def optimize_panels(
         context = detector.get_context_geometry()
 
         # 2. Klimatická data + optimální sklon
+        report_progress("climate", 12)
         calc = SolarRadiationCalculator(epw_path)
         calc.load_and_prepare()
         location_info = calc.get_location_info()
         latitude = location_info.get("latitude", 50.0)
 
+        report_progress("tilt", 18)
         tilt_opt = TiltOptimizer(calc.sky_matrix, calc.location)
         optimal = tilt_opt.find_optimal_orientation()
 
         # 3. Umístění panelů
+        report_progress("placement", 24)
         placer = PanelPlacer(
             panel_width=panel_width,
             panel_height=panel_height,
@@ -107,9 +161,11 @@ async def optimize_panels(
             raise HTTPException(400, "Na střechách není místo pro panely.")
 
         # 4. RadiationStudy → radiace pro VŠECHNY panely
+        report_progress("radiation", 32)
         radiation_values = calc.calculate_panel_radiation(all_panels, context)
 
         # 5. Přiřaď radiaci a seřaď
+        report_progress("ranking", 38)
         optimizer = PanelOptimizer(pv_efficiency, system_losses)
         optimizer.assign_radiation(all_panels, radiation_values)
 
@@ -125,7 +181,7 @@ async def optimize_panels(
         )
         ep_candidates = sorted_all[:ep_candidate_count]
 
-        # 7. EnergyPlus jen na kandidátech
+        # 7. EnergyPlus jen na kandidátech — nejdelší krok, tween 40 → 92
         pv_sim = PVSimulator(
             epw_path=epw_path,
             rated_efficiency=pv_efficiency,
@@ -133,63 +189,65 @@ async def optimize_panels(
             mounting_type=mounting_type,
         )
         pv_sim.assign_pv_properties(ep_candidates)
-        ep_results = pv_sim.simulate(ep_candidates, detector.model)
+        report_progress("energyplus", 40)
+
+        # Progress je teď vázaný na skutečný stdout EnergyPlus — každý
+        # dokončený měsíc posune procenta. 40 → 92 = 52 bodů rozložených
+        # přes ~13 event-lajn.
+        def _ep_progress(fraction: float) -> None:
+            report_progress("energyplus", 40 + fraction * 52)
+
+        ep_results = pv_sim.simulate(
+            ep_candidates, detector.model, on_progress=_ep_progress,
+        )
 
         # 8. Optimalizace
+        report_progress("optimize", 96)
         optimizer.apply_energyplus_production(ep_candidates, ep_results)
         results = optimizer.optimize(ep_candidates, num_panels)
 
-        # Souhrn střech — včetně world_bounds pro správnou vizualizaci
-        roof_summary = [
-            {
-                "identifier": r.identifier,
-                "area_m2": r.area,
-                "tilt": r.tilt,
-                "azimuth": r.azimuth,
-                "orientation": r.orientation,
-                "center": list(r.center),
-                "source": r.source,
-                "world_bounds": _roof_world_bounds(r.geometry),
-            }
-            for r in roofs
-        ]
-
-        return {
-            "model_info": {
-                **model_info,
-                "total_roof_area_m2": round(sum(r.area for r in roofs), 2),
-                "roof_count": len(roofs),
-            },
-            "location": location_info,
-            "optimal_orientation": {
-                "tilt_degrees": optimal.tilt_degrees,
-                "azimuth_degrees": optimal.azimuth_degrees,
-                "max_radiation_kwh_m2": optimal.max_radiation_kwh_m2,
-                "source": optimal.source,
-            },
-            "roofs": roof_summary,
-            "panel_config": {
-                "panel_width_m": panel_width,
-                "panel_height_m": panel_height,
-                "panel_area_m2": round(panel_width * panel_height, 2),
-                "spacing_m": panel_spacing,
-                "pv_efficiency": pv_efficiency,
-                "system_losses": pv_sim.get_loss_breakdown(),
-                "module_type": module_type,
-                "mounting_type": mounting_type,
-            },
-            "simulation_engine": ep_results.get("simulation_engine", ""),
-            "optimization": results,
+    # Souhrn střech — včetně world_bounds pro správnou vizualizaci
+    roof_summary = [
+        {
+            "identifier": r.identifier,
+            "area_m2": r.area,
+            "tilt": r.tilt,
+            "azimuth": r.azimuth,
+            "orientation": r.orientation,
+            "center": list(r.center),
+            "source": r.source,
+            "world_bounds": _roof_world_bounds(r.geometry),
         }
+        for r in roofs
+    ]
 
-    except ImportError as e:
-        raise HTTPException(500, f"Chybí knihovny: {e}")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, f"Chyba: {str(e)}")
-    finally:
-        _cleanup(hbjson_path, epw_path)
+    return {
+        "model_info": {
+            **model_info,
+            "total_roof_area_m2": round(sum(r.area for r in roofs), 2),
+            "roof_count": len(roofs),
+        },
+        "location": location_info,
+        "optimal_orientation": {
+            "tilt_degrees": optimal.tilt_degrees,
+            "azimuth_degrees": optimal.azimuth_degrees,
+            "max_radiation_kwh_m2": optimal.max_radiation_kwh_m2,
+            "source": optimal.source,
+        },
+        "roofs": roof_summary,
+        "panel_config": {
+            "panel_width_m": panel_width,
+            "panel_height_m": panel_height,
+            "panel_area_m2": round(panel_width * panel_height, 2),
+            "spacing_m": panel_spacing,
+            "pv_efficiency": pv_efficiency,
+            "system_losses": pv_sim.get_loss_breakdown(),
+            "module_type": module_type,
+            "mounting_type": mounting_type,
+        },
+        "simulation_engine": ep_results.get("simulation_engine", ""),
+        "optimization": results,
+    }
 
 
 def _save_temp(content: bytes, suffix: str) -> str:

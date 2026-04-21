@@ -73,10 +73,6 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
         </button>
         <span className="hp-hero-badge">Reálný HVAC · EnergyPlus</span>
         <h1>Celoroční simulace TČ</h1>
-        <p>
-          Per-zone terminály — 1 tepelné čerpadlo na místnost.
-          Vzduch-voda vs. země-voda přes Ladybug HVAC šablony.
-        </p>
       </header>
 
       <HPRealForm

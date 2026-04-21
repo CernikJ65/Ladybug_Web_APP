@@ -1,9 +1,9 @@
 /**
  * Formulář — soubory, typ budovy + setpointy + rekuperace.
  *
- * Rekuperace přepíná typ šablony:
- *   0 %   → VRF / WSHP_GSHP (bez DOAS, čistý kompresor)
- *   > 0 % → VRFwithDOAS / WSHPwithDOAS (s ventilací + ERV)
+ * Režim simulace se volí macOS segmented controlem:
+ *   Vytápění a chlazení  →  default (cooling setpoint platí)
+ *   Pouze vytápění       →  heatingOnly=true (cooling vypnut)
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HPRealForm.tsx
  */
@@ -92,41 +92,37 @@ const HPRealForm: React.FC<Props> = (p) => (
       ))}
     </div>
 
-    {/* ── 3. Setpointy + rekuperace ── */}
+    {/* ── 3. Režim simulace ── */}
     <div className="hp-form-step">
       <span className="hp-step-num">3</span>
+      <span className="hp-step-title">Režim simulace</span>
+    </div>
+    <div className="hp-mode-seg" role="tablist">
+      <button type="button"
+        className={`hp-mode-btn ${!p.heatingOnly ? 'active' : ''}`}
+        onClick={() => p.onHeatingOnly(false)}>
+        Vytápění a chlazení
+      </button>
+      <button type="button"
+        className={`hp-mode-btn ${p.heatingOnly ? 'active' : ''}`}
+        onClick={() => p.onHeatingOnly(true)}>
+        Pouze vytápění
+      </button>
+    </div>
+
+    {/* ── 4. Setpointy + rekuperace ── */}
+    <div className="hp-form-step">
+      <span className="hp-step-num">4</span>
       <span className="hp-step-title">Setpointy a rekuperace</span>
     </div>
-    <p className="hp-form-note">
-      <strong>Rekuperace vyp.</strong>: simulace řeší jen topení
-      a chlazení, větrání se neřeší (jen netěsnostmi). Ukazuje
-      čistý výkon tepelného čerpadla, jako by se měřilo na
-      zkušebně.<br />
-      <strong>Rekuperace zap.</strong>: k domu se přidá rozvod
-      čerstvého vzduchu s výměníkem, který ze vzduchu odcházejícího
-      z budovy zachytí část tepla a ohřeje jím přicházející vzduch
-      zvenku. Reálnější pro obývaný dům. 70–80 % je běžná účinnost
-      kvalitní jednotky. Celoroční COP mírně klesne (o 0,3–0,5).
-    </p>
-
-    <button type="button"
-      className={`hp-toggle ${p.heatingOnly ? 'active' : ''}`}
-      onClick={() => p.onHeatingOnly(!p.heatingOnly)}>
-      <span className="hp-toggle-box">
-        {p.heatingOnly && <span className="hp-toggle-check">✓</span>}
-      </span>
-      <span className="hp-toggle-text">
-        Zajímá mě jen vytápění (ignorovat chlazení)
-      </span>
-    </button>
 
     <div className="hp-params-grid">
-      <Slider label="Setpoint vytápění" min={16} max={25} step={0.5}
+      <Slider label="Setpoint vytápění" min={16} max={25} step={1}
         value={p.heatingSp}
         display={`${p.heatingSp} °C`}
         onChange={p.onHeatingSp} />
       {!p.heatingOnly && (
-        <Slider label="Setpoint chlazení" min={22} max={30} step={0.5}
+        <Slider label="Setpoint chlazení" min={22} max={30} step={1}
           value={p.coolingSp}
           display={`${p.coolingSp} °C`}
           onChange={p.onCoolingSp} />
@@ -149,8 +145,6 @@ const HPRealForm: React.FC<Props> = (p) => (
     </button>
   </div>
 );
-
-/* ── Slider komponenta ── */
 
 const Slider: React.FC<{
   label: string; min: number; max: number; step: number;

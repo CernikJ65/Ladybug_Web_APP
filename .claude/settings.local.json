@@ -1,12 +1,13 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(xargs grep *)",
+      "Bash(ls C:\\\\Users\\\\reffy\\\\OneDrive\\\\Plocha\\\\LADYBUG_APP\\\\ladybug_be\\\\app\\\\services\\\\heatpump_real\\\\ *)"
+    ],
     "additionalDirectories": [
       "C:\\Users\\reffy\\ladybug-tools\\ladybug",
       "C:\\Users\\reffy\\ladybug-tools\\honeybee-core",
       "C:\\Users\\reffy\\ladybug-tools\\honeybee-energy"
-    ],
-    "allow": [
-      "Bash(xargs grep *)"
     ]
   }
 }

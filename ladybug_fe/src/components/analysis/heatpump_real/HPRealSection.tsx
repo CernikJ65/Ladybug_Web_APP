@@ -1,23 +1,23 @@
 /**
  * Detailní výsledky jednoho TČ.
  *
- * UI je rozděleno do 3 karet tak, aby bylo jasné co TČ "dělá":
+ * UI rozděleno do 3 karet (trio):
  *   1. VYROBÍ TEPLO — thermal dodaný do zón (kWh)
  *   2. VYROBÍ CHLAD — thermal dodaný do zón (kWh)
- *   3. SPOTŘEBUJE ELEKTŘINU — součet meterů
- *      (Heating + Cooling + Fans + Pumps + HeatRejection)
+ *   3. SPOTŘEBUJE ELEKTŘINU — součet end-use meterů
  *
- * COP vidíme ve třech variantách: topení, chlazení, celoroční.
+ * COPy (topení, chlazení, celoroční) jsou vepsané přímo
+ * do trojice karet — bez duplicitní KPI řady.
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HPRealSection.tsx
  */
 import React from 'react';
 import {
-  FaBolt, FaFire, FaSnowflake,
-  FaWind, FaMountain,
+  FaBolt, FaFire, FaSnowflake, FaWind, FaMountain,
 } from 'react-icons/fa';
 import type { HPSystemResult } from './hpRealUtils';
 import { fmt } from './hpRealUtils';
+import HPElectricityBreakdown from './HPElectricityBreakdown';
 
 interface Props {
   data: HPSystemResult;
@@ -39,8 +39,8 @@ const HPRealSection: React.FC<Props> = ({
     ...(heatingOnly ? [] : data.monthly_cooling_kwh),
     ...data.monthly_electricity_kwh, 1,
   );
-  const breakdown = Object.entries(data.electricity_breakdown)
-    .sort(([, a], [, b]) => b - a);
+  const hasBreakdown = data.electricity_breakdown
+    && Object.keys(data.electricity_breakdown).length > 0;
 
   return (
     <section className="hp-card">
@@ -56,7 +56,7 @@ const HPRealSection: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* ── 3 karty: Vyrobí teplo / Vyrobí chlad / Spotřebuje ── */}
+      {/* ── Trio: teplo / chlad / spotřeba ── */}
       <div className="hp-trio">
         <div className="hp-duo-card duo-heat">
           <div className="hp-duo-head">
@@ -106,31 +106,12 @@ const HPRealSection: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* ── COP KPI řada ── */}
-      <div className="hp-kpi-row">
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">{data.cop_heating.toFixed(2)}</span>
-          <span className="hp-kpi-lbl">COP topení</span>
-        </div>
-        {!heatingOnly && (
-          <div className="hp-kpi">
-            <span className="hp-kpi-val">{data.cop_cooling.toFixed(2)}</span>
-            <span className="hp-kpi-lbl">COP chlazení (EER)</span>
-          </div>
-        )}
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">{data.cop_annual.toFixed(2)}</span>
-          <span className="hp-kpi-lbl">COP celoroční</span>
-        </div>
-      </div>
-
+      {/* ── Shrnutí textem ── */}
       <div className="hp-context">
         TČ dodá do zón
-        <strong> {fmt(data.annual_heating_kwh)} kWh </strong>
-        tepla
+        <strong> {fmt(data.annual_heating_kwh)} kWh </strong>tepla
         {!heatingOnly && (
-          <> a <strong>{fmt(data.annual_cooling_kwh)} kWh </strong>
-          chladu</>
+          <> a <strong>{fmt(data.annual_cooling_kwh)} kWh </strong>chladu</>
         )}
         . Na to potřebuje
         <strong> {fmt(data.annual_electricity_kwh)} kWh </strong>
@@ -144,7 +125,7 @@ const HPRealSection: React.FC<Props> = ({
         )}
       </div>
 
-      {/* ── Měsíční: teplo/chlad/elektrina ── */}
+      {/* ── Měsíčně: teplo / chlad / elektřina ── */}
       <h3 className="hp-sub-title">Měsíčně: produkce vs spotřeba</h3>
       <div className="hpr-stacked-bars">
         {MO.map((mo, i) => {
@@ -179,7 +160,7 @@ const HPRealSection: React.FC<Props> = ({
         <span className="hpr-leg-elec">Spotřeba el.</span>
       </div>
 
-      {/* ── Měsíční COP ── */}
+      {/* ── Měsíční COP chipy ── */}
       <h3 className="hp-sub-title">Měsíční COP (celkové)</h3>
       <div className="hp-cop-strip">
         {data.monthly_cop_total.map((c, i) => (
@@ -190,20 +171,11 @@ const HPRealSection: React.FC<Props> = ({
         ))}
       </div>
 
-      {/* ── Rozpad elektřiny (end-use metery) ── */}
-      {breakdown.length > 0 && (
+      {/* ── Rozpad elektřiny — Apple-style bar ── */}
+      {hasBreakdown && (
         <>
-          <h3 className="hp-sub-title">
-            Rozpad elektřiny podle funkce (end-use metery)
-          </h3>
-          <div className="hp-breakdown">
-            {breakdown.map(([name, val]) => (
-              <div key={name} className="hp-breakdown-row">
-                <span className="hp-breakdown-name">{name}</span>
-                <span className="hp-breakdown-val">{fmt(val)} kWh</span>
-              </div>
-            ))}
-          </div>
+          <h3 className="hp-sub-title">Rozpad spotřeby elektřiny</h3>
+          <HPElectricityBreakdown breakdown={data.electricity_breakdown} />
         </>
       )}
     </section>
