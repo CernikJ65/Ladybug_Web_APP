@@ -19,7 +19,7 @@ from typing import Optional
 import tempfile
 import os
 
-from ..services.progress import progress_scope, report_progress
+from ..services.progress import progress_scope, registry, report_progress
 
 router = APIRouter()
 
@@ -70,6 +70,12 @@ async def optimize_panels(
         raise HTTPException(400, "Pouze EPW soubory")
     if num_panels < 1:
         raise HTTPException(400, "Počet panelů musí být alespoň 1")
+
+    # Registruj job hned, ať první polling z FE nedostane 404 (FE
+    # začíná pollovat ihned po odeslání POST, ale progress_scope se
+    # vytváří až uvnitř threadpoolu po načtení souborů).
+    if job_id:
+        registry.create(job_id)
 
     hbjson_path = _save_temp(await hbjson_file.read(), ".hbjson")
     epw_path = _save_temp(await epw_file.read(), ".epw")
@@ -204,7 +210,9 @@ def _run_solar_pipeline(
         # 8. Optimalizace
         report_progress("optimize", 96)
         optimizer.apply_energyplus_production(ep_candidates, ep_results)
-        results = optimizer.optimize(ep_candidates, num_panels)
+        results = optimizer.optimize(
+            ep_candidates, num_panels, total_available=len(all_panels)
+        )
 
     # Souhrn střech — včetně world_bounds pro správnou vizualizaci
     roof_summary = [
@@ -221,11 +229,16 @@ def _run_solar_pipeline(
         for r in roofs
     ]
 
+    # Logický počet střech = unikátní parent rooms (případně samostatné shady).
+    # Sedlová střecha = 2 plochy (východ + západ) ale 1 "střecha".
+    logical_roof_count = len({r.parent_id for r in roofs})
+
     return {
         "model_info": {
             **model_info,
             "total_roof_area_m2": round(sum(r.area for r in roofs), 2),
-            "roof_count": len(roofs),
+            "roof_count": logical_roof_count,
+            "roof_surface_count": len(roofs),
         },
         "location": location_info,
         "optimal_orientation": {

@@ -12,7 +12,7 @@ Environmentální metriky: CO₂ úspory (0.468 kg/kWh CZ mix), stromy.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from .panel_placer import PanelPosition
 
@@ -85,25 +85,36 @@ class PanelOptimizer:
                 panel.annual_production_kwh = lookup[panel.id]
 
     def optimize(
-        self, panels: List[PanelPosition], requested_count: int
+        self,
+        panels: List[PanelPosition],
+        requested_count: int,
+        total_available: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
         Seřadí panely, vrátí požadovanou + alternativní varianty.
 
         Alternativy: N-2, N-1, N (požadovaný), N+1
+
+        `total_available` — skutečný počet všech umístěných panelů (před
+        výběrem TOP kandidátů pro EnergyPlus). Pokud není zadán, spadne
+        se na `len(panels)` (původní chování).
         """
         sorted_panels = sorted(
             panels, key=lambda p: p.annual_production_kwh, reverse=True
         )
-        max_panels = len(sorted_panels)
+        evaluated_count = len(sorted_panels)
+        max_panels = total_available if total_available is not None else evaluated_count
         requested_count = min(requested_count, max_panels)
+        # Varianty lze sestavit jen z panelů, pro které máme EnergyPlus
+        # výrobu — horní mez je tedy evaluated_count, ne max_panels.
+        variant_cap = min(max_panels, evaluated_count)
 
         counts = set()
         for delta in [-2, -1, 0, 1]:
             c = requested_count + delta
-            if 1 <= c <= max_panels:
+            if 1 <= c <= variant_cap:
                 counts.add(c)
-        if requested_count >= 1:
+        if 1 <= requested_count <= variant_cap:
             counts.add(requested_count)
 
         variants = []

@@ -43,6 +43,7 @@ interface AnalysisResult {
     model_name: string;
     total_roof_area_m2: number;
     roof_count: number;
+    roof_surface_count?: number;
   };
   location: {
     city: string;
@@ -358,7 +359,13 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             </div>
             <div className="saa-info-chip">
               <FaBuilding />
-              <span>{result.model_info.roof_count} střech · {result.model_info.total_roof_area_m2.toFixed(0)} m²</span>
+              <span>
+                {result.model_info.roof_count} {result.model_info.roof_count === 1 ? 'střecha' : 'střech'}
+                {result.model_info.roof_surface_count && result.model_info.roof_surface_count !== result.model_info.roof_count
+                  ? ` (${result.model_info.roof_surface_count} ploch)`
+                  : ''}
+                {' · '}{result.model_info.total_roof_area_m2.toFixed(0)} m²
+              </span>
             </div>
             <div className="saa-info-chip">
               <FaSolarPanel />

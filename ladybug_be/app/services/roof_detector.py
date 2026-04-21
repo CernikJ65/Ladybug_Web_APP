@@ -40,6 +40,7 @@ class RoofInfo:
     azimuth: float
     center: tuple
     source: str = ""
+    parent_id: str = ""  # room.identifier (rooms) / shade.identifier (shades)
 
     @property
     def orientation(self) -> str:
@@ -94,8 +95,14 @@ class RoofDetector:
             for face in room.faces:
                 if str(face.type) != "RoofCeiling":
                     continue
+                # Jen venkovní plochy — RoofCeiling s bc=Surface je
+                # mezipatrový strop, ne skutečná střecha (nemá sun exposure).
+                if str(face.boundary_condition) != "Outdoors":
+                    continue
                 roof = self._validate_roof(
-                    face.geometry, face.identifier, max_tilt, min_area, "room"
+                    face.geometry, face.identifier,
+                    max_tilt, min_area, "room",
+                    parent_id=room.identifier,
                 )
                 if roof:
                     roofs.append(roof)
@@ -112,7 +119,9 @@ class RoofDetector:
             if geom.center.z < min_height:
                 continue
             roof = self._validate_roof(
-                geom, shade.identifier, max_tilt, min_area, "shade"
+                geom, shade.identifier,
+                max_tilt, min_area, "shade",
+                parent_id=shade.identifier,
             )
             if roof:
                 roofs.append(roof)
@@ -125,6 +134,7 @@ class RoofDetector:
         max_tilt: float,
         min_area: float,
         source: str,
+        parent_id: str = "",
     ) -> Optional[RoofInfo]:
         """
         Validuje plochu jako střechu pomocí nativních Face3D vlastností.
@@ -158,4 +168,5 @@ class RoofDetector:
             azimuth=round(azimuth, 2),
             center=(round(c.x, 2), round(c.y, 2), round(c.z, 2)),
             source=source,
+            parent_id=parent_id or identifier,
         )
