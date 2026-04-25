@@ -1,17 +1,4 @@
-"""
-Umístění solárních panelů na střešní plochy — čistá mřížka řad a sloupců.
-
-Logika:
-  - Každá střecha dostane pravidelnou mřížku: sloupce (X) × řady (Y)
-  - Mezera mezi sloupci: panel_width + spacing
-  - Mezera mezi řadami: určena výpočtem stínění (Sunpath) pro ploché střechy,
-    jinak panel_height + spacing
-  - Panely se umisťují od levého dolního rohu, postupně po řadách
-  - Ploché střechy (tilt < 5°): panely se nakloní k optimálnímu azimutu
-  - Šikmé střechy: panely kopírují sklon střechy
-
-Výsledek je deterministická mřížka — žádná náhodnost.
-"""
+"Trida ktera slouzi pro umisteni panelu na jendotlive strechy"
 from __future__ import annotations
 
 import math
@@ -27,10 +14,10 @@ from ladybug_geometry.geometry3d.plane import Plane
 
 from .roof_detector import RoofInfo
 from .tilt_optimizer import TiltOptimizer, OptimalOrientation
-
+"nad jakou hodnotu již střecha není považována za plochou (a tedy panely se naklápí k optimálnímu směru)."
 FLAT_ROOF_THRESHOLD = 5.0  # stupně — pod tímto = plochá střecha
 
-
+"sablona pro infroamce o panelu"
 @dataclass
 class PanelPosition:
     """Jedna pozice solárního panelu."""
@@ -45,6 +32,9 @@ class PanelPosition:
     col: int = 0
     radiation_kwh_m2: float = 0.0
     annual_production_kwh: float = 0.0
+    production_ep_kwh: Optional[float] = None
+    production_pvlib_kwh: Optional[float] = None
+    ep_solar_potential_kwh_m2: Optional[float] = None
 
     @property
     def geometry(self) -> Face3D:
@@ -54,31 +44,28 @@ class PanelPosition:
     def center_3d(self) -> Point3D:
         return self.shade.center
 
-
+"konstrukto definuje umisteni panelu odstup atd."
 class PanelPlacer:
-    """Generuje pravidelnou mřížku panelů na střechách."""
-
+    
     def __init__(
         self,
         panel_width: float = 1.0,
         panel_height: float = 1.7,
-        spacing: float = 0.3,
-        edge_margin: float = 0.3,
-        tilt_optimizer: Optional[TiltOptimizer] = None,
-        latitude: float = 50.0,
+        spacing: float = 0.3, #mezezdí mezi panely v řadě
+        edge_margin: float = 0.3, #odsazen od okraje
+        tilt_optimizer: Optional[TiltOptimizer] = None, #optimalni sklon  
+        latitude: float = 50.0,  #prednastavena zemepisna sirka lokality pokud data nemaji 
     ):
         self.panel_width = panel_width
         self.panel_height = panel_height
         self.spacing = spacing
         self.edge_margin = edge_margin
-        self.tilt_optimizer = tilt_optimizer
+        self.tilt_optimizer = tilt_optimizer 
         self.latitude = latitude
         self._next_id = 0
         self._optimal: Optional[OptimalOrientation] = None
 
-    # ------------------------------------------------------------------
-    # Veřejné API
-    # ------------------------------------------------------------------
+    "Dostane seznam střech a umístí panely na všechny, vrátí celkový seznam panelů."
 
     def place_on_all_roofs(self, roofs: List[RoofInfo]) -> List[PanelPosition]:
         """Umístí panely na všechny střechy, vrátí celkový seznam."""
@@ -100,20 +87,32 @@ class PanelPlacer:
 
         Souřadnice jsou v lokální rovině střechy (2D).
         Sloupce (X) = podél šířky, řady (Y) = podél hloubky.
-        Začínáme od levého dolního rohu s okrajem edge_margin.
+
+        Odsazení od okraje řeší `Polygon2D.offset(edge_margin)`, který respektuje
+        skutečný tvar polygonu (včetně konkávních vrcholů u L-tvaru, T-tvaru atd.)
+        a nedělá zkreslené odsazení podle bounding boxu.
         """
         is_flat = roof.tilt < FLAT_ROOF_THRESHOLD
         face = roof.geometry
         plane: Plane = face.plane
-        poly2d = face.boundary_polygon2d
+        poly2d: Polygon2D = face.boundary_polygon2d
 
-        # Ohraničující obdélník v rovině střechy
-        xs = [v.x for v in poly2d.vertices]
-        ys = [v.y for v in poly2d.vertices]
-        x_min = min(xs) + self.edge_margin
-        x_max = max(xs) - self.edge_margin
-        y_min = min(ys) + self.edge_margin
-        y_max = max(ys) - self.edge_margin
+        # Inset polygon: ladybug-native odsazení od skutečné hrany střechy.
+        # check_intersection=True → None pokud edge_margin je tak velký,
+        # že tvar zkolabuje (např. úzký výběžek u L-střechy).
+        # Inset slouží POUZE k omezení polohy středů panelů — finální kontrola,
+        # že panel leží na střeše, jede vůči původnímu polygonu (poly2d).
+        # Tím se vyhneme dvojité aplikaci marginu (margin v iteraci + margin
+        # ve floating-point boundary checku is_polygon_inside).
+        inset_poly = poly2d.offset(self.edge_margin, check_intersection=True)
+        if inset_poly is None or inset_poly.is_self_intersecting:
+            return []
+
+        # Bounding box už insetnutého polygonu — určuje rozsah iterace středů.
+        xs = [v.x for v in inset_poly.vertices]
+        ys = [v.y for v in inset_poly.vertices]
+        x_min, x_max = min(xs), max(xs)
+        y_min, y_max = min(ys), max(ys)
 
         # Příliš malá střecha
         if (x_max - x_min) < self.panel_width or (y_max - y_min) < self.panel_height:
@@ -138,7 +137,9 @@ class PanelPlacer:
             while x + hw <= x_max:
                 center_2d = Point2D(x, y)
 
-                # Panel musí být celý uvnitř polygonu střechy
+                # Panel musí být celý uvnitř SKUTEČNÉ hrany střechy.
+                # Margin už drží iterační rozsah (středy v insetu → levá hrana
+                # panelu je na úrovni inset hrany = edge_margin od reálné hrany).
                 if self._panel_inside(poly2d, center_2d, hw, hh):
                     panel = self._build_panel(
                         plane=plane,
@@ -169,11 +170,11 @@ class PanelPlacer:
         Vzdálenost mezi řadami (středy panelů).
 
         Plochá střecha s nakloněnými panely:
-          Výpočet z minimálního slunečního úhlu (zimní slunovrat)
-          tak, aby přední řada nestínila zadní.
+          Rozestup počítán z optimálního GCR = 0.45 (Appelbaum & Aronescu
+          2022) — maximalizuje celoroční výnos střechy.
 
         Šikmá střecha:
-          Panely leží na ploše → minimální rozestup = panel_height + spacing.
+          Panely leží na ploše → rozestup = panel_height + spacing.
         """
         if is_flat and self._optimal and self.tilt_optimizer:
             return self.tilt_optimizer.calculate_row_spacing(

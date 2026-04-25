@@ -262,7 +262,7 @@
 .tv-bar-row { display: flex; align-items: center; gap: .5rem; font-size: .78rem; }
 .tv-bar-lbl {
   width: 36px; text-align: right; font-weight: 600;
-  color: var(--sa-text-muted); flex-shrink: 0; font-size: .72rem;
+  color: #ffffff; flex-shrink: 0; font-size: .72rem;
   font-family: var(--sa-mono);
 }
 .tv-bar-track {
@@ -285,7 +285,7 @@
 }
 .tv-bar-val {
   width: 80px; text-align: right; font-weight: 600;
-  color: var(--sa-text-muted); font-size: .72rem; font-family: var(--sa-mono);
+  color: #ffffff; font-size: .72rem; font-family: var(--sa-mono);
 }
 .tv-bar-legend {
   display: flex; justify-content: space-between; padding: .3rem 46px 0;

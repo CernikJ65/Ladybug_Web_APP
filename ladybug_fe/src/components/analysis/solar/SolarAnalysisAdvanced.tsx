@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  FaSun, FaSpinner, FaArrowLeft, FaBolt,
+  FaSun, FaSpinner, FaArrowLeft, FaArrowRight, FaBolt,
   FaBuilding, FaMapMarkerAlt, FaCog,
   FaFile, FaCloudUploadAlt, FaCheckCircle, FaSolarPanel,
-  FaStar, FaThList, FaRulerCombined, FaChartBar, FaTimes,
+  FaThList, FaRulerCombined, FaTimes,
 } from 'react-icons/fa';
 import PanelMapView, { type RoofMeta } from './PanelMapView';
 import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
@@ -23,18 +23,19 @@ interface PanelResult {
   radiation_kwh_m2: number;
   annual_production_kwh: number;
   capacity_kwp: number;
+  production_ep_kwh?: number;
+  production_pvlib_kwh?: number;
+  ep_solar_potential_kwh_m2?: number;
 }
 
-interface Variant {
+type PvEngine = 'energyplus' | 'pvlib' | 'both';
+
+interface OptimizationResult {
   num_panels: number;
-  is_requested: boolean;
   total_production_kwh: number;
   total_capacity_kwp: number;
   total_area_m2: number;
   avg_radiation_kwh_m2: number;
-  co2_savings_kg: number;
-  co2_savings_tons: number;
-  trees_equivalent: number;
   panels: PanelResult[];
 }
 
@@ -60,10 +61,16 @@ interface AnalysisResult {
     mounting_type: string;
   };
   simulation_engine: string;
+  pv_engine?: PvEngine;
+  engine_totals?: {
+    energyplus_kwh?: number;
+    pvlib_kwh?: number;
+  };
   roofs: RoofMeta[];
   optimization: {
     max_panels_available: number;
-    variants: Variant[];
+    requested_count: number;
+    result: OptimizationResult;
   };
 }
 
@@ -72,25 +79,41 @@ interface CachedState {
   epwFile: File | null;
   result: AnalysisResult | null;
   error: string | null;
-  selIdx: number | null;
   numPanels: number;
   pvEff: number;
   maxTilt: number;
-  modType: string;
   mountType: string;
+  pvEngine: PvEngine;
 }
 
 interface Props {
   onBack: () => void;
 }
 
-/* ───── Presety modulů ───── */
+/* ───── Konfigurace účinnosti ───── */
 
-const MODULE_PRESETS: Record<string, { min: number; max: number; default: number; label: string }> = {
-  Standard: { min: 14, max: 18, default: 16, label: 'Standardní (poly-Si)' },
-  Premium:  { min: 18, max: 23, default: 20, label: 'Prémiový (mono-Si PERC/HJT)' },
-  ThinFilm: { min: 8,  max: 13, default: 11, label: 'Tenkovrstvý (CdTe, a-Si)' },
+const PV_EFF_MIN = 19;       // % — dolní hranice moderních mono-Si panelů
+const PV_EFF_MAX = 24;       // % — špičkové HJT/TOPCon panely
+const PV_EFF_DEFAULT = 20;   // % — typická hodnota pro mainstream mono-Si
+
+const MODULE_TYPE_LABELS: Record<string, string> = {
+  Standard: 'Standardní (poly-Si)',
+  Premium:  'Prémiový (mono-Si PERC/HJT)',
+  ThinFilm: 'Tenkovrstvý (CdTe, a-Si)',
 };
+
+/* ───── Options pro AppleSelect ───── */
+
+const PV_ENGINE_OPTIONS = [
+  { value: 'energyplus', label: 'EnergyPlus PVWatts (referenční, ~1–3 min)' },
+  { value: 'pvlib',      label: 'pvlib + Radiance POA (rychlé, ~3–5 s)' },
+  { value: 'both',       label: 'Oba — porovnání' },
+];
+
+const MOUNT_TYPE_OPTIONS = [
+  { value: 'FixedOpenRack',    label: 'Volný stojan (cirkulace vzduchu)' },
+  { value: 'FixedRoofMounted', label: 'Střešní montáž (flush)' },
+];
 
 /* ───── Komponenta ───── */
 
@@ -100,12 +123,11 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [loading, setLoading]       = useState(false);
   const [result, setResult]         = useState<AnalysisResult | null>(null);
   const [error, setError]           = useState<string | null>(null);
-  const [selIdx, setSelIdx]         = useState<number | null>(null);
-  const [numPanels, setNumPanels]   = useState(10);
-  const [pvEff, setPvEff]           = useState(MODULE_PRESETS.Standard.default);
+  const [numPanels, setNumPanels]   = useState(8);
+  const [pvEff, setPvEff]           = useState(PV_EFF_DEFAULT);
   const [maxTilt, setMaxTilt]       = useState(60);
-  const [modType, setModType]       = useState('Standard');
   const [mountType, setMountType]   = useState('FixedOpenRack');
+  const [pvEngine, setPvEngine]     = useState<PvEngine>('energyplus');
   const [jobId, setJobId]           = useState<string | null>(null);
 
   const progress = useSimulationProgress(loading ? jobId : null);
@@ -113,28 +135,19 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   /* Zachování stavu při návratu z landing page */
   useViewStateCache<CachedState>(
     'solar-advanced',
-    { hbjsonFile, epwFile, result, error, selIdx, numPanels, pvEff, maxTilt, modType, mountType },
+    { hbjsonFile, epwFile, result, error, numPanels, pvEff, maxTilt, mountType, pvEngine },
     (c: CachedState) => {
       setHbjsonFile(c.hbjsonFile);
       setEpwFile(c.epwFile);
       setResult(c.result);
       setError(c.error);
-      setSelIdx(c.selIdx);
       setNumPanels(c.numPanels);
       setPvEff(c.pvEff);
       setMaxTilt(c.maxTilt);
-      setModType(c.modType);
       setMountType(c.mountType);
+      if (c.pvEngine) setPvEngine(c.pvEngine);
     }
   );
-
-  const currentPreset = MODULE_PRESETS[modType] ?? MODULE_PRESETS.Standard;
-
-  const handleModTypeChange = (value: string) => {
-    const preset = MODULE_PRESETS[value] ?? MODULE_PRESETS.Standard;
-    setModType(value);
-    setPvEff(preset.default);
-  };
 
   /** Společný handler pro oba FileBoxy – nastaví/vymaže soubor
    *  a zároveň vyčistí předchozí výsledky a chybu. */
@@ -144,7 +157,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     setter(f);
     setError(null);
     setResult(null);
-    setSelIdx(null);
   };
 
   const run = async () => {
@@ -162,8 +174,8 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     fd.append('num_panels', numPanels.toString());
     fd.append('pv_efficiency', (pvEff / 100).toString());
     fd.append('max_tilt', maxTilt.toString());
-    fd.append('module_type', modType);
     fd.append('mounting_type', mountType);
+    fd.append('pv_engine', pvEngine);
     fd.append('job_id', newJobId);
 
     try {
@@ -177,7 +189,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
       }
       const data: AnalysisResult = await res.json();
       setResult(data);
-      setSelIdx(data.optimization.variants.findIndex(v => v.is_requested) ?? 0);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Neznámá chyba');
     } finally {
@@ -188,12 +199,9 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const fmt = (n: number) =>
     n.toLocaleString('cs-CZ', { maximumFractionDigits: 0 });
 
-  const sel =
-    result && selIdx !== null ? result.optimization.variants[selIdx] : null;
+  const sel = result ? result.optimization.result : null;
 
-  const moduleLabel = (v: string) => {
-    return MODULE_PRESETS[v]?.label ?? v;
-  };
+  const moduleLabel = (v: string) => MODULE_TYPE_LABELS[v] ?? v;
 
   const mountLabel = (v: string) => {
     switch (v) {
@@ -255,7 +263,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
           </div>
         </div>
 
-        <div className="saa-card">
+        <div className="saa-card saa-config-card">
           <div className="saa-card-head">
             <span className="saa-card-icon"><FaSolarPanel /></span>
             <div>
@@ -292,20 +300,21 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             <summary><FaCog /> Pokročilé parametry</summary>
             <div className="saa-params-body">
               <div className="saa-select-row">
-                <label>Typ modulu</label>
-                <select value={modType} onChange={e => handleModTypeChange(e.target.value)}>
-                  {Object.entries(MODULE_PRESETS).map(([key, preset]) => (
-                    <option key={key} value={key}>{preset.label}</option>
-                  ))}
-                </select>
+                <label>Výpočetní engine</label>
+                <AppleSelect
+                  value={pvEngine}
+                  options={PV_ENGINE_OPTIONS}
+                  onChange={v => setPvEngine(v as PvEngine)}
+                  ariaLabel="Výpočetní engine"
+                />
               </div>
               <Slider
-                label="Účinnost FV modulu"
+                label="Účinnost panelu"
                 value={pvEff}
-                min={currentPreset.min}
-                max={currentPreset.max}
+                min={PV_EFF_MIN}
+                max={PV_EFF_MAX}
                 unit="%"
-                hint={`Rozsah pro ${moduleLabel(modType)}: ${currentPreset.min}–${currentPreset.max} %`}
+                hint="Běžné moderní panely 20–22 %, špičkové HJT/TOPCon až 24 %. Typ modulu se odvodí automaticky."
                 onChange={setPvEff}
               />
               <Slider
@@ -319,10 +328,12 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               />
               <div className="saa-select-row">
                 <label>Typ montáže</label>
-                <select value={mountType} onChange={e => setMountType(e.target.value)}>
-                  <option value="FixedOpenRack">Volný stojan (cirkulace vzduchu)</option>
-                  <option value="FixedRoofMounted">Střešní montáž (flush)</option>
-                </select>
+                <AppleSelect
+                  value={mountType}
+                  options={MOUNT_TYPE_OPTIONS}
+                  onChange={setMountType}
+                  ariaLabel="Typ montáže"
+                />
               </div>
             </div>
           </details>
@@ -332,10 +343,13 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             disabled={loading || !hbjsonFile || !epwFile}
             className="saa-run"
           >
-            {loading
-              ? <><FaSpinner className="saa-spin" /> Analyzuji v EnergyPlus…</>
-              : <><FaSun /> Spustit optimalizaci</>
-            }
+            <span className="saa-run-mark">
+              {loading ? <FaSpinner className="saa-spin" /> : <FaSun />}
+            </span>
+            <span className="saa-run-copy">
+              {loading ? engineRunningLabel(pvEngine) : 'Spustit optimalizaci'}
+            </span>
+            {!loading && <FaArrowRight className="saa-run-arrow" />}
           </button>
         </div>
       </div>
@@ -377,34 +391,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             </div>
           </div>
 
-          {/* Varianty */}
-          <div className="saa-card">
-            <div className="saa-card-head">
-              <span className="saa-card-icon"><FaChartBar /></span>
-              <div>
-                <h2>Varianty rozmístění</h2>
-                <p className="saa-card-sub">Klikněte na variantu pro zobrazení detailu</p>
-              </div>
-            </div>
-            <div className="saa-variants">
-              {result.optimization.variants.map((v, idx) => (
-                <button
-                  key={v.num_panels}
-                  className={`saa-variant ${idx === selIdx ? 'active' : ''} ${v.is_requested ? 'requested' : ''}`}
-                  onClick={() => setSelIdx(idx)}
-                >
-                  {v.is_requested && (
-                    <span className="saa-badge"><FaStar /> Váš výběr</span>
-                  )}
-                  <div className="saa-var-count">{v.num_panels}</div>
-                  <div className="saa-var-label">panelů</div>
-                  <div className="saa-var-prod">{fmt(v.total_production_kwh)} kWh/rok</div>
-                  <div className="saa-var-meta">{v.total_capacity_kwp.toFixed(1)} kWp</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* KPI metriky */}
           <div className="saa-kpi-row">
             <KPI icon={<FaBolt />} value={`${fmt(sel.total_production_kwh)} kWh`} label="Roční výroba" accent />
@@ -419,7 +405,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               <div className="saa-card-head">
                 <span className="saa-card-icon"><FaCog /></span>
                 <div>
-                  <h2>Parametry systému</h2>
+                  <h2>Parametry panelů</h2>
                   <p className="saa-card-sub">Konfigurace FV instalace</p>
                 </div>
               </div>
@@ -453,8 +439,18 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                     <th>Plocha</th>
                     <th>Sklon</th>
                     <th>Azimut</th>
-                    <th>Sol. potenciál</th>
-                    <th>Výroba</th>
+                    <th title="Stíněná POA z Radiance (SkyMatrix ray tracing, stínění od budovy)">Sol. pot. (Radiance)</th>
+                    {result.pv_engine === 'both' && (
+                      <th title="Stíněná POA z EnergyPlus (polygon clipping, stínění od budovy i sousedních panelů)">Sol. pot. (EP)</th>
+                    )}
+                    {result.pv_engine === 'both' ? (
+                      <>
+                        <th>Výroba (EP)</th>
+                        <th>Výroba (pvlib)</th>
+                      </>
+                    ) : (
+                      <th>Výroba</th>
+                    )}
                     <th>Kapacita</th>
                   </tr>
                 </thead>
@@ -467,7 +463,27 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                       <td>{p.tilt.toFixed(1)}°</td>
                       <td>{p.azimuth.toFixed(0)}°</td>
                       <td className="val-hl">{p.radiation_kwh_m2.toFixed(0)} kWh/m²</td>
-                      <td className="val-hl">{p.annual_production_kwh.toFixed(0)} kWh</td>
+                      {result.pv_engine === 'both' && (
+                        <td>
+                          {p.ep_solar_potential_kwh_m2 !== undefined && p.ep_solar_potential_kwh_m2 !== null
+                            ? `${p.ep_solar_potential_kwh_m2.toFixed(0)} kWh/m²`
+                            : '—'}
+                        </td>
+                      )}
+                      {result.pv_engine === 'both' ? (
+                        <>
+                          <td className="val-hl">
+                            {p.production_ep_kwh !== undefined && p.production_ep_kwh !== null
+                              ? `${p.production_ep_kwh.toFixed(0)} kWh` : '—'}
+                          </td>
+                          <td className="val-hl">
+                            {p.production_pvlib_kwh !== undefined && p.production_pvlib_kwh !== null
+                              ? `${p.production_pvlib_kwh.toFixed(0)} kWh` : '—'}
+                          </td>
+                        </>
+                      ) : (
+                        <td className="val-hl">{p.annual_production_kwh.toFixed(0)} kWh</td>
+                      )}
                       <td>{p.capacity_kwp.toFixed(3)} kWp</td>
                     </tr>
                   ))}
@@ -480,6 +496,16 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     </div>
   );
 };
+
+/* ───── Pomocné ───── */
+
+function engineRunningLabel(engine: PvEngine): string {
+  switch (engine) {
+    case 'pvlib': return 'Počítám pvlib + Radiance…';
+    case 'both':  return 'Analyzuji EnergyPlus + pvlib…';
+    default:      return 'Analyzuji v EnergyPlus…';
+  }
+}
 
 /* ───── Subkomponenty ───── */
 
@@ -549,19 +575,26 @@ function Slider({
   hint: string;
   onChange: (v: number) => void;
 }) {
+  const pct = ((value - min) / (max - min)) * 100;
+
   return (
     <div className="saa-slider">
       <label>
         <span>{label}</span>
         <span className="saa-slider-val">{value}{unit}</span>
       </label>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={e => onChange(+e.target.value)}
-      />
+      <div className="saa-slider-wrap">
+        <div className="saa-slider-track">
+          <div className="saa-slider-fill" style={{ width: `${pct}%` }} />
+          <input
+            type="range"
+            min={min}
+            max={max}
+            value={value}
+            onChange={e => onChange(+e.target.value)}
+          />
+        </div>
+      </div>
       <p className="saa-slider-hint">{hint}</p>
     </div>
   );
@@ -589,6 +622,130 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     <div className="saa-detail-row">
       <span>{label}</span>
       <strong>{value}</strong>
+    </div>
+  );
+}
+
+/* ───── AppleSelect — custom dropdown (iOS/macOS inspirovaný) ───── */
+
+interface AppleSelectOption {
+  value: string;
+  label: string;
+}
+
+function AppleSelect({
+  value,
+  options,
+  onChange,
+  ariaLabel,
+}: {
+  value: string;
+  options: AppleSelectOption[];
+  onChange: (v: string) => void;
+  ariaLabel?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+
+  const current = options.find(o => o.value === value) ?? options[0];
+  const currentIdx = options.findIndex(o => o.value === value);
+
+  /* Zavření po kliknutí mimo */
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  /* Klávesové ovládání: ESC, šipky, Enter */
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setOpen(false);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActiveIdx(i => Math.min(options.length - 1, i + 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActiveIdx(i => Math.max(0, i - 1));
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const opt = options[activeIdx];
+        if (opt) {
+          onChange(opt.value);
+          setOpen(false);
+        }
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, activeIdx, options, onChange]);
+
+  /* Autoscroll aktivní option do view */
+  useEffect(() => {
+    if (!open || !menuRef.current) return;
+    const active = menuRef.current.querySelector<HTMLLIElement>('.saa-asel-opt.active');
+    if (active) {
+      active.scrollIntoView({ block: 'nearest' });
+    }
+  }, [open, activeIdx]);
+
+  const toggleOpen = () => {
+    if (!open) setActiveIdx(currentIdx >= 0 ? currentIdx : 0);
+    setOpen(o => !o);
+  };
+
+  return (
+    <div ref={wrapRef} className={`saa-asel ${open ? 'open' : ''}`}>
+      <button
+        type="button"
+        className="saa-asel-trigger"
+        onClick={toggleOpen}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+      >
+        <span className="saa-asel-val">{current.label}</span>
+        <span className="saa-asel-chev" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <ul ref={menuRef} className="saa-asel-menu" role="listbox">
+          {options.map((opt, idx) => {
+            const isSel = opt.value === value;
+            const isActive = idx === activeIdx;
+            return (
+              <li
+                key={opt.value}
+                role="option"
+                aria-selected={isSel}
+                className={
+                  `saa-asel-opt` +
+                  (isSel ? ' sel' : '') +
+                  (isActive ? ' active' : '')
+                }
+                onMouseEnter={() => setActiveIdx(idx)}
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                }}
+              >
+                <span className="saa-asel-opt-label">{opt.label}</span>
+                {isSel && <span className="saa-asel-check" aria-hidden="true" />}
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

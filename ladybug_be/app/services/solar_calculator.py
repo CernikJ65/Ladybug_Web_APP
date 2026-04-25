@@ -1,12 +1,4 @@
-"""
-Výpočet solární radiace na panelech pomocí Ladybug-radiance.
-
-KLÍČOVÁ OPRAVA self-shading:
-  Panely NESMÍ být součástí context_geometry — vzájemně se pak
-  silně stíní (zejm. na 60° střeše) a radiace vychází nereálně nízká
-  (~700 kWh/m² místo správných ~1100 kWh/m² pro Prahu).
-  Context = pouze stěny + ostatní části budovy, ne panely samotné.
-"""
+"Kolik slunenecni energie za rok dopadne na jednotlivé fotovoltaiícé panely"
 from __future__ import annotations
 
 from typing import List, Dict, Any, Optional
@@ -20,18 +12,21 @@ from honeybee_radiance.sensorgrid import SensorGrid
 
 from .panel_placer import PanelPosition
 
-
+"spocita kolik slunecniho zareni dopadne za rok na kazdy panel"
 class SolarRadiationCalculator:
-    """Výpočet solární radiace se SensorGrid."""
-
+    
+    "priprava objektu"
     def __init__(self, epw_path: str):
         self.epw_path = epw_path
         self.epw: Optional[EPW] = None
         self.location: Optional[Location] = None
         self.sky_matrix: Optional[SkyMatrix] = None
-
+    "pomoci epw souboru vytvori pripravi klimaticka data pro vypocet solarniho zareni"
+    "pripravi model"
     def load_and_prepare(self, high_density: bool = True) -> None:
-        """Načte EPW a vytvoří SkyMatrix (Reinhart 577 patchů)."""
+        "skymatrix v tomto priapde rozdeli oblohu na 577 malych plosek"
+        "pro kazdou dopada kolik slunecniho zareni dopadne"
+        "vysledke je mapa oblohy a u kazd plosky je napsany jeji potencial" 
         self.epw = EPW(self.epw_path)
         self.location = self.epw.location
         self.sky_matrix = SkyMatrix.from_epw(
@@ -40,7 +35,7 @@ class SolarRadiationCalculator:
             high_density=high_density,
             ground_reflectance=0.2,
         )
-
+        "priprava vypoctup potencialu"
     def calculate_panel_radiation(
         self,
         panels: List[PanelPosition],
@@ -51,16 +46,16 @@ class SolarRadiationCalculator:
             raise ValueError("Nejdříve zavolejte load_and_prepare().")
         if not panels:
             return []
-
+        "stineni "
         panel_faces = [p.shade.geometry for p in panels]
-
+        "uprostred panelu vytvorci merici bod nebol senzor"
         grid = SensorGrid.from_face3d(
             identifier="pv_panels",
             faces=panel_faces,
             x_dim=max(f.max.x - f.min.x for f in panel_faces) + 0.1,
         )
 
-        # Context = pouze stěny budovy — BEZ panelů
+        "kontext stineni"
         context: List = list(building_context or [])
 
         study = RadiationStudy(
@@ -70,6 +65,12 @@ class SolarRadiationCalculator:
             offset_distance=0.1,
             by_vertex=False,
         )
+        "vezme mapu nebe neboli skymatri, senzory pro panely, steny budovy, a posun "
+        "pro kazdy senzor vysvtreli 577 paprsku ke kazde plose oblohy"
+        "aby radiance zjistila jestli plosku vidi"
+        "vystreli paprek od senoru ke stredu ploskya podiva s e jeslji ji paprske protne"
+        "pro kazdy senzor vznikne seznam odpovedi ano/ne"
+        "nasledne se sectou hodnoty tech co ano a mame potnecialni radianci senzoru"
         study.compute()
 
         raw = [float(v) for v in study.radiation_values]

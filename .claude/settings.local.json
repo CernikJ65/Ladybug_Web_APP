@@ -7,7 +7,11 @@
     "additionalDirectories": [
       "C:\\Users\\reffy\\ladybug-tools\\ladybug",
       "C:\\Users\\reffy\\ladybug-tools\\honeybee-core",
-      "C:\\Users\\reffy\\ladybug-tools\\honeybee-energy"
+      "C:\\Users\\reffy\\ladybug-tools\\honeybee-energy",
+      "C:\\Users\\reffy\\ladybug-tools\\ladybug-radiance",
+      "C:\\Users\\reffy\\ladybug-tools\\honeybee-radiance",
+      "C:\\Users\\reffy\\ladybug-tools\\honeybee-schema",
+      "C:\\Users\\reffy\\ladybug-tools\\EnergyPlus"
     ]
   }
 }

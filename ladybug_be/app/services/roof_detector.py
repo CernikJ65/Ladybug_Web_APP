@@ -1,16 +1,4 @@
-"""
-Detekce střešních ploch z HBJSON modelu.
-
-Podporuje dva zdroje střech:
-  1. Room faces s typem RoofCeiling (honeybee rooms)
-  2. Orphaned shades – horizontální plochy ve výšce
-
-Orientace se čte z nativních vlastností Face3D:
-  - `Face3D.tilt` — úhel od svislice v radiánech (0 = nahoru, π = dolů)
-  - `Face3D.azimuth` — radiány, 0 = +Y, clockwise
-
-Plocha s tilt > π/2 směřuje dolů → flip a znovu přečíst tilt.
-"""
+"trida pro detekci strech z HBJSON modelu"
 from __future__ import annotations
 
 import math
@@ -18,8 +6,9 @@ from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 
 from honeybee.model import Model
+from honeybee.boundarycondition import Outdoors
 from ladybug_geometry.geometry3d.face import Face3D
-
+"kostanta slouzi prevodu k ciselne hodnot azimuth pro oznaceni"
 COMPASS = [
     (337.5, 360, "North"), (0, 22.5, "North"),
     (22.5, 67.5, "North-East"), (67.5, 112.5, "East"),
@@ -28,10 +17,10 @@ COMPASS = [
     (292.5, 337.5, "North-West"),
 ]
 
-
+"zde ulozi infroamce o strese co najde"
 @dataclass
 class RoofInfo:
-    """Jedna střešní plocha připravená pro umístění panelů."""
+   
 
     identifier: str
     geometry: Face3D
@@ -40,7 +29,7 @@ class RoofInfo:
     azimuth: float
     center: tuple
     source: str = ""
-    parent_id: str = ""  # room.identifier (rooms) / shade.identifier (shades)
+    parent_id: str = ""  
 
     @property
     def orientation(self) -> str:
@@ -51,16 +40,17 @@ class RoofInfo:
                 return name
         return "North"
 
-
+"Detekje strechy z HBJSON a potom hleda vhodne plochy pro umisteni panelu"
+"detekuje jestli ma hjbsoj atribut roof_ceiling a jestli se jedna o outdoor plochu"
 class RoofDetector:
-    """Detekuje střechy z HBJSON modelu."""
+    
 
     def __init__(self, hbjson_path: str):
         self.model: Model = Model.from_hbjson(hbjson_path)
 
     def detect_roofs(
         self,
-        max_tilt: float = 60.0,
+        max_tilt: float = 100.0,
         min_area: float = 5.0,
         min_height: float = 2.0,
     ) -> List[RoofInfo]:
@@ -70,12 +60,11 @@ class RoofDetector:
         return roofs
 
     def get_context_geometry(self) -> List[Face3D]:
-        walls: List[Face3D] = []
+        context: List[Face3D] = []
         for room in self.model.rooms:
-            for face in room.faces:
-                if str(face.type) != "RoofCeiling":
-                    walls.append(face.geometry)
-        return walls
+            for face in room.walls + room.floors:
+                context.append(face.geometry)
+        return context
 
     def get_model_info(self) -> Dict[str, Any]:
         name = self.model.display_name or self.model.identifier
@@ -92,12 +81,10 @@ class RoofDetector:
     def _from_rooms(self, max_tilt: float, min_area: float) -> List[RoofInfo]:
         roofs: List[RoofInfo] = []
         for room in self.model.rooms:
-            for face in room.faces:
-                if str(face.type) != "RoofCeiling":
-                    continue
-                # Jen venkovní plochy — RoofCeiling s bc=Surface je
-                # mezipatrový strop, ne skutečná střecha (nemá sun exposure).
-                if str(face.boundary_condition) != "Outdoors":
+            for face in room.roof_ceilings:
+                # RoofCeiling s bc=Surface je mezipatrový strop, ne skutečná
+                # střecha (nemá sun exposure).
+                if not isinstance(face.boundary_condition, Outdoors):
                     continue
                 roof = self._validate_roof(
                     face.geometry, face.identifier,
@@ -136,16 +123,7 @@ class RoofDetector:
         source: str,
         parent_id: str = "",
     ) -> Optional[RoofInfo]:
-        """
-        Validuje plochu jako střechu pomocí nativních Face3D vlastností.
-
-        `Face3D.tilt` vrací úhel normály od svislice v radiánech:
-          - 0      = dokonale horizontální (plochá střecha)
-          - π/2    = vertikální stěna
-          - > π/2  = plocha směřuje dolů (flip a znovu)
-
-        Tilt > max_tilt → vyloučeno (není vhodné pro panely).
-        """
+       
         # Normála směřuje dolů → otočíme plochu
         if geom.tilt > math.pi / 2:
             geom = geom.flip()

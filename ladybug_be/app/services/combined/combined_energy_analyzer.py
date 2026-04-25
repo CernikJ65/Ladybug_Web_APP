@@ -43,7 +43,7 @@ class CombinedEnergyAnalyzer:
         epw_path: str,
         budget_czk: float,
         pv_efficiency: float = 0.20,
-        system_losses: float = 0.14,
+        system_losses: float = 0.10,
         config: CostConfig | None = None,
     ):
         self._hp = hp_result
@@ -98,8 +98,8 @@ class CombinedEnergyAnalyzer:
         """
         Plná solární pipeline přes existující služby.
 
-        Vrací výsledek z PanelOptimizer.optimize(),
-        který obsahuje varianty s annual_production_kwh.
+        Vrací sorted (desc) seznam roční výroby per panel — combined
+        analyzer si pak pro každou rozpočtovou variantu sečte TOP-N.
         """
         from ..roof_detector import RoofDetector
         from ..panel_placer import PanelPlacer
@@ -112,7 +112,7 @@ class CombinedEnergyAnalyzer:
         detector = RoofDetector(self._hbjson)
         roofs = detector.detect_roofs(max_tilt=60.0)
         if not roofs:
-            return {"total_kwh": 0, "per_panel_kwh": []}
+            return {"panel_productions_kwh": [], "max_available": 0}
         context = detector.get_context_geometry()
 
         # 2. Klimatická data + optimální sklon
@@ -131,7 +131,7 @@ class CombinedEnergyAnalyzer:
         )
         all_panels = placer.place_on_all_roofs(roofs)
         if not all_panels:
-            return {"total_kwh": 0, "per_panel_kwh": []}
+            return {"panel_productions_kwh": [], "max_available": 0}
 
         # 4. RadiationStudy → radiace
         rad_values = calc.calculate_panel_radiation(
@@ -163,32 +163,22 @@ class CombinedEnergyAnalyzer:
             ep_candidates, detector.model,
         )
 
-        # 7. Finální optimalizace
+        # 7. Aplikuj E+ výsledky a seřaď podle finální výroby
         optimizer.apply_energyplus_production(
             ep_candidates, ep_results,
         )
-        opt_result = optimizer.optimize(
-            ep_candidates, num_panels,
+        sorted_with_prod = sorted(
+            ep_candidates,
+            key=lambda p: p.annual_production_kwh,
+            reverse=True,
         )
-
-        # Extrakce výroby per varianta
-        requested = None
-        for v in opt_result.get("variants", []):
-            if v.get("is_requested"):
-                requested = v
-                break
-        if not requested and opt_result.get("variants"):
-            requested = opt_result["variants"][0]
-
-        total_kwh = requested.get(
-            "total_production_kwh", 0,
-        ) if requested else 0
-        max_available = opt_result.get("max_panels_available", 0)
+        panel_productions = [
+            p.annual_production_kwh for p in sorted_with_prod
+        ]
 
         return {
-            "total_kwh": total_kwh,
-            "max_available": max_available,
-            "optimization": opt_result,
+            "panel_productions_kwh": panel_productions,
+            "max_available": len(all_panels),
         }
 
     # ----------------------------------------------------------
@@ -210,23 +200,12 @@ class CombinedEnergyAnalyzer:
         hp_scop = hp_data["scop"]
         monthly_hp_elec = hp_data["monthly_elec"]
 
-        # FVE data — z reálné E+ simulace
+        # FVE data — z reálné E+ simulace.
+        # Sečti TOP-N panelů (sorted desc) pro tuto rozpočtovou variantu.
         annual_pv = 0.0
         if solar and v.num_panels > 0:
-            opt = solar.get("optimization", {})
-            # Najdi variantu s odpovídajícím počtem panelů
-            for sv in opt.get("variants", []):
-                if sv.get("num_panels") == v.num_panels:
-                    annual_pv = sv.get("total_production_kwh", 0)
-                    break
-            # Fallback: škáluj z requested varianty
-            if annual_pv == 0 and solar.get("total_kwh", 0) > 0:
-                max_n = solar.get("max_available", v.num_panels)
-                if max_n > 0:
-                    per_panel = solar["total_kwh"] / min(
-                        max_n, v.num_panels,
-                    )
-                    annual_pv = per_panel * v.num_panels
+            prods = solar.get("panel_productions_kwh", [])
+            annual_pv = sum(prods[:v.num_panels])
 
         # Měsíční FVE distribuce z GHI profilu
         monthly_pv = [

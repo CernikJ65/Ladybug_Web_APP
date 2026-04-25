@@ -5,58 +5,30 @@ Postup:
   1. Přiřadí radiaci z RadiationStudy každému panelu (Shade objektu)
   2. Spočítá roční výrobu: radiace × plocha × účinnost × PR
   3. Seřadí panely od nejlepšího (nejvyšší výroba)
-  4. Vrátí požadovanou variantu + 3 alternativy
+  4. Vrátí požadovaný počet panelů jako jediný výsledek
 
-Environmentální metriky: CO₂ úspory (0.468 kg/kWh CZ mix), stromy.
+Dataclassy a serializace žijí v panel_optimizer_models.py.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 
 from .panel_placer import PanelPosition
+from .panel_optimizer_models import (
+    OptimizationResult,
+    panel_position_to_result,
+    result_to_dict,
+)
 
-CO2_KG_PER_KWH = 0.468
-TREES_PER_TON_CO2 = 50
-
-
-@dataclass
-class PanelResult:
-    """Serializovatelný výsledek jednoho panelu."""
-
-    id: int
-    shade_id: str
-    roof_id: str
-    center: List[float]
-    area_m2: float
-    tilt: float
-    azimuth: float
-    radiation_kwh_m2: float
-    annual_production_kwh: float
-    capacity_kwp: float
-
-
-@dataclass
-class OptimizationVariant:
-    """Jedna varianta rozmístění panelů."""
-
-    num_panels: int
-    is_requested: bool
-    total_production_kwh: float
-    total_capacity_kwp: float
-    total_area_m2: float
-    avg_radiation_kwh_m2: float
-    co2_savings_kg: float
-    co2_savings_tons: float
-    trees_equivalent: float
-    panels: List[PanelResult]
+# Re-export pro zpětnou kompatibilitu (dříve importovatelné z panel_optimizer)
+from .panel_optimizer_models import PanelResult  # noqa: F401
 
 
 class PanelOptimizer:
     """Optimalizuje výběr panelů podle solární radiace."""
 
     def __init__(
-        self, pv_efficiency: float = 0.20, system_losses: float = 0.14
+        self, pv_efficiency: float = 0.20, system_losses: float = 0.10
     ):
         self.pv_efficiency = pv_efficiency
         self.performance_ratio = 1.0 - system_losses
@@ -75,14 +47,26 @@ class PanelOptimizer:
     def apply_energyplus_production(
         self, panels: List[PanelPosition], ep_results: Dict[str, Any]
     ) -> None:
-        """Přepíše výrobu hodnotami z EnergyPlus (pokud jsou dostupné)."""
-        panel_data = ep_results.get("panel_results", [])
-        if not panel_data:
-            return
-        lookup = {r["panel_id"]: r["annual_production_kwh"] for r in panel_data}
+        """Přepíše výrobu hodnotami z EnergyPlus + uloží EP shaded POA."""
+        self._apply_engine_production(panels, ep_results, "production_ep_kwh")
+        # EP navíc poskytuje reálnou stíněnou POA per shade — přepiš
+        # pvlib-derived hodnotu ep_solar_potential_kwh_m2 za EP-native.
+        ep_poa_by_id = {
+            r["panel_id"]: r.get("ep_solar_potential_kwh_m2")
+            for r in ep_results.get("panel_results", [])
+        }
         for panel in panels:
-            if panel.id in lookup and lookup[panel.id] > 0:
-                panel.annual_production_kwh = lookup[panel.id]
+            ep_poa = ep_poa_by_id.get(panel.id)
+            if ep_poa is not None and ep_poa > 0:
+                panel.ep_solar_potential_kwh_m2 = ep_poa
+
+    def apply_pvlib_production(
+        self, panels: List[PanelPosition], pvlib_results: Dict[str, Any]
+    ) -> None:
+        """Přepíše výrobu hodnotami z pvlib PVWatts (Radiance POA)."""
+        self._apply_engine_production(
+            panels, pvlib_results, "production_pvlib_kwh"
+        )
 
     def optimize(
         self,
@@ -91,120 +75,74 @@ class PanelOptimizer:
         total_available: Optional[int] = None,
     ) -> Dict[str, Any]:
         """
-        Seřadí panely, vrátí požadovanou + alternativní varianty.
-
-        Alternativy: N-2, N-1, N (požadovaný), N+1
+        Seřadí panely a vrátí TOP-N (požadovaný počet) jako jediný výsledek.
 
         `total_available` — skutečný počet všech umístěných panelů (před
         výběrem TOP kandidátů pro EnergyPlus). Pokud není zadán, spadne
-        se na `len(panels)` (původní chování).
+        se na `len(panels)`.
         """
         sorted_panels = sorted(
             panels, key=lambda p: p.annual_production_kwh, reverse=True
         )
         evaluated_count = len(sorted_panels)
         max_panels = total_available if total_available is not None else evaluated_count
-        requested_count = min(requested_count, max_panels)
-        # Varianty lze sestavit jen z panelů, pro které máme EnergyPlus
-        # výrobu — horní mez je tedy evaluated_count, ne max_panels.
-        variant_cap = min(max_panels, evaluated_count)
+        actual_count = max(1, min(requested_count, max_panels, evaluated_count))
 
-        counts = set()
-        for delta in [-2, -1, 0, 1]:
-            c = requested_count + delta
-            if 1 <= c <= variant_cap:
-                counts.add(c)
-        if 1 <= requested_count <= variant_cap:
-            counts.add(requested_count)
-
-        variants = []
-        for count in sorted(counts):
-            variant = self._build_variant(
-                sorted_panels[:count], count,
-                is_requested=(count == requested_count),
-            )
-            variants.append(variant)
+        selected = sorted_panels[:actual_count]
+        result = self._build_result(selected, actual_count)
 
         return {
             "max_panels_available": max_panels,
-            "requested_count": requested_count,
-            "variants": [self._variant_to_dict(v) for v in variants],
+            "requested_count": actual_count,
+            "result": result_to_dict(result),
         }
 
     # ------------------------------------------------------------------
     # Interní
     # ------------------------------------------------------------------
 
-    def _build_variant(
-        self, selected: List[PanelPosition], count: int, is_requested: bool
-    ) -> OptimizationVariant:
+    @staticmethod
+    def _apply_engine_production(
+        panels: List[PanelPosition],
+        engine_results: Dict[str, Any],
+        panel_attr: str,
+    ) -> None:
+        panel_data = engine_results.get("panel_results", [])
+        if not panel_data:
+            return
+        lookup = {r["panel_id"]: r["annual_production_kwh"] for r in panel_data}
+        for panel in panels:
+            if panel.id not in lookup:
+                continue
+            value = lookup[panel.id]
+            # Per-engine hodnotu zapisuj vždy (i 0), aby FE věděl, že engine
+            # proběhl a mohl ji zobrazit ve sloupci porovnání.
+            setattr(panel, panel_attr, value)
+            # annual_production_kwh používá optimize() k řazení → přepisuj jen
+            # pokud engine vrátil >0 (ochrana proti zkažení radiation-based
+            # výroby, pokud EP/pvlib z nějakého důvodu vrátil nulu).
+            if value > 0:
+                panel.annual_production_kwh = value
+
+    def _build_result(
+        self, selected: List[PanelPosition], count: int
+    ) -> OptimizationResult:
         total_prod = sum(p.annual_production_kwh for p in selected)
         total_area = sum(p.area for p in selected)
-        total_cap = round(total_area * self.pv_efficiency, 2)
         avg_rad = (
             sum(p.radiation_kwh_m2 for p in selected) / len(selected)
             if selected else 0
         )
-        co2_kg = total_prod * CO2_KG_PER_KWH
 
         panels = [
-            PanelResult(
-                id=p.id,
-                shade_id=p.shade.identifier,
-                roof_id=p.roof_id,
-                center=[
-                    round(p.center_3d.x, 1),
-                    round(p.center_3d.y, 1),
-                    round(p.center_3d.z, 1),
-                ],
-                area_m2=p.area,
-                tilt=p.tilt,
-                azimuth=p.azimuth,
-                radiation_kwh_m2=p.radiation_kwh_m2,
-                annual_production_kwh=p.annual_production_kwh,
-                capacity_kwp=round(p.area * self.pv_efficiency, 3),
-            )
-            for p in selected
+            panel_position_to_result(p, self.pv_efficiency) for p in selected
         ]
 
-        return OptimizationVariant(
+        return OptimizationResult(
             num_panels=count,
-            is_requested=is_requested,
             total_production_kwh=round(total_prod, 2),
-            total_capacity_kwp=total_cap,
+            total_capacity_kwp=round(total_area * self.pv_efficiency, 2),
             total_area_m2=round(total_area, 2),
             avg_radiation_kwh_m2=round(avg_rad, 2),
-            co2_savings_kg=round(co2_kg, 2),
-            co2_savings_tons=round(co2_kg / 1000, 2),
-            trees_equivalent=round(co2_kg / 1000 * TREES_PER_TON_CO2, 1),
             panels=panels,
         )
-
-    @staticmethod
-    def _variant_to_dict(v: OptimizationVariant) -> Dict[str, Any]:
-        return {
-            "num_panels": v.num_panels,
-            "is_requested": v.is_requested,
-            "total_production_kwh": v.total_production_kwh,
-            "total_capacity_kwp": v.total_capacity_kwp,
-            "total_area_m2": v.total_area_m2,
-            "avg_radiation_kwh_m2": v.avg_radiation_kwh_m2,
-            "co2_savings_kg": v.co2_savings_kg,
-            "co2_savings_tons": v.co2_savings_tons,
-            "trees_equivalent": v.trees_equivalent,
-            "panels": [
-                {
-                    "id": p.id,
-                    "shade_id": p.shade_id,
-                    "roof_id": p.roof_id,
-                    "center": p.center,
-                    "area_m2": p.area_m2,
-                    "tilt": p.tilt,
-                    "azimuth": p.azimuth,
-                    "radiation_kwh_m2": p.radiation_kwh_m2,
-                    "annual_production_kwh": p.annual_production_kwh,
-                    "capacity_kwp": p.capacity_kwp,
-                }
-                for p in v.panels
-            ],
-        }

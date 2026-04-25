@@ -153,7 +153,7 @@ class SolarAnalysisResponse(BaseModel):
                 },
                 "parameters": {
                     "pv_efficiency": 0.18,
-                    "system_losses": 0.14
+                    "system_losses": 0.10
                 }
             }
         }

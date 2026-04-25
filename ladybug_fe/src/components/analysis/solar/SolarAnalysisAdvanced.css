@@ -1,6 +1,6 @@
 /* ==========================================================
    SolarAnalysisAdvanced.css — Apple-Inspired · Blue & White
-   Fonty: Outfit (UI) + JetBrains Mono (data)
+   Fonty: Sora (UI) + JetBrains Mono (data)
    Sladěno s HeatPumpAnalysis designem
    Soubor: ladybug_fe/src/components/analysis/solar/SolarAnalysisAdvanced.css
    ========================================================== */
@@ -299,7 +299,7 @@
   transform: scale(.95);
 }
 
-/* ── Panel count stepper ── */
+/* ── Panel count stepper (base; specifické overrides v config-card) ── */
 
 .saa-stepper {
   display: flex;
@@ -374,7 +374,7 @@
   margin: 0;
 }
 
-/* ── Parameters ── */
+/* ── Parameters (base; specifické overrides v config-card) ── */
 
 .saa-params {
   margin-bottom: .5rem;
@@ -466,7 +466,7 @@
   box-shadow: 0 0 0 3px var(--saa-blue-glow);
 }
 
-/* ── Run button ── */
+/* ── Run button (base; specifické overrides v config-card) ── */
 
 .saa-run {
   width: 100%;
@@ -503,6 +503,648 @@
 }
 @keyframes saa-spin {
   to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   ── Panel configuration: Apple / iOS Settings inspired ──
+   Plochá bílá plocha, hairline separátory mezi řádky,
+   minimalistické kontrolky, iOS-style slider.
+   ============================================================ */
+
+.saa-config-card {
+  position: relative;
+  overflow: visible;           /* kvůli dropdown menu */
+  padding: 0;
+  border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, .04),
+    0 8px 24px rgba(15, 23, 42, .05);
+}
+
+/* Header s jemnou separační linkou */
+.saa-config-card .saa-card-head {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin: 0;
+  padding: 1.1rem 1.35rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, .06);
+}
+
+.saa-config-card .saa-card-icon {
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #ebf5fb;
+  color: var(--saa-blue);
+  font-size: .95rem;
+  flex-shrink: 0;
+  box-shadow: none;
+}
+
+.saa-config-card .saa-card-head h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.saa-config-card .saa-card-sub {
+  font-size: .76rem;
+  margin: .12rem 0 0;
+  color: #6b7280;
+  line-height: 1.35;
+}
+
+/* ── Řádek: Počet panelů ──────────────────────────────── */
+
+.saa-config-card .saa-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: .9rem 1.35rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.saa-config-card .saa-stepper-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  padding: 0;
+  flex: 0 0 auto;
+  color: #1f2937;
+  font-size: .88rem;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  white-space: nowrap;
+}
+
+.saa-config-card .saa-stepper-label svg {
+  color: var(--saa-blue);
+  font-size: .78rem;
+}
+
+/* iOS-style stepper pill */
+.saa-config-card .saa-stepper-control {
+  display: inline-flex;
+  align-items: stretch;
+  background: #f2f2f7;
+  border: none;
+  border-radius: 9px;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.saa-config-card .saa-stepper-btn {
+  width: 34px;
+  height: 30px;
+  color: var(--saa-blue);
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: transparent;
+  transition: background .15s;
+}
+
+.saa-config-card .saa-stepper-btn:hover {
+  background: rgba(41, 128, 185, .1);
+}
+
+.saa-config-card .saa-stepper-btn:active {
+  background: rgba(41, 128, 185, .18);
+  transform: none;
+}
+
+.saa-config-card .saa-stepper-val {
+  width: 48px;
+  background: #fff;
+  border: none;
+  border-left: 1px solid rgba(0, 0, 0, .06);
+  border-right: 1px solid rgba(0, 0, 0, .06);
+  color: #111827;
+  font-size: .92rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  padding: 0;
+}
+
+/* ── Disclosure: Pokročilé parametry ─────────────────── */
+
+.saa-config-card .saa-params {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, .06);
+  overflow: visible;           /* kvůli dropdown */
+}
+
+.saa-config-card .saa-params summary {
+  padding: .9rem 1.35rem;
+  background: transparent;
+  color: #1f2937;
+  font-size: .85rem;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.saa-config-card .saa-params summary:hover {
+  background: #fafafa;
+}
+
+.saa-config-card .saa-params summary::-webkit-details-marker {
+  display: none;
+}
+
+.saa-config-card .saa-params summary > svg:first-of-type {
+  color: #9ca3af;
+  font-size: .78rem;
+}
+
+/* iOS-style chevron */
+.saa-config-card .saa-params summary::after {
+  content: '';
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-right: 1.5px solid #9ca3af;
+  border-bottom: 1.5px solid #9ca3af;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform .22s cubic-bezier(.4, 0, .2, 1);
+}
+
+.saa-config-card .saa-params[open] summary {
+  border-bottom: 1px solid rgba(0, 0, 0, .06);
+}
+
+.saa-config-card .saa-params[open] summary::after {
+  transform: rotate(-135deg) translate(-2px, -2px);
+}
+
+.saa-config-card .saa-params-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  background: transparent;
+}
+
+/* ── Select row (grouped-style) ──────────────────────── */
+
+.saa-config-card .saa-select-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
+  padding: .85rem 1.35rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, .05);
+  font-size: .85rem;
+  font-weight: 500;
+}
+
+.saa-config-card .saa-select-row label {
+  color: #1f2937;
+  font-size: .85rem;
+  font-weight: 500;
+  letter-spacing: -.005em;
+}
+
+/* fallback styling pro nativní select (kdyby někdo vrátil) */
+.saa-config-card .saa-select-row select {
+  min-width: 230px;
+  max-width: 320px;
+  padding: .42rem 2rem .42rem .7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: .8rem;
+  font-weight: 500;
+  color: #111827;
+  font-family: var(--saa-font);
+  appearance: none;
+  -webkit-appearance: none;
+  background:
+    linear-gradient(45deg, transparent 50%, #6b7280 50%) calc(100% - 14px) 50% / 5px 5px no-repeat,
+    linear-gradient(135deg, #6b7280 50%, transparent 50%) calc(100% - 10px) 50% / 5px 5px no-repeat,
+    #fff;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.saa-config-card .saa-select-row select:hover {
+  border-color: #9ca3af;
+}
+
+.saa-config-card .saa-select-row select:focus {
+  outline: none;
+  border-color: var(--saa-blue);
+  box-shadow: 0 0 0 3px rgba(41, 128, 185, .12);
+}
+
+/* ── Slider (iOS-style, tenčí track, bílý thumb) ─────── */
+
+.saa-config-card .saa-slider {
+  margin: 0;
+  padding: .85rem 1.35rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, .05);
+  border-radius: 0;
+}
+
+.saa-config-card .saa-slider label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .85rem;
+  font-weight: 500;
+  color: #1f2937;
+  letter-spacing: -.005em;
+}
+
+.saa-config-card .saa-slider-val {
+  padding: .15rem .55rem;
+  background: #ebf5fb;
+  color: var(--saa-blue);
+  border-radius: 6px;
+  font-size: .74rem;
+  font-weight: 700;
+  font-family: var(--saa-mono);
+  letter-spacing: -.01em;
+}
+
+.saa-config-card .saa-slider-wrap {
+  display: flex;
+  align-items: center;
+  margin-top: .6rem;
+}
+
+.saa-config-card .saa-slider-track {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  overflow: visible;
+  border-radius: 100px;
+  background: #e5e7eb;
+}
+
+.saa-config-card .saa-slider-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 100px;
+  background: var(--saa-blue);
+  pointer-events: none;
+  transition: width .15s cubic-bezier(.4, 0, .2, 1);
+  box-shadow: none;
+}
+
+.saa-config-card .saa-slider input[type="range"] {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  transform: translateY(-50%);
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.saa-config-card .saa-slider input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 100px;
+  background: transparent;
+}
+
+.saa-config-card .saa-slider input[type="range"]::-moz-range-track {
+  height: 4px;
+  border: none;
+  border-radius: 100px;
+  background: transparent;
+}
+
+.saa-config-card .saa-slider input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -9px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 .5px rgba(0, 0, 0, .1),
+    0 1px 2px rgba(0, 0, 0, .1),
+    0 3px 6px rgba(0, 0, 0, .08);
+  cursor: grab;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.saa-config-card .saa-slider input::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 .5px rgba(0, 0, 0, .1),
+    0 1px 2px rgba(0, 0, 0, .1),
+    0 3px 6px rgba(0, 0, 0, .08);
+  cursor: grab;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.saa-config-card .saa-slider input:active::-webkit-slider-thumb {
+  transform: scale(1.08);
+  cursor: grabbing;
+}
+
+.saa-config-card .saa-slider input:active::-moz-range-thumb {
+  transform: scale(1.08);
+  cursor: grabbing;
+}
+
+.saa-config-card .saa-slider-hint {
+  margin-top: .4rem;
+  color: #9ca3af;
+  font-size: .72rem;
+  font-style: normal;
+  line-height: 1.45;
+}
+
+/* Poslední řádek v groupu nemá spodní čáru */
+.saa-config-card .saa-params-body > *:last-child {
+  border-bottom: none;
+}
+
+/* ── Run button: iOS-style solid ─────────────────────── */
+
+.saa-config-card .saa-run {
+  display: flex;
+  grid-template-columns: none;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  width: calc(100% - 2.7rem);
+  min-height: 46px;
+  margin: .9rem 1.35rem 1.2rem;
+  padding: .7rem 1rem;
+  border: none;
+  border-radius: 11px;
+  background: var(--saa-blue);
+  color: #fff;
+  font-size: .92rem;
+  font-weight: 600;
+  letter-spacing: -.005em;
+  box-shadow:
+    0 1px 2px rgba(41, 128, 185, .2),
+    0 2px 8px rgba(41, 128, 185, .15);
+  cursor: pointer;
+  transition: background .18s, transform .12s, box-shadow .18s;
+}
+
+.saa-config-card .saa-run:hover:not(:disabled) {
+  background: #2471a3;
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(41, 128, 185, .22),
+    0 4px 14px rgba(41, 128, 185, .24);
+}
+
+.saa-config-card .saa-run:active:not(:disabled) {
+  transform: translateY(0);
+  background: #1f618d;
+  box-shadow: 0 1px 2px rgba(41, 128, 185, .28);
+}
+
+.saa-config-card .saa-run:disabled {
+  background: #9ca3af;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.saa-config-card .saa-run-mark {
+  width: auto;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  box-shadow: none;
+  opacity: 1;
+  justify-self: auto;
+}
+
+.saa-config-card .saa-run-copy {
+  font-weight: 600;
+  justify-self: auto;
+}
+
+.saa-config-card .saa-run-arrow {
+  width: 13px;
+  height: 13px;
+  opacity: .9;
+  justify-self: auto;
+  transition: transform .18s ease;
+}
+
+.saa-config-card .saa-run:hover:not(:disabled) .saa-run-arrow {
+  transform: translateX(2px);
+}
+
+/* ============================================================
+   ── AppleSelect — custom dropdown (iOS / macOS inspirovaný)
+   Nahrazuje nativní <select>, aby šlo stylovat i rozbalené menu.
+   ============================================================ */
+
+.saa-asel {
+  position: relative;
+  min-width: 230px;
+  max-width: 320px;
+  font-family: var(--saa-font);
+}
+
+/* Trigger – uzavřený stav vypadá jako iOS select */
+.saa-asel-trigger {
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  width: 100%;
+  padding: .45rem .75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--saa-font);
+  font-size: .8rem;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .15s, box-shadow .15s, background .12s;
+  line-height: 1.3;
+}
+
+.saa-asel-trigger:hover {
+  border-color: #9ca3af;
+}
+
+.saa-asel.open > .saa-asel-trigger,
+.saa-asel-trigger:focus-visible {
+  outline: none;
+  border-color: var(--saa-blue);
+  box-shadow: 0 0 0 3px rgba(41, 128, 185, .12);
+}
+
+.saa-asel-val {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Chevron v trigger (CSS-only triangle) */
+.saa-asel-chev {
+  width: 9px;
+  height: 9px;
+  border-right: 1.5px solid #6b7280;
+  border-bottom: 1.5px solid #6b7280;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform .2s cubic-bezier(.4, 0, .2, 1), border-color .15s;
+  flex-shrink: 0;
+}
+
+.saa-asel.open .saa-asel-chev {
+  transform: rotate(-135deg) translate(-2px, -2px);
+  border-color: var(--saa-blue);
+}
+
+/* Panel s možnostmi – macOS-style popover */
+.saa-asel-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, .06);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, .06),
+    0 6px 20px rgba(15, 23, 42, .1),
+    0 12px 36px rgba(15, 23, 42, .08);
+  z-index: 200;
+  transform-origin: top center;
+  animation: saa-asel-in .13s cubic-bezier(.2, .8, .2, 1);
+}
+
+@keyframes saa-asel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Option */
+.saa-asel-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: .55rem;
+  padding: .5rem .7rem;
+  border-radius: 6px;
+  font-size: .8rem;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  line-height: 1.3;
+  transition: background .1s, color .1s;
+}
+
+.saa-asel-opt-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Vybraná (bez hoveru) – jen checkmark, neutrální bg */
+.saa-asel-opt.sel {
+  color: var(--saa-blue);
+  font-weight: 600;
+}
+
+/* Aktivní (hover / klávesnice) – modrý highlight, bílý text */
+.saa-asel-opt.active {
+  background: var(--saa-blue);
+  color: #fff;
+}
+
+.saa-asel-opt.active.sel {
+  background: var(--saa-blue);
+  color: #fff;
+}
+
+/* Checkmark (CSS-only tick ✓) */
+.saa-asel-check {
+  width: 12px;
+  height: 7px;
+  border-left: 1.8px solid var(--saa-blue);
+  border-bottom: 1.8px solid var(--saa-blue);
+  transform: rotate(-45deg) translate(1px, -1px);
+  flex-shrink: 0;
+  transition: border-color .1s;
+}
+
+.saa-asel-opt.active .saa-asel-check {
+  border-color: #fff;
+}
+
+/* Scrollbar v menu – decentní */
+.saa-asel-menu::-webkit-scrollbar {
+  width: 8px;
+}
+.saa-asel-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.saa-asel-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, .12);
+  border-radius: 4px;
+  border: 2px solid #fff;
+}
+.saa-asel-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, .22);
 }
 
 /* ── Error ── */
@@ -552,85 +1194,6 @@
 .saa-info-chip svg {
   font-size: .72rem;
   color: var(--saa-blue);
-}
-
-/* ── Varianty ── */
-
-.saa-variants {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
-  gap: .75rem;
-}
-.saa-variant {
-  position: relative;
-  background: var(--saa-surface);
-  border: 2px solid var(--saa-border);
-  border-radius: 12px;
-  padding: 1.2rem 1rem .75rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all .25s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .15rem;
-  font-family: var(--saa-font);
-}
-.saa-variant:hover {
-  border-color: #93c5fd;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(41, 128, 185, .1);
-}
-.saa-variant.active {
-  border-color: var(--saa-blue);
-  box-shadow: 0 0 0 3px var(--saa-blue-glow), 0 4px 16px rgba(41, 128, 185, .12);
-}
-.saa-variant.requested {
-  background: var(--saa-blue-pale);
-}
-.saa-badge {
-  position: absolute;
-  top: -.55rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--saa-amber);
-  color: #fff;
-  font-size: .62rem;
-  font-weight: 700;
-  padding: .15rem .55rem;
-  border-radius: 6px;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: .2rem;
-  box-shadow: 0 2px 6px rgba(245, 158, 11, .3);
-}
-.saa-var-count {
-  font-size: 1.9rem;
-  font-weight: 800;
-  color: var(--saa-blue);
-  line-height: 1;
-  font-family: var(--saa-mono);
-  letter-spacing: -.03em;
-}
-.saa-var-label {
-  font-size: .7rem;
-  color: var(--saa-text-dim);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .5px;
-}
-.saa-var-prod {
-  font-size: .84rem;
-  font-weight: 700;
-  color: var(--saa-heading);
-  margin-top: .25rem;
-  font-family: var(--saa-mono);
-}
-.saa-var-meta {
-  font-size: .7rem;
-  color: var(--saa-text-dim);
-  font-family: var(--saa-mono);
 }
 
 /* ── KPI row ── */
@@ -827,59 +1390,163 @@
   letter-spacing: .4px;
 }
 
-/* ── Table ── */
+/* ============================================================
+   ── Table: Apple / macOS list inspired (v3 — centered) ──
+   ----------------------------------------------------------
+   Hierarchie čistě přes barvu a váhu, všechny numerické buňky
+   CENTROVANÉ (hlavičky i hodnoty), takže hodnota sedí přesně
+   pod jménem sloupce. Text labely (#, Střecha) zůstávají podle
+   své přirozenosti (# centr, Střecha left).
+     • Primární číslo   → #111827  weight 600
+     • Sekundární číslo → #6b7280  weight 500
+     • Street label     → #111827  weight 600   (Sora)
+     • Index (#)        → #c0c6cf  weight 600
+   ============================================================ */
 
 .saa-table-wrap {
   overflow-x: auto;
-  margin-top: -.25rem;
+  overflow-y: auto;
+  max-height: 560px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(226, 232, 240, .8);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, .78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .9),
+    0 1px 2px rgba(15, 23, 42, .035);
 }
+
 .saa-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: .8rem;
+  min-width: 980px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--saa-font);
+  font-variant-numeric: tabular-nums;
 }
+
+/* ── Header – centrovaný, subtilní uppercase label v Sora ── */
+
 .saa-table thead th {
-  text-align: right;
-  padding: .6rem .75rem;
-  background: var(--saa-surface-2);
-  color: var(--saa-text-muted);
-  font-weight: 600;
-  font-size: .68rem;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-  border-bottom: 2px solid var(--saa-border);
-  font-family: var(--saa-mono);
-}
-.saa-table thead th:first-child,
-.saa-table tbody td:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   text-align: center;
-  width: 40px;
+  padding: .7rem .85rem;
+  background: rgba(248, 250, 252, .92);
+  backdrop-filter: blur(14px) saturate(1.1);
+  color: #7c8796;
+  font-weight: 700;
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border-bottom: 1px solid rgba(226, 232, 240, .9);
+  font-family: var(--saa-font);
+  white-space: nowrap;
+  vertical-align: middle;
 }
+
+.saa-table thead th:first-child {
+  width: 40px;
+  padding-left: .5rem;
+  padding-right: .5rem;
+}
+
 .saa-table thead th:nth-child(2) {
   text-align: left;
 }
+
+.saa-table thead th:last-child {
+  padding-right: .5rem;
+}
+
+/* ── Body: jednotný padding, centrované hodnoty ── */
+
+.saa-table tbody tr {
+  border-bottom: 1px solid rgba(0, 0, 0, .045);
+  transition: background-color .12s ease;
+}
+
+.saa-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.saa-table tbody tr:hover {
+  background-color: rgba(15, 23, 42, .02);
+}
+
+.saa-table tbody td {
+  padding: .75rem .85rem;
+  color: #6b7280;                   /* sekundární hodnota */
+  text-align: center;
+  font-family: var(--saa-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: .78rem;
+  font-weight: 500;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Row number (#) – nenápadný index, centrovaný */
+.saa-table tbody td:first-child {
+  width: 40px;
+  padding-left: .5rem;
+  padding-right: .5rem;
+  color: #c0c6cf;
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.saa-table tbody td:last-child {
+  padding-right: .5rem;
+}
+
+/* ── Střecha (label) – jediná výjimka vlevo, proporcionální ── */
+
 .saa-table tbody .td-left {
   text-align: left;
-  font-family: var(--saa-mono);
-  font-size: .75rem;
+  font-family: var(--saa-font);
+  font-size: .82rem;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: -.005em;
 }
-.saa-table tbody tr {
-  border-bottom: 1px solid var(--saa-border);
-  transition: background .15s;
+
+/* ── Primární numerická hodnota (val-hl) ──
+   Žádné pozadí. Jen tmavší barva + větší váha.                */
+
+.saa-table td.val-hl {
+  color: #111827;
+  font-weight: 600;
 }
-.saa-table tbody tr:hover {
-  background: var(--saa-blue-pale);
+
+/* ── Sol. pot. (EP) zvýraznění bez JSX zásahu ──
+   Když je v JSX pv_engine === 'both', řádek tabulky má
+   10 buněk a 7. sloupec (Sol. pot. EP) nemá vlastní třídu.
+   Detekuju 10sloupcový režim přes :has() a odbarvím 7. td
+   stejně jako val-hl. Funguje v Chrome 105+, Firefox 121+,
+   Safari 15.4+.                                                */
+
+.saa-table tbody tr:has(td:nth-child(10)) td:nth-child(7) {
+  color: #111827;
+  font-weight: 600;
 }
-.saa-table tbody td {
-  padding: .5rem .75rem;
-  color: var(--saa-text);
-  text-align: right;
-  font-family: var(--saa-mono);
-  font-size: .78rem;
+
+/* ── Jemný scrollbar uvnitř table-wrap ── */
+
+.saa-table-wrap::-webkit-scrollbar {
+  height: 8px;
 }
-.saa-table .val-hl {
-  color: var(--saa-blue);
-  font-weight: 700;
+.saa-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.saa-table-wrap::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, .1);
+  border-radius: 4px;
+}
+.saa-table-wrap::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, .2);
 }
 
 /* ── Responsive ── */
@@ -904,9 +1571,6 @@
   .saa-upload-grid {
     grid-template-columns: 1fr;
   }
-  .saa-variants {
-    grid-template-columns: repeat(2, 1fr);
-  }
   .saa-kpi-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -916,12 +1580,68 @@
   .saa-card {
     padding: 1rem;
   }
+
+  /* Config card: keep flat-row design on mobile */
+  .saa-config-card {
+    padding: 0;
+    border-radius: 14px;
+  }
+  .saa-config-card .saa-card-head {
+    padding: .95rem 1.1rem;
+  }
+  .saa-config-card .saa-stepper {
+    padding: .9rem 1.1rem;
+    gap: .75rem;
+  }
+  .saa-config-card .saa-stepper-control {
+    flex-shrink: 0;
+  }
+  .saa-config-card .saa-params summary,
+  .saa-config-card .saa-select-row,
+  .saa-config-card .saa-slider {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+  .saa-config-card .saa-select-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: .5rem;
+  }
+  .saa-config-card .saa-select-row select {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+  .saa-asel {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+  .saa-config-card .saa-run {
+    width: calc(100% - 2.2rem);
+    margin: .8rem 1.1rem 1rem;
+  }
+
+  /* Tabulka na mobilu: kompaktnější padding */
+  .saa-table thead th,
+  .saa-table tbody td {
+    padding: .6rem .65rem;
+  }
+  .saa-table thead th:first-child,
+  .saa-table tbody td:first-child {
+    padding-left: .35rem;
+    padding-right: .35rem;
+  }
+  .saa-table thead th:last-child,
+  .saa-table tbody td:last-child {
+    padding-right: .35rem;
+  }
+  .saa-table tbody .td-left {
+    font-size: .78rem;
+  }
 }
 
 @media (max-width: 440px) {
-  .saa-variants {
-    grid-template-columns: 1fr;
-  }
   .saa-kpi-row {
     grid-template-columns: 1fr;
   }
