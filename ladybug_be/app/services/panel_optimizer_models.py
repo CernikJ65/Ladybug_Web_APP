@@ -1,9 +1,4 @@
-"""
-Dataclassy a serializační helpery pro PanelOptimizer.
-
-Vytaženo z panel_optimizer.py, aby modul zůstal pod rozumným rozsahem
-a orchestrace byla oddělená od datového modelu.
-"""
+"prepravak mezu be a fe"
 from __future__ import annotations
 
 from dataclasses import dataclass

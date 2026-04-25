@@ -39,6 +39,19 @@ interface OptimizationResult {
   panels: PanelResult[];
 }
 
+interface SystemLosses {
+  age: number;
+  light_induced_degradation: number;
+  soiling: number;
+  snow: number;
+  manufacturer_nameplate_tolerance: number;
+  cell_characteristic_mismatch: number;
+  wiring: number;
+  electrical_connection: number;
+  grid_availability: number;
+  total: number;
+}
+
 interface AnalysisResult {
   model_info: {
     model_name: string;
@@ -54,11 +67,19 @@ interface AnalysisResult {
   optimal_orientation: {
     tilt_degrees: number;
     azimuth_degrees: number;
+    cardinal_direction?: string;
   };
   panel_config: {
     pv_efficiency: number;
     module_type: string;
     mounting_type: string;
+    panel_width_m?: number;
+    panel_height_m?: number;
+    panel_area_m2?: number;
+    spacing_m?: number;
+    active_area_fraction?: number;
+    panel_age_years?: number;
+    system_losses?: SystemLosses;
   };
   simulation_engine: string;
   pv_engine?: PvEngine;
@@ -92,27 +113,25 @@ interface Props {
 
 /* ───── Konfigurace účinnosti ───── */
 
-const PV_EFF_MIN = 19;       // % — dolní hranice moderních mono-Si panelů
-const PV_EFF_MAX = 24;       // % — špičkové HJT/TOPCon panely
-const PV_EFF_DEFAULT = 20;   // % — typická hodnota pro mainstream mono-Si
+const PV_EFF_MIN = 19;
+const PV_EFF_MAX = 24;
+const PV_EFF_DEFAULT = 20;
 
-const MODULE_TYPE_LABELS: Record<string, string> = {
-  Standard: 'Standardní (poly-Si)',
-  Premium:  'Prémiový (mono-Si PERC/HJT)',
-  ThinFilm: 'Tenkovrstvý (CdTe, a-Si)',
-};
+/* Inverter (DC→AC). EnergyPlus aplikuje samostatne mimo system_loss_fraction.
+   Defaultni honeybee/PVWatts hodnota = 0.96 → 4 % ztrata. */
+const INVERTER_LOSS = 0.04;
 
 /* ───── Options pro AppleSelect ───── */
 
 const PV_ENGINE_OPTIONS = [
-  { value: 'energyplus', label: 'EnergyPlus PVWatts (referenční, ~1–3 min)' },
-  { value: 'pvlib',      label: 'pvlib + Radiance POA (rychlé, ~3–5 s)' },
-  { value: 'both',       label: 'Oba — porovnání' },
+  { value: 'energyplus', label: 'EnergyPlus PVWatts (trvá déle' },
+  { value: 'pvlib',      label: 'Ladybug Radiance + pvlib (rychlá simulace)' },
+  { value: 'both',       label: 'Simulovat oběma způsoby' },
 ];
 
 const MOUNT_TYPE_OPTIONS = [
-  { value: 'FixedOpenRack',    label: 'Volný stojan (cirkulace vzduchu)' },
-  { value: 'FixedRoofMounted', label: 'Střešní montáž (flush)' },
+  { value: 'FixedOpenRack',    label: 'Otevřená konstrukce' },
+  { value: 'FixedRoofMounted', label: 'Střešní montáž' },
 ];
 
 /* ───── Komponenta ───── */
@@ -129,10 +148,10 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [mountType, setMountType]   = useState('FixedOpenRack');
   const [pvEngine, setPvEngine]     = useState<PvEngine>('energyplus');
   const [jobId, setJobId]           = useState<string | null>(null);
+  const [lossesOpen, setLossesOpen] = useState(false);
 
   const progress = useSimulationProgress(loading ? jobId : null);
 
-  /* Zachování stavu při návratu z landing page */
   useViewStateCache<CachedState>(
     'solar-advanced',
     { hbjsonFile, epwFile, result, error, numPanels, pvEff, maxTilt, mountType, pvEngine },
@@ -149,8 +168,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     }
   );
 
-  /** Společný handler pro oba FileBoxy – nastaví/vymaže soubor
-   *  a zároveň vyčistí předchozí výsledky a chybu. */
   const handleFileChange = (
     setter: React.Dispatch<React.SetStateAction<File | null>>
   ) => (f: File | null) => {
@@ -199,16 +216,39 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const fmt = (n: number) =>
     n.toLocaleString('cs-CZ', { maximumFractionDigits: 0 });
 
-  const sel = result ? result.optimization.result : null;
+  const pct = (v: number | undefined) =>
+    v === undefined || v === null ? '—' : `${(v * 100).toFixed(1)} %`;
 
-  const moduleLabel = (v: string) => MODULE_TYPE_LABELS[v] ?? v;
+  /* Kombinovana ztrata (system + inverter) — multiplikativne. */
+  const combinedLossValue = (systemTotal: number | undefined): number | undefined => {
+    if (systemTotal === undefined || systemTotal === null) return undefined;
+    return 1 - (1 - systemTotal) * (1 - INVERTER_LOSS);
+  };
+
+  const sel = result ? result.optimization.result : null;
 
   const mountLabel = (v: string) => {
     switch (v) {
-      case 'FixedOpenRack': return 'Volný stojan';
+      case 'FixedOpenRack': return 'Otevřená konstrukce';
       case 'FixedRoofMounted': return 'Střešní montáž';
       default: return v;
     }
+  };
+
+  const cardinalLabel = (v: string | undefined): string => {
+    if (!v) return '';
+    const map: Record<string, string> = {
+      North: 'sever',
+      'North-East': 'severovýchod',
+      East: 'východ',
+      'South-East': 'jihovýchod',
+      South: 'jih',
+      'South-West': 'jihozápad',
+      West: 'západ',
+      'North-West': 'severozápad',
+      Horizontal: 'vodorovně',
+    };
+    return map[v] ?? v;
   };
 
   return (
@@ -216,7 +256,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
       <SimulationProgressOverlay
         open={loading}
         progress={progress}
-        title="Optimalizace solárních panelů"
+        title="Solární analýza"
       />
 
       {/* Hero */}
@@ -225,9 +265,9 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
           <FaArrowLeft /> Zpět na přehled
         </button>
         <span className="saa-hero-badge">EnergyPlus + Ladybug Radiance</span>
-        <h1>Optimalizace solárních panelů</h1>
+        <h1>Solární analýza</h1>
         <p>
-          Vypočet potenciálu solární energie pro FVE, roční výroba, orientace, umístění panelů.
+          Scénar, který na základě EPW a HBJSON dat simuluje solární potenciál dopadu slunečního zářeni na panely a na základě toto následně similuje kolik je panel schopen produkovat .
         </p>
       </header>
 
@@ -300,7 +340,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             <summary><FaCog /> Pokročilé parametry</summary>
             <div className="saa-params-body">
               <div className="saa-select-row">
-                <label>Výpočetní engine</label>
+                <label>Zvolte způsob simulace</label>
                 <AppleSelect
                   value={pvEngine}
                   options={PV_ENGINE_OPTIONS}
@@ -314,7 +354,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                 min={PV_EFF_MIN}
                 max={PV_EFF_MAX}
                 unit="%"
-                hint="Běžné moderní panely 20–22 %, špičkové HJT/TOPCon až 24 %. Typ modulu se odvodí automaticky."
+                hint=""
                 onChange={setPvEff}
               />
               <Slider
@@ -385,10 +425,9 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               <FaSolarPanel />
               <span>Max {result.optimization.max_panels_available} panelů</span>
             </div>
-            <div className="saa-info-chip">
-              <FaBolt />
-              <span>{result.simulation_engine || 'EnergyPlus PVWatts'}</span>
-            </div>
+            
+             
+          
           </div>
 
           {/* KPI metriky */}
@@ -410,11 +449,88 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                 </div>
               </div>
               <div className="saa-detail-rows">
-                <DetailRow label="Typ modulu" value={moduleLabel(result.panel_config.module_type)} />
+                {/* Modul a montáž */}
                 <DetailRow label="Typ montáže" value={mountLabel(result.panel_config.mounting_type)} />
                 <DetailRow label="Účinnost FV" value={`${(result.panel_config.pv_efficiency * 100).toFixed(0)} %`} />
+
+                {/* Geometrie */}
+                {result.panel_config.panel_width_m !== undefined && result.panel_config.panel_height_m !== undefined && (
+                  <DetailRow
+                    label="Rozměry panelu"
+                    value={`${result.panel_config.panel_width_m} × ${result.panel_config.panel_height_m} m`}
+                  />
+                )}
+                {result.panel_config.panel_area_m2 !== undefined && (
+                  <DetailRow label="Plocha panelu" value={`${result.panel_config.panel_area_m2} m²`} />
+                )}
+                {result.panel_config.active_area_fraction !== undefined && (
+                  <DetailRow
+                    label="Aktivní plocha"
+                    value={`${(result.panel_config.active_area_fraction * 100).toFixed(0)} %`}
+                  />
+                )}
+                {result.panel_config.spacing_m !== undefined && (
+                  <DetailRow label="Mezera mezi panely" value={`${result.panel_config.spacing_m} m`} />
+                )}
+
+                {/* Stáří */}
+                {result.panel_config.panel_age_years !== undefined && (
+                  <DetailRow label="Stáří systému" value={`${result.panel_config.panel_age_years} let`} />
+                )}
+
+                {/* Orientace */}
                 <DetailRow label="Optimální sklon" value={`${result.optimal_orientation.tilt_degrees.toFixed(1)}°`} />
-                <DetailRow label="Optimální azimut" value={`${result.optimal_orientation.azimuth_degrees.toFixed(0)}°`} />
+                <DetailRow
+                  label="Optimální směr natočení"
+                  value={
+                    result.optimal_orientation.cardinal_direction
+                      ? `${result.optimal_orientation.azimuth_degrees.toFixed(0)}° (${cardinalLabel(result.optimal_orientation.cardinal_direction)})`
+                      : `${result.optimal_orientation.azimuth_degrees.toFixed(0)}°`
+                  }
+                />
+
+                {/* Celkové ztráty — rozbalovací sekce */}
+                {result.panel_config.system_losses && (
+                  <div className={`saa-losses ${lossesOpen ? 'open' : ''}`}>
+                    <button
+                      type="button"
+                      className="saa-losses-header"
+                      onClick={() => setLossesOpen(o => !o)}
+                      aria-expanded={lossesOpen}
+                    >
+                      <span className="saa-losses-label">Celkové ztráty</span>
+                      <span className="saa-losses-meta">
+                        <strong>{pct(combinedLossValue(result.panel_config.system_losses.total))}</strong>
+                        <span className="saa-losses-chev" aria-hidden="true" />
+                      </span>
+                    </button>
+
+                    <div className="saa-losses-body">
+                      <div className="saa-losses-section">
+                        <div className="saa-losses-section-title">Komponenty systému</div>
+                        <SubRow label="Degradace stárnutím" value={pct(result.panel_config.system_losses.age)} />
+                        <SubRow label="Počáteční pokles výkonu (do stabilizace)" value={pct(result.panel_config.system_losses.light_induced_degradation)} />
+                        <SubRow label="Znečištění panelu" value={pct(result.panel_config.system_losses.soiling)} />
+                        <SubRow label="Sníh" value={pct(result.panel_config.system_losses.snow)} />
+                        <SubRow label="Odchylka výrobce" value={pct(result.panel_config.system_losses.manufacturer_nameplate_tolerance)} />
+                        <SubRow label="Nesoulad mezi moduly" value={pct(result.panel_config.system_losses.cell_characteristic_mismatch)} />
+                        <SubRow label="Ztráty ve vedení (například kabely)" value={pct(result.panel_config.system_losses.wiring)} />
+                        <SubRow label="Elektrické konektory (například odpor)" value={pct(result.panel_config.system_losses.electrical_connection)} />
+                        <SubRow label="Dostupnost sítě (výpadky)" value={pct(result.panel_config.system_losses.grid_availability)} />
+                        <SubRow label="Systémové ztráty (dílčí součet)" value={pct(result.panel_config.system_losses.total)} emphasized />
+                      </div>
+
+                      <div className="saa-losses-section">
+                        <div className="saa-losses-section-title">Panel vyrábí stejnosměrný proud (DC), ale domácnost a síť používají hlavně střídavý proud</div>
+                        <SubRow label="Ztráta při převodu DC/AC" value={pct(INVERTER_LOSS)} emphasized />
+                      </div>
+
+                      <p className="saa-losses-note">
+                        Celkové ztráty se kombinují multiplikativně, nikoliv prostým součtem.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -438,15 +554,13 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                     <th>Střecha</th>
                     <th>Plocha</th>
                     <th>Sklon</th>
-                    <th>Azimut</th>
+                    <th>Směr</th>
                     <th title="Stíněná POA z Radiance (SkyMatrix ray tracing, stínění od budovy)">Sol. pot. (Radiance)</th>
-                    {result.pv_engine === 'both' && (
-                      <th title="Stíněná POA z EnergyPlus (polygon clipping, stínění od budovy i sousedních panelů)">Sol. pot. (EP)</th>
-                    )}
                     {result.pv_engine === 'both' ? (
                       <>
-                        <th>Výroba (EP)</th>
                         <th>Výroba (pvlib)</th>
+                        <th title="Stíněná POA z EnergyPlus (polygon clipping, stínění od budovy i sousedních panelů)">Sol. pot. (EP)</th>
+                        <th>Výroba (EP)</th>
                       </>
                     ) : (
                       <th>Výroba</th>
@@ -463,22 +577,20 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                       <td>{p.tilt.toFixed(1)}°</td>
                       <td>{p.azimuth.toFixed(0)}°</td>
                       <td className="val-hl">{p.radiation_kwh_m2.toFixed(0)} kWh/m²</td>
-                      {result.pv_engine === 'both' && (
-                        <td>
-                          {p.ep_solar_potential_kwh_m2 !== undefined && p.ep_solar_potential_kwh_m2 !== null
-                            ? `${p.ep_solar_potential_kwh_m2.toFixed(0)} kWh/m²`
-                            : '—'}
-                        </td>
-                      )}
                       {result.pv_engine === 'both' ? (
                         <>
                           <td className="val-hl">
-                            {p.production_ep_kwh !== undefined && p.production_ep_kwh !== null
-                              ? `${p.production_ep_kwh.toFixed(0)} kWh` : '—'}
-                          </td>
-                          <td className="val-hl">
                             {p.production_pvlib_kwh !== undefined && p.production_pvlib_kwh !== null
                               ? `${p.production_pvlib_kwh.toFixed(0)} kWh` : '—'}
+                          </td>
+                          <td className="val-hl">
+                            {p.ep_solar_potential_kwh_m2 !== undefined && p.ep_solar_potential_kwh_m2 !== null
+                              ? `${p.ep_solar_potential_kwh_m2.toFixed(0)} kWh/m²`
+                              : '—'}
+                          </td>
+                          <td className="val-hl">
+                            {p.production_ep_kwh !== undefined && p.production_ep_kwh !== null
+                              ? `${p.production_ep_kwh.toFixed(0)} kWh` : '—'}
                           </td>
                         </>
                       ) : (
@@ -626,6 +738,15 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function SubRow({ label, value, emphasized }: { label: string; value: string; emphasized?: boolean }) {
+  return (
+    <div className={`saa-sub-row ${emphasized ? 'emphasized' : ''}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 /* ───── AppleSelect — custom dropdown (iOS/macOS inspirovaný) ───── */
 
 interface AppleSelectOption {
@@ -652,7 +773,6 @@ function AppleSelect({
   const current = options.find(o => o.value === value) ?? options[0];
   const currentIdx = options.findIndex(o => o.value === value);
 
-  /* Zavření po kliknutí mimo */
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -664,7 +784,6 @@ function AppleSelect({
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  /* Klávesové ovládání: ESC, šipky, Enter */
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -690,7 +809,6 @@ function AppleSelect({
     return () => document.removeEventListener('keydown', handler);
   }, [open, activeIdx, options, onChange]);
 
-  /* Autoscroll aktivní option do view */
   useEffect(() => {
     if (!open || !menuRef.current) return;
     const active = menuRef.current.querySelector<HTMLLIElement>('.saa-asel-opt.active');

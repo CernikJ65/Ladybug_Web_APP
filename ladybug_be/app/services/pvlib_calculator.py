@@ -46,8 +46,20 @@ class PVLibCalculator:
         if system_loss_fraction is None:
             # Konzistentní s PVSimulator — age_degradation 0 %
             # pro simulaci nového systému v roce 0.
+            # Vsechny komponenty zapisujeme explicitne, aby vypocet
+            # byl 1:1 shodny s tim, co reportuje get_loss_breakdown()
+            # (zadne skryte defaulty z honeybee, ktere by se mohly
+            # v budoucnu zmenit).
             system_loss_fraction = PVProperties.loss_fraction_from_components(
                 age=0.0,
+                light_induced_degradation=0.015,
+                soiling=0.02,
+                snow=0.01,
+                manufacturer_nameplate_tolerance=0.01,
+                cell_characteristic_mismatch=0.02,
+                wiring=0.02,
+                electrical_connection=0.005,
+                grid_availability=0.015,
             )
         self.system_loss_fraction = system_loss_fraction
         self.module_type = infer_module_type(rated_efficiency)
@@ -89,11 +101,20 @@ class PVLibCalculator:
         }
     "ztratty paneli stejne jako v PVSimulatoru"
     def get_loss_breakdown(self) -> Dict[str, float]:
-        """Stejný rozpis ztrát jako PVSimulator, aby byl response jednotný."""
+        """Stejný rozpis ztrát jako PVSimulator — klíče musí přesně
+        odpovídat PVProperties.loss_fraction_from_components, jinak
+        FE reportuje jiné hodnoty, než simulace skutečně používá.
+        (Pozor: dříve zde bylo snow:1.0 — chyba v reportu, simulace
+        ale pracovala s 0.0 z PVProperties default.)"""
         return {
-            "soiling": 0.02, "snow": 0.0, "wiring": 0.02,
-            "electrical_connection": 0.005, "manufacturer_mismatch": 0.02,
-            "age_degradation": 0.0, "light_induced_degradation": 0.015,
+            "age": 0.0,
+            "light_induced_degradation": 0.015,
+            "soiling": 0.02,
+            "snow": 0.01,
+            "manufacturer_nameplate_tolerance": 0.01,
+            "cell_characteristic_mismatch": 0.02,
+            "wiring": 0.02,
+            "electrical_connection": 0.005,
             "grid_availability": 0.015,
             "total": round(self.system_loss_fraction, 3),
         }

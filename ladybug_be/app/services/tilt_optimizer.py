@@ -40,6 +40,18 @@ class OptimalOrientation:
     azimuth_degrees: float
     max_radiation_kwh_m2: float
     source: str  # "radiation_dome"
+    cardinal_direction: str  # "South", "South-East", ...
+
+
+def _azimuth_to_cardinal(azimuth_deg: float) -> str:
+    """Mapuje azimut na světovou stranu — používá stejnou COMPASS
+    tabulku jako roof_detector.RoofInfo.orientation."""
+    from .roof_detector import COMPASS
+    az = azimuth_deg % 360
+    for lo, hi, name in COMPASS:
+        if lo <= az < hi:
+            return name
+    return "North"
 
 
 class TiltOptimizer:
@@ -83,6 +95,7 @@ class TiltOptimizer:
             azimuth_degrees=azimuth,
             max_radiation_kwh_m2=radiation,
             source="radiation_dome",
+            cardinal_direction=_azimuth_to_cardinal(azimuth),
         )
         return self._optimal
 

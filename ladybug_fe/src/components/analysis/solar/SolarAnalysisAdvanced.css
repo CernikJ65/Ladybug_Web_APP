@@ -1282,6 +1282,167 @@
   font-size: .82rem;
 }
 
+/* ============================================================
+   ── Losses disclosure (Apple-style rozbalovací sekce) ──
+   Klikem na hlavičku se rozbalí detail dílčích ztrát.
+   Animace přes max-height + opacity, hairline separátor,
+   zvýraznění souhrnných hodnot.
+   ============================================================ */
+
+.saa-losses {
+  margin-top: .25rem;
+  border-top: 1px solid var(--saa-border);
+  border-bottom: 1px solid var(--saa-border);
+}
+
+.saa-detail-row + .saa-losses {
+  margin-top: 0;
+}
+
+.saa-losses-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: .65rem 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: var(--saa-font);
+  font-size: .84rem;
+  color: var(--saa-text-muted);
+  transition: color .15s;
+}
+
+.saa-losses-header:hover {
+  color: var(--saa-blue);
+}
+
+.saa-losses-label {
+  font-weight: 500;
+}
+
+.saa-losses-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.saa-losses-meta strong {
+  color: var(--saa-heading);
+  font-weight: 700;
+  font-family: var(--saa-mono);
+  font-size: .82rem;
+}
+
+.saa-losses-chev {
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid #9ca3af;
+  border-bottom: 1.5px solid #9ca3af;
+  transform: rotate(45deg) translate(-1.5px, -1.5px);
+  transition: transform .25s cubic-bezier(.4, 0, .2, 1), border-color .15s;
+}
+
+.saa-losses.open .saa-losses-chev {
+  transform: rotate(-135deg) translate(-1.5px, -1.5px);
+  border-color: var(--saa-blue);
+}
+
+.saa-losses-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height .35s cubic-bezier(.4, 0, .2, 1),
+    opacity .25s ease,
+    padding .35s cubic-bezier(.4, 0, .2, 1);
+  padding: 0 .15rem;
+}
+
+.saa-losses.open .saa-losses-body {
+  max-height: 720px;
+  opacity: 1;
+  padding: .25rem .15rem .85rem;
+}
+
+/* Sekce uvnitř body (Komponenty / Konverze) */
+.saa-losses-section {
+  margin-top: .85rem;
+  padding: .75rem .85rem;
+  background: var(--saa-surface-2);
+  border: 1px solid var(--saa-border);
+  border-radius: 10px;
+}
+
+.saa-losses-section:first-child {
+  margin-top: .25rem;
+}
+
+.saa-losses-section-title {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--saa-text-muted);
+  margin-bottom: .5rem;
+  font-family: var(--saa-font);
+}
+
+/* Sub-row — hairline řádky uvnitř detailu */
+.saa-sub-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: .35rem 0;
+  font-size: .78rem;
+  border-bottom: 1px solid rgba(0, 0, 0, .04);
+}
+
+.saa-sub-row:last-child {
+  border-bottom: none;
+}
+
+.saa-sub-row span {
+  color: var(--saa-text-muted);
+  font-weight: 400;
+}
+
+.saa-sub-row strong {
+  color: var(--saa-heading);
+  font-weight: 500;
+  font-family: var(--saa-mono);
+  font-size: .76rem;
+}
+
+/* Zvýrazněný řádek (souhrny — systémové ztráty, střídač) */
+.saa-sub-row.emphasized {
+  margin-top: .2rem;
+  padding-top: .45rem;
+  border-top: 1px solid var(--saa-border);
+  border-bottom: none;
+}
+
+.saa-sub-row.emphasized span {
+  color: var(--saa-heading);
+  font-weight: 600;
+}
+
+.saa-sub-row.emphasized strong {
+  color: var(--saa-blue);
+  font-weight: 700;
+}
+
+/* Poznámka pod detailem */
+.saa-losses-note {
+  margin: .85rem .15rem 0;
+  padding: 0;
+  font-size: .7rem;
+  line-height: 1.5;
+  color: var(--saa-text-dim);
+  font-style: normal;
+}
+
 /* ── Panel map overrides (dark block inside light page) ── */
 
 .pmap-wrap {

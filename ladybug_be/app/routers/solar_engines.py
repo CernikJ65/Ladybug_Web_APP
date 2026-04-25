@@ -86,7 +86,6 @@ def _run_pvlib(
     pvlib_calc = pvlib_cls(
         epw_path=epw_path,
         rated_efficiency=pv_efficiency,
-        system_loss_fraction=system_losses,
         mounting_type=mounting_type,
     )
     return pvlib_calc.simulate(ep_candidates)

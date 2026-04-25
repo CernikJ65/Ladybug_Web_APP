@@ -54,8 +54,19 @@ class PVSimulator:
         "podil plochy panelu jez skutecne vyrabi energii"
         self.active_area_fraction = active_area_fraction
         "simuulace probiha pro novy system takze ztraty kvuli stari jsou 0"
+        
+        "shodny s tim, co reportuje get_loss_breakdown() (zadne skryte"
+        "defaulty z honeybee, ktere by se mohly v budoucnu zmenit)."
         self._system_loss = PVProperties.loss_fraction_from_components(
             age=0.0,
+            light_induced_degradation=0.015,
+            soiling=0.02,
+            snow=0.01,
+            manufacturer_nameplate_tolerance=0.01,
+            cell_characteristic_mismatch=0.02,
+            wiring=0.02,
+            electrical_connection=0.005,
+            grid_availability=0.015,
         )
 
     def assign_pv_properties(self, panels: List[PanelPosition]) -> None:
@@ -114,11 +125,18 @@ class PVSimulator:
             shutil.rmtree(tmp_dir, ignore_errors=True)
 
     def get_loss_breakdown(self) -> Dict[str, float]:
-        """Rozpis celkových PVProperties ztrát pro API response."""
+        """Rozpis komponent ztrát — musí přesně odpovídat klíčům
+        PVProperties.loss_fraction_from_components, jinak FE reportuje
+        jiné hodnoty, než simulace skutečně používá."""
         return {
-            "soiling": 0.02, "snow": 0.0, "wiring": 0.02,
-            "electrical_connection": 0.005, "manufacturer_mismatch": 0.02,
-            "age_degradation": 0.0, "light_induced_degradation": 0.015,
+            "age": 0.0,
+            "light_induced_degradation": 0.015,
+            "soiling": 0.02,
+            "snow": 0.01,
+            "manufacturer_nameplate_tolerance": 0.01,
+            "cell_characteristic_mismatch": 0.02,
+            "wiring": 0.02,
+            "electrical_connection": 0.005,
             "grid_availability": 0.015,
             "total": round(self._system_loss, 3),
         }

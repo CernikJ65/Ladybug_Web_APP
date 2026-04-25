@@ -84,6 +84,7 @@ def build_response(
             "azimuth_degrees": optimal.azimuth_degrees,
             "max_radiation_kwh_m2": optimal.max_radiation_kwh_m2,
             "source": optimal.source,
+            "cardinal_direction": optimal.cardinal_direction,
         },
         "roofs": roof_summary,
         "panel_config": {
@@ -92,6 +93,8 @@ def build_response(
             "panel_area_m2": round(panel_width * panel_height, 2),
             "spacing_m": panel_spacing,
             "pv_efficiency": pv_efficiency,
+            "active_area_fraction": pv_sim.active_area_fraction,
+            "panel_age_years": 0,
             "system_losses": pv_sim.get_loss_breakdown(),
             "module_type": pv_sim.module_type,
             "mounting_type": mounting_type,
