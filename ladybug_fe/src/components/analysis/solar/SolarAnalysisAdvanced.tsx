@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   FaSun, FaSpinner, FaArrowLeft, FaArrowRight, FaBolt,
   FaBuilding, FaMapMarkerAlt, FaCog,
@@ -7,6 +7,9 @@ import {
 } from 'react-icons/fa';
 import PanelMapView, { type RoofMeta } from './PanelMapView';
 import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
+import HelpButton from '../../help/HelpButton';
+import TourOverlay from '../../help/TourOverlay';
+import { getSolarAdvancedSteps } from '../../help/content/solarAdvancedSteps';
 import { useSimulationProgress } from '../../../hooks/useSimulationProgress';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import './SolarAnalysisAdvanced.css';
@@ -149,8 +152,15 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [pvEngine, setPvEngine]     = useState<PvEngine>('energyplus');
   const [jobId, setJobId]           = useState<string | null>(null);
   const [lossesOpen, setLossesOpen] = useState(false);
+  const [tourOpen, setTourOpen]     = useState(false);
 
   const progress = useSimulationProgress(loading ? jobId : null);
+
+  /* Memoizace kroků průvodce — přepočet jen při změně stavu výsledků. */
+  const tourSteps = useMemo(
+    () => getSolarAdvancedSteps(result !== null),
+    [result],
+  );
 
   useViewStateCache<CachedState>(
     'solar-advanced',
@@ -253,6 +263,13 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="saa-page">
+      <HelpButton onClick={() => setTourOpen(true)} />
+      <TourOverlay
+        isActive={tourOpen}
+        onClose={() => setTourOpen(false)}
+        steps={tourSteps}
+      />
+
       <SimulationProgressOverlay
         open={loading}
         progress={progress}
@@ -264,7 +281,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
         <button className="saa-back" onClick={onBack}>
           <FaArrowLeft /> Zpět na přehled
         </button>
-        <span className="saa-hero-badge">EnergyPlus + Ladybug Radiance</span>
+        
         <h1>Solární analýza</h1>
         <p>
           Scénar, který na základě EPW a HBJSON dat simuluje solární potenciál dopadu slunečního zářeni na panely a na základě toto následně similuje kolik je panel schopen produkovat .

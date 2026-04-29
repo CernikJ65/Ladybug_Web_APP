@@ -50,3 +50,62 @@
   color: var(--hp-text);
   box-shadow: 0 1px 4px rgba(0, 0, 0, .25);
 }
+
+/* ── Dropzone musí mít position:relative aby se křížek
+       ukotvil přímo do rohu té karty — bez toho ho absolute
+       pozicování přilepí k nějakému vzdálenějšímu rodiči. ── */
+
+.hp-dropzone {
+  position: relative;
+}
+
+/* ── Clear button (×) v pravém horním rohu dropzone ── */
+
+.hp-dropzone-clear {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  background: var(--hp-surface-2);
+  border: 1px solid var(--hp-border);
+  border-radius: 50%;
+  color: var(--hp-text-muted);
+  cursor: pointer;
+  z-index: 3;
+  transition:
+    background .18s ease,
+    border-color .18s ease,
+    color .18s ease,
+    transform .12s cubic-bezier(.4, 0, .2, 1);
+}
+
+.hp-dropzone-clear:hover {
+  background: rgba(239, 68, 68, .12);
+  border-color: rgba(239, 68, 68, .38);
+  color: #ef4444;
+  transform: scale(1.08);
+}
+
+.hp-dropzone-clear:active {
+  transform: scale(.92);
+}
+
+.hp-dropzone-clear svg {
+  font-size: .56rem;
+  pointer-events: none;
+}
+
+
+.hp-hero-sub {
+  margin: .5rem 0 0;
+  font-size: .92rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--hp-text-muted, #94a3b8);
+  letter-spacing: .005em;
+  max-width: 560px;
+}

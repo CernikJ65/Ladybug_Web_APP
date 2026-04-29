@@ -208,3 +208,53 @@
     left: 16px !important;
   }
 }
+
+/* ============================================================
+   ── Scoped overrides — Solar Advanced (light blue theme) ──
+   ----------------------------------------------------------
+   Solární analýza používá světlé téma s modrým akcentem.
+   Help systém by v defaultu vypadal cize (tmavá pilulka,
+   amber rámeček). Přemapování --hp-* proměnných uvnitř
+   .saa-page ho sladí se stránkou. Ostatní obrazovky (EPW,
+   tepelná čerpadla atd.) zůstávají beze změny.
+   ============================================================ */
+
+.saa-page {
+  --hp-bg: var(--saa-bg);
+  --hp-surface: var(--saa-surface);
+  --hp-surface-2: var(--saa-surface-2);
+  --hp-border: var(--saa-border);
+  --hp-border-light: var(--saa-border-light);
+  --hp-text: var(--saa-text);
+  --hp-text-muted: var(--saa-text-muted);
+  --hp-text-dim: var(--saa-text-dim);
+  --hp-heading: var(--saa-heading);
+  --hp-amber: var(--saa-blue);
+  --hp-amber-bright: var(--saa-blue-light);
+}
+
+/* Trigger pilulka — jemný stín pro světlé pozadí */
+.saa-page .help-trigger {
+  box-shadow: 0 4px 14px rgba(41, 128, 185, .15);
+}
+.saa-page .help-trigger:hover {
+  color: #fff;
+  background: var(--saa-blue);
+  border-color: var(--saa-blue);
+}
+
+/* Tooltip — jemnější stín místo tmavého */
+.saa-page .tour-tooltip {
+  box-shadow: var(--saa-shadow-lg);
+}
+
+/* Primární tlačítko v navigaci — bílý text na modré */
+.saa-page .tour-btn.primary,
+.saa-page .tour-btn.primary:hover {
+  color: #fff;
+}
+
+/* Counter v hlavičce tooltipu */
+.saa-page .tour-counter {
+  color: var(--saa-blue);
+}

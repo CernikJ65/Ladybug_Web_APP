@@ -1,8 +1,8 @@
 /**
- * Karta "Tepelná potřeba budovy" — kolik tepla a chladu
- * budova potřebuje dodat ze zdroje, aby držela setpointy.
+ * Tepelna potreba budovy — KPI a mesicni stacked bar graf.
  *
- * Je to to, co musí tepelné čerpadlo (oba varianty) vyrobit.
+ * Per-room rozpis se NEzobrazuje (patri do HP detail tabu,
+ * ne do "potreby budovy" — to je pohled produkce TC).
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HPRealDemand.tsx
  */
@@ -13,7 +13,6 @@ import { fmt } from './hpRealUtils';
 
 interface Props {
   demand: BuildingDemand;
-  area: number;
   heatingOnly?: boolean;
 }
 
@@ -23,11 +22,13 @@ const MO = [
 ];
 
 const HPRealDemand: React.FC<Props> = ({
-  demand, area, heatingOnly = false,
+  demand, heatingOnly = false,
 }) => {
+  const heatMonthly = demand.monthly_heating_kwh ?? [];
+  const coolMonthly = demand.monthly_cooling_kwh ?? [];
   const maxBar = Math.max(
-    ...demand.monthly_heating_kwh,
-    ...(heatingOnly ? [] : demand.monthly_cooling_kwh), 1,
+    ...heatMonthly,
+    ...(heatingOnly ? [] : coolMonthly), 1,
   );
 
   return (
@@ -36,10 +37,6 @@ const HPRealDemand: React.FC<Props> = ({
         <FaBuilding className="hp-card-icon" />
         <div>
           <h2>Tepelná potřeba budovy</h2>
-          <p className="hp-card-sub">
-            Co musí HVAC dodat do zón — stejné pro ASHP i GSHP,
-            TČ varianty se liší jen spotřebou elektřiny
-          </p>
         </div>
       </div>
 
@@ -60,39 +57,13 @@ const HPRealDemand: React.FC<Props> = ({
             <span className="hp-kpi-lbl">Chlazení kWh/rok</span>
           </div>
         )}
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">
-            {demand.specific_heating_kwh_m2}
-          </span>
-          <span className="hp-kpi-lbl">kWh/m²·rok (topení)</span>
-        </div>
-        <div className="hp-kpi">
-          <span className="hp-kpi-val">
-            {fmt(heatingOnly
-              ? demand.annual_heating_kwh
-              : demand.annual_total_kwh)}
-          </span>
-          <span className="hp-kpi-lbl">Celkem kWh/rok</span>
-        </div>
-      </div>
-
-      <div className="hp-context">
-        Budova o ploše <strong>{area.toFixed(0)} m²</strong> potřebuje
-        ročně <strong>{fmt(demand.annual_heating_kwh)} kWh</strong> tepla
-        pro vytápění
-        {!heatingOnly && (
-          <> a <strong>{fmt(demand.annual_cooling_kwh)} kWh</strong>
-          &nbsp;chladu</>
-        )}
-        {' '}— to je cílová potřeba, kterou musí tepelné
-        čerpadlo pokrýt.
       </div>
 
       <h3 className="hp-sub-title">Měsíční potřeba</h3>
       <div className="hpr-stacked-bars">
         {MO.map((mo, i) => {
-          const h = demand.monthly_heating_kwh[i];
-          const c = demand.monthly_cooling_kwh[i];
+          const h = heatMonthly[i] ?? 0;
+          const c = coolMonthly[i] ?? 0;
           return (
             <div key={i} className="hpr-bar-col">
               <div className="hpr-bar-stack">

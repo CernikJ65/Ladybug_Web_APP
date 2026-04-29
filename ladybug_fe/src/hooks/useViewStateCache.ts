@@ -18,7 +18,7 @@ type ViewType =
   | 'builder'
   | 'heatpump'
   | 'heatpump-real'
-  | 'combined';
+  | 'ped-optimizer';
 
 /**
  * Saves component state to cache on every change and on unmount.

@@ -1,7 +1,8 @@
 /**
  * Upload karta pro DWG/DXF konvertor.
  *
- * Drag & drop + file picker + toggle terén.
+ * Drag & drop + file picker. Terén je do modelu zahrnut vždy
+ * automaticky — žádný uživatelský přepínač.
  *
  * Soubor: ladybug_fe/src/components/analysis/converter/DwgUploadCard.tsx
  */
@@ -12,12 +13,10 @@ import {
 
 interface Props {
   file: File | null;
-  terrain: boolean;
   dragging: boolean;
   error: string | null;
   inputRef: React.RefObject<HTMLInputElement | null>;
   onFile: (f: File) => void;
-  onTerrain: (v: boolean) => void;
   onDragging: (v: boolean) => void;
   onDrop: (e: React.DragEvent) => void;
   onConvert: () => void;
@@ -69,19 +68,6 @@ const DwgUploadCard: React.FC<Props> = (p) => (
         onChange={e =>
           e.target.files?.[0] && p.onFile(e.target.files[0])
         }
-      />
-    </div>
-
-    <div className="cvt-option-row">
-      <div>
-        <div className="cvt-option-label">Zahrnout terén</div>
-        <div className="cvt-option-desc">
-          Topografie jako stínící plochy modelu
-        </div>
-      </div>
-      <button
-        className={`cvt-toggle${p.terrain ? ' active' : ''}`}
-        onClick={() => p.onTerrain(!p.terrain)}
       />
     </div>
 

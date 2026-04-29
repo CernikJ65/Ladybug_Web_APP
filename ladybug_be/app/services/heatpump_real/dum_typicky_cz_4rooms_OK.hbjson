@@ -1,0 +1,3213 @@
+{
+  "type": "Model",
+  "identifier": "CR_Starsi_Dum_240m2_2Patra",
+  "display_name": "Starsi CR rodinny dum 12x10 m, 2 patra, 240 m2 (1990-2005, PENB D)",
+  "units": "Meters",
+  "properties": {
+    "type": "ModelProperties",
+    "energy": {
+      "type": "ModelEnergyProperties",
+      "construction_sets": [
+        {
+          "type": "ConstructionSetAbridged",
+          "identifier": "CR_Modern_2010Plus",
+          "wall_set": {
+            "type": "WallConstructionSetAbridged",
+            "exterior_construction": "CR_Ext_Wall_U0.26",
+            "interior_construction": "CR_Int_Wall",
+            "ground_construction": "CR_Ext_Wall_U0.26"
+          },
+          "floor_set": {
+            "type": "FloorConstructionSetAbridged",
+            "ground_construction": "CR_Ground_Floor_U0.31",
+            "interior_construction": "CR_Int_Floor",
+            "exterior_construction": "CR_Ground_Floor_U0.31"
+          },
+          "roof_ceiling_set": {
+            "type": "RoofCeilingConstructionSetAbridged",
+            "exterior_construction": "CR_Roof_U0.16",
+            "interior_construction": "CR_Int_Floor",
+            "ground_construction": "CR_Roof_U0.16"
+          },
+          "aperture_set": {
+            "type": "ApertureConstructionSetAbridged",
+            "window_construction": "CR_Window_U1.1_g0.55",
+            "interior_construction": "CR_Window_U1.1_g0.55",
+            "skylight_construction": "CR_Window_U1.1_g0.55",
+            "operable_construction": "CR_Window_U1.1_g0.55"
+          }
+        }
+      ],
+      "constructions": [
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "CR_Ext_Wall_U0.26",
+          "display_name": "Stena obvodova U=0.26",
+          "materials": [
+            "CR_Wall_EPS_125mm"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "CR_Roof_U0.16",
+          "display_name": "Strecha U=0.16",
+          "materials": [
+            "CR_Roof_EPS_207mm"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "CR_Ground_Floor_U0.31",
+          "display_name": "Podlaha na zemi U=0.31",
+          "materials": [
+            "CR_Floor_EPS_104mm"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "CR_Int_Wall",
+          "display_name": "Vnitrni stena",
+          "materials": [
+            "CR_Int_Brick_150mm"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "CR_Int_Floor",
+          "display_name": "Vnitrni strop ZB",
+          "materials": [
+            "CR_ZB_200mm"
+          ]
+        },
+        {
+          "type": "WindowConstructionAbridged",
+          "identifier": "CR_Window_U1.1_g0.55",
+          "display_name": "Trojsklo U=1.1 g=0.55",
+          "materials": [
+            "CR_Window_Glass"
+          ]
+        }
+      ],
+      "materials": [
+        {
+          "type": "EnergyMaterial",
+          "identifier": "CR_Wall_EPS_125mm",
+          "roughness": "MediumSmooth",
+          "thickness": 0.06,
+          "conductivity": 0.034,
+          "density": 20,
+          "specific_heat": 1450,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "CR_Roof_EPS_207mm",
+          "roughness": "MediumSmooth",
+          "thickness": 0.09,
+          "conductivity": 0.034,
+          "density": 20,
+          "specific_heat": 1450,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "CR_Floor_EPS_104mm",
+          "roughness": "MediumSmooth",
+          "thickness": 0.06,
+          "conductivity": 0.034,
+          "density": 35,
+          "specific_heat": 1450,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "CR_Int_Brick_150mm",
+          "roughness": "MediumRough",
+          "thickness": 0.15,
+          "conductivity": 0.36,
+          "density": 900,
+          "specific_heat": 900,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "CR_ZB_200mm",
+          "roughness": "MediumRough",
+          "thickness": 0.2,
+          "conductivity": 1.58,
+          "density": 2400,
+          "specific_heat": 920,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyWindowMaterialSimpleGlazSys",
+          "identifier": "CR_Window_Glass",
+          "u_factor": 2.0,
+          "shgc": 0.7,
+          "vt": 0.75
+        }
+      ],
+      "hvacs": [],
+      "shws": [],
+      "program_types": [],
+      "schedules": [],
+      "schedule_type_limits": []
+    }
+  },
+  "rooms": [
+    {
+      "type": "Room",
+      "identifier": "Obyvak_JZ",
+      "display_name": "Obyvak (jihozapad)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Obyvak_JZ_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.0,
+                0.0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Obyvak_JZ_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_Hlavni_JZ_1_Floor",
+              "Loznice_Hlavni_JZ_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Obyvak_JZ_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Obyvak_JZ_Window_S",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    5.0,
+                    0.0,
+                    2.06
+                  ],
+                  [
+                    5.0,
+                    0.0,
+                    0.64
+                  ],
+                  [
+                    1.0,
+                    0.0,
+                    0.64
+                  ],
+                  [
+                    1.0,
+                    0.0,
+                    2.06
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Obyvak_JZ_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                0.0,
+                2.7
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Obyvak_JZ_Window_W",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0.0,
+                    1.0,
+                    2.025
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    0.675
+                  ],
+                  [
+                    0.0,
+                    4.0,
+                    0.675
+                  ],
+                  [
+                    0.0,
+                    4.0,
+                    2.025
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Obyvak_JZ_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_SZ_Wall_S",
+              "Loznice_SZ"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Obyvak_JZ_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Kuchyne_JV_Wall_W",
+              "Kuchyne_JV"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                0.0,
+                0.0
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Kuchyne_JV",
+      "display_name": "Kuchyne s jidelnou (jihovychod)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Kuchyne_JV_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                5.0,
+                0.0
+              ],
+              [
+                12.0,
+                0.0,
+                0.0
+              ],
+              [
+                6.0,
+                0.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Kuchyne_JV_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Detskypokoj_JV_1_Floor",
+              "Detskypokoj_JV_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                12.0,
+                0.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Kuchyne_JV_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                0.0,
+                2.7
+              ],
+              [
+                12.0,
+                0.0,
+                0.0
+              ],
+              [
+                6.0,
+                0.0,
+                0.0
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Kuchyne_JV_Window_S",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    11.0,
+                    0.0,
+                    2.06
+                  ],
+                  [
+                    11.0,
+                    0.0,
+                    0.64
+                  ],
+                  [
+                    7.0,
+                    0.0,
+                    0.64
+                  ],
+                  [
+                    7.0,
+                    0.0,
+                    2.06
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Kuchyne_JV_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                0.0
+              ],
+              [
+                12.0,
+                0.0,
+                0.0
+              ],
+              [
+                12.0,
+                0.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Kuchyne_JV_Window_E",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    12.0,
+                    4.0,
+                    2.025
+                  ],
+                  [
+                    12.0,
+                    4.0,
+                    0.675
+                  ],
+                  [
+                    12.0,
+                    1.0,
+                    0.675
+                  ],
+                  [
+                    12.0,
+                    1.0,
+                    2.025
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Kuchyne_JV_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Koupelna_SV_Wall_S",
+              "Koupelna_SV"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                12.0,
+                5.0,
+                0.0
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Kuchyne_JV_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Obyvak_JZ_Wall_E",
+              "Obyvak_JZ"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Loznice_SZ",
+      "display_name": "Loznice (severozapad)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Loznice_SZ_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.0,
+                0.0
+              ],
+              [
+                0.0,
+                10.0,
+                0.0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_SZ_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_Host_SZ_1_Floor",
+              "Loznice_Host_SZ_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                10.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_SZ_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                10.0,
+                2.7
+              ],
+              [
+                0.0,
+                10.0,
+                0.0
+              ],
+              [
+                6.0,
+                10.0,
+                0.0
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Loznice_SZ_Window_N",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    2.25,
+                    10.0,
+                    1.755
+                  ],
+                  [
+                    2.25,
+                    10.0,
+                    0.945
+                  ],
+                  [
+                    3.75,
+                    10.0,
+                    0.945
+                  ],
+                  [
+                    3.75,
+                    10.0,
+                    1.755
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_SZ_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                0.0
+              ],
+              [
+                0.0,
+                10.0,
+                0.0
+              ],
+              [
+                0.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Loznice_SZ_Window_W",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0.0,
+                    6.0,
+                    2.025
+                  ],
+                  [
+                    0.0,
+                    6.0,
+                    0.675
+                  ],
+                  [
+                    0.0,
+                    9.0,
+                    0.675
+                  ],
+                  [
+                    0.0,
+                    9.0,
+                    2.025
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_SZ_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Obyvak_JZ_Wall_N",
+              "Obyvak_JZ"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.0,
+                0.0
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_SZ_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Koupelna_SV_Wall_W",
+              "Koupelna_SV"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Koupelna_SV",
+      "display_name": "Koupelna a chodba (severovychod)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                10.0,
+                0.0
+              ],
+              [
+                12.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                10.0,
+                0.0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Koupelna_SV_1_Floor",
+              "Koupelna_SV_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                0.0
+              ],
+              [
+                12.0,
+                10.0,
+                0.0
+              ],
+              [
+                12.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Koupelna_SV_Window_N",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    8.25,
+                    10.0,
+                    1.755
+                  ],
+                  [
+                    8.25,
+                    10.0,
+                    0.945
+                  ],
+                  [
+                    9.75,
+                    10.0,
+                    0.945
+                  ],
+                  [
+                    9.75,
+                    10.0,
+                    1.755
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                10.0,
+                2.7
+              ],
+              [
+                12.0,
+                10.0,
+                0.0
+              ],
+              [
+                12.0,
+                5.0,
+                0.0
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Koupelna_SV_Window_E",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    12.0,
+                    9.0,
+                    2.025
+                  ],
+                  [
+                    12.0,
+                    9.0,
+                    0.675
+                  ],
+                  [
+                    12.0,
+                    6.0,
+                    0.675
+                  ],
+                  [
+                    12.0,
+                    6.0,
+                    2.025
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Kuchyne_JV_Wall_N",
+              "Kuchyne_JV"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_SZ_Wall_E",
+              "Loznice_SZ"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                0.0
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Loznice_Hlavni_JZ_1",
+      "display_name": "Hlavni loznice (1.patro, JZ)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Loznice_Hlavni_JZ_1_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Obyvak_JZ_Roof",
+              "Obyvak_JZ"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                0.0,
+                0.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Hlavni_JZ_1_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                5.0,
+                5.4
+              ],
+              [
+                0.0,
+                0.0,
+                5.4
+              ],
+              [
+                6.0,
+                0.0,
+                5.4
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Hlavni_JZ_1_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                0.0,
+                5.4
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                0.0,
+                0.0,
+                2.7
+              ],
+              [
+                0.0,
+                0.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Loznice_Hlavni_JZ_1_Window_S",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    5.0,
+                    0.0,
+                    4.76
+                  ],
+                  [
+                    5.0,
+                    0.0,
+                    3.34
+                  ],
+                  [
+                    1.0,
+                    0.0,
+                    3.34
+                  ],
+                  [
+                    1.0,
+                    0.0,
+                    4.76
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Hlavni_JZ_1_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                0.0,
+                5.4
+              ],
+              [
+                0.0,
+                0.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Loznice_Hlavni_JZ_1_Window_W",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0.0,
+                    1.0,
+                    4.725
+                  ],
+                  [
+                    0.0,
+                    1.0,
+                    3.375
+                  ],
+                  [
+                    0.0,
+                    4.0,
+                    3.375
+                  ],
+                  [
+                    0.0,
+                    4.0,
+                    4.725
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Hlavni_JZ_1_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_Host_SZ_1_Wall_S",
+              "Loznice_Host_SZ_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                5.0,
+                5.4
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Hlavni_JZ_1_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Detskypokoj_JV_1_Wall_W",
+              "Detskypokoj_JV_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                5.4
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Detskypokoj_JV_1",
+      "display_name": "Detsky pokoj (1.patro, JV)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Detskypokoj_JV_1_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Kuchyne_JV_Roof",
+              "Kuchyne_JV"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Detskypokoj_JV_1_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                5.4
+              ],
+              [
+                6.0,
+                0.0,
+                5.4
+              ],
+              [
+                12.0,
+                0.0,
+                5.4
+              ],
+              [
+                12.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Detskypokoj_JV_1_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                0.0,
+                5.4
+              ],
+              [
+                12.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                0.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Detskypokoj_JV_1_Window_S",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    11.0,
+                    0.0,
+                    4.76
+                  ],
+                  [
+                    11.0,
+                    0.0,
+                    3.34
+                  ],
+                  [
+                    7.0,
+                    0.0,
+                    3.34
+                  ],
+                  [
+                    7.0,
+                    0.0,
+                    4.76
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Detskypokoj_JV_1_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                5.0,
+                5.4
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                0.0,
+                2.7
+              ],
+              [
+                12.0,
+                0.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Detskypokoj_JV_1_Window_E",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    12.0,
+                    4.0,
+                    4.725
+                  ],
+                  [
+                    12.0,
+                    4.0,
+                    3.375
+                  ],
+                  [
+                    12.0,
+                    1.0,
+                    3.375
+                  ],
+                  [
+                    12.0,
+                    1.0,
+                    4.725
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Detskypokoj_JV_1_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Koupelna_SV_1_Wall_S",
+              "Koupelna_SV_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                5.4
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Detskypokoj_JV_1_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_Hlavni_JZ_1_Wall_E",
+              "Loznice_Hlavni_JZ_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                0.0,
+                5.4
+              ],
+              [
+                6.0,
+                0.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Loznice_Host_SZ_1",
+      "display_name": "Hostujici loznice (1.patro, SZ)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Loznice_Host_SZ_1_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_SZ_Roof",
+              "Loznice_SZ"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Host_SZ_1_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                10.0,
+                5.4
+              ],
+              [
+                0.0,
+                5.0,
+                5.4
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ],
+              [
+                6.0,
+                10.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Host_SZ_1_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                10.0,
+                5.4
+              ],
+              [
+                0.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Loznice_Host_SZ_1_Window_N",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    2.25,
+                    10.0,
+                    4.455
+                  ],
+                  [
+                    2.25,
+                    10.0,
+                    3.645
+                  ],
+                  [
+                    3.75,
+                    10.0,
+                    3.645
+                  ],
+                  [
+                    3.75,
+                    10.0,
+                    4.455
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Host_SZ_1_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                5.0,
+                5.4
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                10.0,
+                2.7
+              ],
+              [
+                0.0,
+                10.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Loznice_Host_SZ_1_Window_W",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0.0,
+                    6.0,
+                    4.725
+                  ],
+                  [
+                    0.0,
+                    6.0,
+                    3.375
+                  ],
+                  [
+                    0.0,
+                    9.0,
+                    3.375
+                  ],
+                  [
+                    0.0,
+                    9.0,
+                    4.725
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Host_SZ_1_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_Hlavni_JZ_1_Wall_N",
+              "Loznice_Hlavni_JZ_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                5.0,
+                5.4
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                2.7
+              ],
+              [
+                0.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Loznice_Host_SZ_1_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Koupelna_SV_1_Wall_W",
+              "Koupelna_SV_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                5.4
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "Koupelna_SV_1",
+      "display_name": "Koupelna (1.patro, SV)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "CR_Modern_2010Plus",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "CR_Older1990s_Infil_n50_8ACH",
+            "flow_per_exterior_area": 0.0004,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CR_Vent_30m3h_per_pers",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_1_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Koupelna_SV_Roof",
+              "Koupelna_SV"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                10.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_1_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                5.4
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ],
+              [
+                12.0,
+                5.0,
+                5.4
+              ],
+              [
+                12.0,
+                10.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_1_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                5.4
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                12.0,
+                10.0,
+                2.7
+              ],
+              [
+                12.0,
+                10.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Koupelna_SV_1_Window_N",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    8.25,
+                    10.0,
+                    4.455
+                  ],
+                  [
+                    8.25,
+                    10.0,
+                    3.645
+                  ],
+                  [
+                    9.75,
+                    10.0,
+                    3.645
+                  ],
+                  [
+                    9.75,
+                    10.0,
+                    4.455
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_1_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                10.0,
+                5.4
+              ],
+              [
+                12.0,
+                10.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                12.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "Koupelna_SV_1_Window_E",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    12.0,
+                    9.0,
+                    4.725
+                  ],
+                  [
+                    12.0,
+                    9.0,
+                    3.375
+                  ],
+                  [
+                    12.0,
+                    6.0,
+                    3.375
+                  ],
+                  [
+                    12.0,
+                    6.0,
+                    4.725
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ],
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_1_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Detskypokoj_JV_1_Wall_N",
+              "Detskypokoj_JV_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                12.0,
+                5.0,
+                5.4
+              ],
+              [
+                12.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "Koupelna_SV_1_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "Loznice_Host_SZ_1_Wall_E",
+              "Loznice_Host_SZ_1"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                6.0,
+                10.0,
+                5.4
+              ],
+              [
+                6.0,
+                10.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                2.7
+              ],
+              [
+                6.0,
+                5.0,
+                5.4
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

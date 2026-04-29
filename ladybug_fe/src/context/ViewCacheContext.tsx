@@ -24,7 +24,7 @@ type ViewType =
   | 'builder'
   | 'heatpump'
   | 'heatpump-real'
-  | 'combined';
+  | 'ped-optimizer';
 
 interface ViewCacheContextType {
   getCache: <T>(view: ViewType) => T | null;

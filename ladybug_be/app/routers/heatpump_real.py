@@ -32,7 +32,12 @@ async def analyze_real_heatpump(
     heat_recovery: float = Form(0.0),
     heating_only: bool = Form(False),
 ):
-    """Celorocni simulace TC s realnym HVAC."""
+    """Celorocni simulace TC s realnym HVAC.
+
+    CZ kalibrace (CSN 73 0331-1 BD profil + LED + EU spotrebice)
+    se aplikuje AUTOMATICKY pri building_type='Residential'.
+    Pro ostatni typy zustanou ASHRAE 90.1 defaulty.
+    """
     _validate(
         hbjson_file, epw_file, building_type,
         heating_setpoint_c, cooling_setpoint_c, heat_recovery,

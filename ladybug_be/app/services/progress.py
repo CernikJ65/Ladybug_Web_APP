@@ -3,7 +3,7 @@ Sdílený progress reporter pro dlouho běžící simulace.
 
 Pilot: použit v routeru solar.optimize_panels. Cíl je mít jednu centrální
 komponentu, kterou lze později zapojit do dalších endpointů (heatpump,
-combined, converter…) bez zásahu do stávajících tříd ve /services.
+ped-optimizer, converter…) bez zásahu do stávajících tříd ve /services.
 
 Použití v routeru:
 

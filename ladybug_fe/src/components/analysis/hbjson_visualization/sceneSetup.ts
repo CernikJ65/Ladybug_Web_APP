@@ -24,16 +24,16 @@ export function createScene(container: HTMLDivElement, cameraTarget: THREE.Vecto
   renderer.shadowMap.type = THREE.BasicShadowMap;
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-  const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.85);
   sun.position.set(500, 800, 500); sun.castShadow = true;
   sun.shadow.camera.left = -1000; sun.shadow.camera.right = 1000;
   sun.shadow.camera.top = 1000; sun.shadow.camera.bottom = -1000;
   sun.shadow.mapSize.set(2048, 2048);
   scene.add(sun);
-  const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+  const fill = new THREE.DirectionalLight(0xffffff, 0.28);
   fill.position.set(-400, 200, -400); scene.add(fill);
-  scene.add(new THREE.HemisphereLight(0x888888, 0x444444, 0.35));
+  scene.add(new THREE.HemisphereLight(0x888888, 0x444444, 0.28));
 
   const ground = new THREE.Mesh(new THREE.PlaneGeometry(5000, 5000), new THREE.MeshLambertMaterial({ color: 0x0a0a0a, side: THREE.DoubleSide }));
   ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;

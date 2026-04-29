@@ -71,7 +71,7 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       icon: <FaFire />,
       title: 'Potenciál tepelných čerpadel',
       description:
-        'Simulace a porovnání výroby energie čerpadel typu vzduch-voda a země-voda pro vytápění.',
+        'Optimalizační úloha, porovnávající využití tepelného čerpadla ',
       color: '#14b8a6',
       tags: ['EnergyPlus', 'COP'],
     },
@@ -79,20 +79,20 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
      {
        id: 'heatpump-real',
        icon: <FaThermometerQuarter />,
-     title: 'Celoroční simulace TČ',
+     title: 'Potenciál tepelných čerpadel',
        description:
-         'Reálný HVAC (VRF / WSHP) s výkonovými křivkami. Vytápění i chlazení po celý rok.',
+         'Optimalizační úloha, porovnávající využití tepelného čerpadla vzduch-voda a země-voda pro budovy ve stejné lokaci',
        color: '#0891b2',
        tags: ['VRF', 'WSHP', 'HVAC'],
      },
     {
-      id: 'combined',
+      id: 'ped-optimizer',
       icon: <FaBolt />,
-      title: 'Energetický optimalizátor',
+      title: 'PED optimalizátor',
       description:
-        'Kombinovaná analýza TČ + FVE. Investiční hodnocení, NPV a energetická bilance.',
+        'Kombinovaná analýza TČ + FVE z rozpočtu. Porovnání jen panely / ASHP+panely / GSHP+panely vůči celkové spotřebě budovy.',
       color: '#0d9488',
-      tags: ['NPV', 'PED', 'Bilance'],
+      tags: ['PED', 'Bilance', 'Rozpočet'],
     },
     {
       id: 'converter',

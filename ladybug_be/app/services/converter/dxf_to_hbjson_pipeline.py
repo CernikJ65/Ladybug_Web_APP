@@ -1,13 +1,24 @@
 """
 DXF → HBJSON pipeline orchestrátor.
 
+Účelem této pipeline je čistě geometrický převod (DWG/)DXF → HBJSON
+pro 3D vizualizaci v UI — výstup obsahuje pouze ladybug-native
+geometrii a klasifikaci ploch (Wall / RoofCeiling / Floor / Shade,
+Outdoors / Ground / Surface), bez energetických materiálů,
+konstrukcí, programů či radiance modifikátorů.
+
+Extension data se nevyloučí post-mortem mazáním z dictu, ale rovnou
+přes oficiální API: Model.to_dict(included_prop=[]). Honeybee tak
+do výstupu vůbec nezapíše energy/radiance properties.
+
 Celá konverzní pipeline:
   1. (volitelně) DWG → DXF přes DwgConverter
   2. Validace DXF přes DxfValidator
   3. Extrakce budov → Honeybee Rooms (DxfBuildingExtractor)
   4. Extrakce terénu → Honeybee Shades (DxfTerrainExtractor)
-  5. Sestavení Honeybee Model → export dict
-  6. Post-processing: oprava normál + triangulace (HbjsonPostprocessor)
+  5. Sestavení Honeybee Model → to_dict(included_prop=[],
+                                        include_plane=False)
+  6. Post-processing (HbjsonPostprocessor): oprava normál + triangulace
   7. Zápis HBJSON
 
 Soubor: ladybug_be/app/services/converter/dxf_to_hbjson_pipeline.py
@@ -95,7 +106,12 @@ class DxfToHbjsonPipeline:
             tolerance=TOL,
             angle_tolerance=ANGLE_TOL,
         )
-        hbjson_dict = model.to_dict()
+        # included_prop=[] → vůbec se nevygenerují extension data
+        # (energy/radiance konstrukce, materiály, programy…). Pro pouhý
+        # geometrický převod a 3D vizualizaci nemají smysl.
+        # include_plane=False → planes Face3D se nezahrnou (zmenšuje dict
+        # a vizualizace je nepotřebuje).
+        hbjson_dict = model.to_dict(included_prop=[], include_plane=False)
 
         # 7. Post-processing: oprava normál + triangulace
         postprocessor = HbjsonPostprocessor(hbjson_dict)

@@ -19,15 +19,11 @@ interface Props { onBack: () => void; }
 
 const DwgConverter: React.FC<Props> = ({ onBack }) => {
   const [file, setFile] = useState<File | null>(null);
-  const [terrain, setTerrain] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConvertResult | null>(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const fmt = (n: number) =>
-    n.toLocaleString('cs-CZ', { maximumFractionDigits: 1 });
 
   const handleFile = useCallback((f: File) => {
     const name = f.name.toLowerCase();
@@ -54,7 +50,6 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
 
     const fd = new FormData();
     fd.append('file', file);
-    fd.append('include_terrain', String(terrain));
 
     try {
       const res = await fetch(`${API}/convert`, {
@@ -111,12 +106,10 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
         {!result && !loading && (
           <DwgUploadCard
             file={file}
-            terrain={terrain}
             dragging={dragging}
             error={error}
             inputRef={inputRef}
             onFile={handleFile}
-            onTerrain={setTerrain}
             onDragging={setDragging}
             onDrop={handleDrop}
             onConvert={handleConvert}
@@ -137,8 +130,6 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
 
         {result && (
           <DwgResultCards
-            result={result}
-            fmt={fmt}
             onDownload={handleDownload}
             onReset={reset}
           />

@@ -1,18 +1,17 @@
 /**
- * Celoroční simulace TČ s reálným HVAC — orchestrátor.
+ * Celorocni simulace TC s realnym HVAC — orchestrator.
  *
- * Tok: HBJSON + EPW + typ budovy + setpointy + rekuperace
- *   rekuperace 0 → VRF / WSHP_GSHP (bez ventilace, čisté HP)
- *   rekuperace > 0 → VRFwithDOAS / WSHPwithDOAS s ERV
+ * Layout: Overview budovy → Tepelna potreba → Porovnani TC (taby).
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpReal.tsx
  */
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
+import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import HPRealForm from './HPRealForm';
 import HPRealOverview from './HPRealOverview';
 import HPRealDemand from './HPRealDemand';
-import HPRealSection from './HPRealSection';
+import HPRealComparison from './HPRealComparison';
 import type { RealHPResult } from './hpRealUtils';
 import './HeatPumpReal.css';
 import './HeatPumpRealResults.css';
@@ -20,6 +19,18 @@ import './HeatPumpRealResults.css';
 const API = 'http://127.0.0.1:8000/api/heatpump-real';
 
 interface Props { onBack: () => void; }
+
+interface CachedState {
+  hbjson: File | null;
+  epw: File | null;
+  buildingType: string;
+  heatingSp: number;
+  coolingSp: number;
+  heatRecovery: number;
+  heatingOnly: boolean;
+  result: RealHPResult | null;
+  error: string | null;
+}
 
 const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
   const [hbjson, setHbjson] = useState<File | null>(null);
@@ -32,6 +43,26 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RealHPResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  /* Zachování stavu při návratu z landing page (stejně jako solar/heatpump) */
+  useViewStateCache<CachedState>(
+    'heatpump-real',
+    {
+      hbjson, epw, buildingType, heatingSp, coolingSp,
+      heatRecovery, heatingOnly, result, error,
+    },
+    (c: CachedState) => {
+      setHbjson(c.hbjson);
+      setEpw(c.epw);
+      setBuildingType(c.buildingType);
+      setHeatingSp(c.heatingSp);
+      setCoolingSp(c.coolingSp);
+      setHeatRecovery(c.heatRecovery);
+      setHeatingOnly(c.heatingOnly);
+      setResult(c.result);
+      setError(c.error);
+    }
+  );
 
   const handleRun = async () => {
     if (!hbjson || !epw) {
@@ -71,8 +102,11 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
         <button className="hp-back" onClick={onBack}>
           <FaArrowLeft /> Zpět na přehled
         </button>
-        <span className="hp-hero-badge">Reálný HVAC · EnergyPlus</span>
-        <h1>Celoroční simulace TČ</h1>
+        <h1>Potenciál tepelných čerpadel</h1>
+        <p className="hp-hero-sub">
+    Tento scénář umisťuje do zón vyznačených v HBJSON datech tepelná čerpadla a počítá jejich potenciál. 
+Zároveň porovnává dva druhy čerpadel, vzduch-voda (ASHP) a země-voda (GSHP), proto se simulace interně spouští dvakrát.
+</p>
       </header>
 
       <HPRealForm
@@ -96,12 +130,13 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
       {result && (
         <div className="hp-results">
           <HPRealOverview result={result} />
-          <HPRealDemand demand={result.building_demand}
-            area={result.model_info.total_floor_area_m2}
+          <HPRealDemand
+            demand={result.building_demand}
             heatingOnly={result.parameters.heating_only} />
-          <HPRealSection data={result.ashp} color="ashp"
-            heatingOnly={result.parameters.heating_only} />
-          <HPRealSection data={result.gshp} color="gshp"
+          <HPRealComparison
+            ashp={result.ashp}
+            gshp={result.gshp}
+            rooms={result.building_demand.rooms}
             heatingOnly={result.parameters.heating_only} />
         </div>
       )}

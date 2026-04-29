@@ -22,7 +22,7 @@ const HBJSONBuilder = lazy(async () => {
 });
 const HeatPumpAnalysis = lazy(() => import('./components/analysis/heatpump/HeatPumpAnalysis'));
 const HeatPumpReal = lazy(() => import('./components/analysis/heatpump_real/HeatPumpReal'));
-const EnergyOptimizer = lazy(() => import('./components/analysis/combined/EnergyOptimizer'));
+const PedOptimizer = lazy(() => import('./components/analysis/ped_optimizer/PedOptimizer'));
 const DwgConverter = lazy(() => import('./components/analysis/converter/DwgConverter'));
 
 const RouteFallback: FC = () => (
@@ -54,20 +54,20 @@ const RouteFallback: FC = () => (
 type ViewType =
   | 'landing' | 'solar' | 'solar-advanced'
   | 'hbjson' | 'builder' | 'heatpump'
-  | 'heatpump-real' | 'combined' | 'converter';
+  | 'heatpump-real' | 'ped-optimizer' | 'converter';
 
 const hashToView: Record<string, ViewType> = {
   '': 'landing', features: 'landing', about: 'landing',
   solar: 'solar', 'solar-advanced': 'solar-advanced',
   hbjson: 'hbjson', builder: 'builder',
   heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
-  combined: 'combined', converter: 'converter',
+  'ped-optimizer': 'ped-optimizer', converter: 'converter',
 };
 const viewToHash: Record<ViewType, string> = {
   landing: '', solar: 'solar', 'solar-advanced': 'solar-advanced',
   hbjson: 'hbjson', builder: 'builder',
   heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
-  combined: 'combined', converter: 'converter',
+  'ped-optimizer': 'ped-optimizer', converter: 'converter',
 };
 const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   landing:          { cs: 'Ladybug Web',                                en: 'Ladybug Web' },
@@ -77,7 +77,7 @@ const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   builder:          { cs: 'HBJSON Builder – Ladybug Web',               en: 'HBJSON Builder – Ladybug Web' },
   heatpump:         { cs: 'Tepelná čerpadla – Ladybug Web',             en: 'Heat Pumps – Ladybug Web' },
   'heatpump-real':  { cs: 'Celoroční simulace TČ – Ladybug Web',       en: 'Year-Round HP Simulation – Ladybug Web' },
-  combined:         { cs: 'Energetický optimalizátor – Ladybug Web',    en: 'Energy Optimizer – Ladybug Web' },
+  'ped-optimizer':  { cs: 'PED optimalizátor – Ladybug Web',            en: 'PED Optimizer – Ladybug Web' },
   converter:        { cs: 'CAD Konvertor – Ladybug Web',                en: 'CAD Converter – Ladybug Web' },
 };
 
@@ -176,8 +176,9 @@ function App() {
       case 'heatpump-real':
         setCurrentView('heatpump-real');
         break;
+      case 'ped-optimizer':
       case 'combined':
-        setCurrentView('combined');
+        setCurrentView('ped-optimizer');
         break;
       case 'converter':
         setCurrentView('converter');
@@ -210,7 +211,7 @@ function App() {
           {currentView === 'builder' && <HBJSONBuilder onBack={back} />}
           {currentView === 'heatpump' && <HeatPumpAnalysis onBack={back} />}
           {currentView === 'heatpump-real' && <HeatPumpReal onBack={back} />}
-          {currentView === 'combined' && <EnergyOptimizer onBack={back} />}
+          {currentView === 'ped-optimizer' && <PedOptimizer onBack={back} />}
           {currentView === 'converter' && <DwgConverter onBack={back} />}
         </Suspense>
       )}

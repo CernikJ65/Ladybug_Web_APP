@@ -1,0 +1,3577 @@
+{
+  "type": "Model",
+  "identifier": "TestBudovy_PED",
+  "display_name": "Testovací PED budovy",
+  "units": "Meters",
+  "properties": {
+    "type": "ModelProperties",
+    "energy": {
+      "type": "ModelEnergyProperties",
+      "global_construction_set": {
+        "type": "GlobalConstructionSet",
+        "wall_set": {
+          "type": "WallConstructionSetAbridged",
+          "exterior_construction": "Generic Exterior Wall",
+          "interior_construction": "Generic Interior Wall",
+          "ground_construction": "Generic Underground Wall"
+        },
+        "floor_set": {
+          "type": "FloorConstructionSetAbridged",
+          "exterior_construction": "Generic Exposed Floor",
+          "interior_construction": "Generic Interior Floor",
+          "ground_construction": "Generic Ground Slab"
+        },
+        "roof_ceiling_set": {
+          "type": "RoofCeilingConstructionSetAbridged",
+          "exterior_construction": "Generic Roof",
+          "interior_construction": "Generic Interior Ceiling",
+          "ground_construction": "Generic Underground Roof"
+        },
+        "aperture_set": {
+          "type": "ApertureConstructionSetAbridged",
+          "window_construction": "Generic Double Pane",
+          "interior_construction": "Generic Single Pane",
+          "skylight_construction": "Generic Double Pane",
+          "operable_construction": "Generic Double Pane"
+        },
+        "door_set": {
+          "type": "DoorConstructionSetAbridged",
+          "exterior_construction": "Generic Exterior Door",
+          "interior_construction": "Generic Interior Door",
+          "exterior_glass_construction": "Generic Double Pane",
+          "interior_glass_construction": "Generic Single Pane",
+          "overhead_construction": "Generic Exterior Door"
+        },
+        "shade_construction": "Generic Shade",
+        "air_boundary_construction": "Generic Air Boundary",
+        "context_construction": "Generic Context",
+        "constructions": [
+          {
+            "type": "ShadeConstruction",
+            "identifier": "Generic Context",
+            "solar_reflectance": 0.2,
+            "visible_reflectance": 0.2,
+            "is_specular": false
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Underground Roof",
+            "materials": [
+              "Generic 50mm Insulation",
+              "Generic HW Concrete",
+              "Generic Ceiling Air Gap",
+              "Generic Acoustic Tile"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Exterior Wall",
+            "materials": [
+              "Generic Brick",
+              "Generic LW Concrete",
+              "Generic 50mm Insulation",
+              "Generic Wall Air Gap",
+              "Generic Gypsum Board"
+            ]
+          },
+          {
+            "type": "ShadeConstruction",
+            "identifier": "Generic Shade",
+            "solar_reflectance": 0.35,
+            "visible_reflectance": 0.35,
+            "is_specular": false
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Interior Wall",
+            "materials": [
+              "Generic Gypsum Board",
+              "Generic Wall Air Gap",
+              "Generic Gypsum Board"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Exterior Door",
+            "materials": [
+              "Generic Painted Metal",
+              "Generic 25mm Insulation",
+              "Generic Painted Metal"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Underground Wall",
+            "materials": [
+              "Generic 50mm Insulation",
+              "Generic HW Concrete",
+              "Generic Wall Air Gap",
+              "Generic Gypsum Board"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Roof",
+            "materials": [
+              "Generic Roof Membrane",
+              "Generic 50mm Insulation",
+              "Generic LW Concrete",
+              "Generic Ceiling Air Gap",
+              "Generic Acoustic Tile"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Exposed Floor",
+            "materials": [
+              "Generic Painted Metal",
+              "Generic Ceiling Air Gap",
+              "Generic 50mm Insulation",
+              "Generic LW Concrete"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Ground Slab",
+            "materials": [
+              "Generic 50mm Insulation",
+              "Generic HW Concrete"
+            ]
+          },
+          {
+            "type": "WindowConstructionAbridged",
+            "identifier": "Generic Double Pane",
+            "materials": [
+              "Generic Low-e Glass",
+              "Generic Window Air Gap",
+              "Generic Clear Glass"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Interior Ceiling",
+            "materials": [
+              "Generic LW Concrete",
+              "Generic Ceiling Air Gap",
+              "Generic Acoustic Tile"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Interior Door",
+            "materials": [
+              "Generic 25mm Wood"
+            ]
+          },
+          {
+            "type": "WindowConstructionAbridged",
+            "identifier": "Generic Single Pane",
+            "materials": [
+              "Generic Clear Glass"
+            ]
+          },
+          {
+            "type": "OpaqueConstructionAbridged",
+            "identifier": "Generic Interior Floor",
+            "materials": [
+              "Generic Acoustic Tile",
+              "Generic Ceiling Air Gap",
+              "Generic LW Concrete"
+            ]
+          },
+          {
+            "type": "AirBoundaryConstructionAbridged",
+            "identifier": "Generic Air Boundary",
+            "air_mixing_per_area": 0.1,
+            "air_mixing_schedule": "Always On"
+          }
+        ],
+        "materials": [
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic 25mm Insulation",
+            "roughness": "MediumRough",
+            "thickness": 0.025,
+            "conductivity": 0.03,
+            "density": 43.0,
+            "specific_heat": 1210.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.7,
+            "visible_absorptance": 0.7
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Acoustic Tile",
+            "roughness": "MediumSmooth",
+            "thickness": 0.02,
+            "conductivity": 0.06,
+            "density": 368.0,
+            "specific_heat": 590.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.2,
+            "visible_absorptance": 0.2
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic LW Concrete",
+            "roughness": "MediumRough",
+            "thickness": 0.1,
+            "conductivity": 0.53,
+            "density": 1280.0,
+            "specific_heat": 840.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.8,
+            "visible_absorptance": 0.8
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Brick",
+            "roughness": "MediumRough",
+            "thickness": 0.1,
+            "conductivity": 0.9,
+            "density": 1920.0,
+            "specific_heat": 790.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.65,
+            "visible_absorptance": 0.65
+          },
+          {
+            "type": "EnergyWindowMaterialGlazing",
+            "identifier": "Generic Low-e Glass",
+            "thickness": 0.006,
+            "solar_transmittance": 0.45,
+            "solar_reflectance": 0.36,
+            "solar_reflectance_back": 0.36,
+            "visible_transmittance": 0.71,
+            "visible_reflectance": 0.21,
+            "visible_reflectance_back": 0.21,
+            "infrared_transmittance": 0.0,
+            "emissivity": 0.84,
+            "emissivity_back": 0.047,
+            "conductivity": 1.0,
+            "dirt_correction": 1.0,
+            "solar_diffusing": false
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Wall Air Gap",
+            "roughness": "Smooth",
+            "thickness": 0.1,
+            "conductivity": 0.667,
+            "density": 1.28,
+            "specific_heat": 1000.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.7,
+            "visible_absorptance": 0.7
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Roof Membrane",
+            "roughness": "MediumRough",
+            "thickness": 0.01,
+            "conductivity": 0.16,
+            "density": 1120.0,
+            "specific_heat": 1460.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.65,
+            "visible_absorptance": 0.65
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic HW Concrete",
+            "roughness": "MediumRough",
+            "thickness": 0.2,
+            "conductivity": 1.95,
+            "density": 2240.0,
+            "specific_heat": 900.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.8,
+            "visible_absorptance": 0.8
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Ceiling Air Gap",
+            "roughness": "Smooth",
+            "thickness": 0.1,
+            "conductivity": 0.556,
+            "density": 1.28,
+            "specific_heat": 1000.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.7,
+            "visible_absorptance": 0.7
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Painted Metal",
+            "roughness": "Smooth",
+            "thickness": 0.0015,
+            "conductivity": 45.0,
+            "density": 7690.0,
+            "specific_heat": 410.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.5,
+            "visible_absorptance": 0.5
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic 25mm Wood",
+            "roughness": "MediumSmooth",
+            "thickness": 0.0254,
+            "conductivity": 0.15,
+            "density": 608.0,
+            "specific_heat": 1630.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.5,
+            "visible_absorptance": 0.5
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic Gypsum Board",
+            "roughness": "MediumSmooth",
+            "thickness": 0.0127,
+            "conductivity": 0.16,
+            "density": 800.0,
+            "specific_heat": 1090.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.5,
+            "visible_absorptance": 0.5
+          },
+          {
+            "type": "EnergyWindowMaterialGas",
+            "identifier": "Generic Window Air Gap",
+            "thickness": 0.0127,
+            "gas_type": "Air"
+          },
+          {
+            "type": "EnergyWindowMaterialGlazing",
+            "identifier": "Generic Clear Glass",
+            "thickness": 0.006,
+            "solar_transmittance": 0.77,
+            "solar_reflectance": 0.07,
+            "solar_reflectance_back": 0.07,
+            "visible_transmittance": 0.88,
+            "visible_reflectance": 0.08,
+            "visible_reflectance_back": 0.08,
+            "infrared_transmittance": 0.0,
+            "emissivity": 0.84,
+            "emissivity_back": 0.84,
+            "conductivity": 1.0,
+            "dirt_correction": 1.0,
+            "solar_diffusing": false
+          },
+          {
+            "type": "EnergyMaterial",
+            "identifier": "Generic 50mm Insulation",
+            "roughness": "MediumRough",
+            "thickness": 0.05,
+            "conductivity": 0.03,
+            "density": 43.0,
+            "specific_heat": 1210.0,
+            "thermal_absorptance": 0.9,
+            "solar_absorptance": 0.7,
+            "visible_absorptance": 0.7
+          }
+        ]
+      },
+      "construction_sets": [
+        {
+          "type": "ConstructionSetAbridged",
+          "identifier": "PED_LowEnergy_Set",
+          "display_name": "PED nízkoenergetický standard",
+          "wall_set": {
+            "type": "WallConstructionSetAbridged",
+            "exterior_construction": "PED_Ext_Wall",
+            "interior_construction": "PED_Int_Wall",
+            "ground_construction": "PED_Ext_Wall"
+          },
+          "floor_set": {
+            "type": "FloorConstructionSetAbridged",
+            "exterior_construction": "PED_Ground_Floor",
+            "interior_construction": "PED_Int_Floor",
+            "ground_construction": "PED_Ground_Floor"
+          },
+          "roof_ceiling_set": {
+            "type": "RoofCeilingConstructionSetAbridged",
+            "exterior_construction": "PED_Roof",
+            "interior_construction": "PED_Int_Floor",
+            "ground_construction": "PED_Roof"
+          },
+          "aperture_set": {
+            "type": "ApertureConstructionSetAbridged",
+            "window_construction": "PED_Triple_Glazing",
+            "interior_construction": "PED_Triple_Glazing",
+            "skylight_construction": "PED_Triple_Glazing",
+            "operable_construction": "PED_Triple_Glazing"
+          }
+        }
+      ],
+      "constructions": [
+        {
+          "type": "OpaqueConstruction",
+          "identifier": "PED_Ext_Wall",
+          "display_name": "Obvodová stěna ETICS (U≈0.15)",
+          "materials": [
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_Omitka_Ext",
+              "display_name": "Vnější omítka",
+              "roughness": "MediumRough",
+              "thickness": 0.015,
+              "conductivity": 0.87,
+              "density": 1800,
+              "specific_heat": 840,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_EPS_200",
+              "display_name": "EPS 200mm (λ=0.032)",
+              "roughness": "MediumSmooth",
+              "thickness": 0.2,
+              "conductivity": 0.032,
+              "density": 20,
+              "specific_heat": 1450,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_Zdivo_300",
+              "display_name": "Cihelné zdivo 300mm",
+              "roughness": "MediumRough",
+              "thickness": 0.3,
+              "conductivity": 0.52,
+              "density": 1400,
+              "specific_heat": 900,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.7,
+              "visible_absorptance": 0.7
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_Omitka_Int",
+              "display_name": "Vnitřní omítka",
+              "roughness": "MediumSmooth",
+              "thickness": 0.015,
+              "conductivity": 0.7,
+              "density": 1600,
+              "specific_heat": 840,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            }
+          ]
+        },
+        {
+          "type": "OpaqueConstruction",
+          "identifier": "PED_Roof",
+          "display_name": "Plochá střecha zateplená (U≈0.12)",
+          "materials": [
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_Hydroizolace",
+              "display_name": "Hydroizolace střechy",
+              "roughness": "Smooth",
+              "thickness": 0.005,
+              "conductivity": 0.17,
+              "density": 1200,
+              "specific_heat": 1000,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.65,
+              "visible_absorptance": 0.65
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_EPS_250",
+              "display_name": "EPS 250mm (λ=0.032)",
+              "roughness": "MediumSmooth",
+              "thickness": 0.25,
+              "conductivity": 0.032,
+              "density": 20,
+              "specific_heat": 1450,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_ZB_Deska_200",
+              "display_name": "ŽB deska 200mm",
+              "roughness": "MediumRough",
+              "thickness": 0.2,
+              "conductivity": 1.58,
+              "density": 2400,
+              "specific_heat": 920,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.7,
+              "visible_absorptance": 0.7
+            }
+          ]
+        },
+        {
+          "type": "OpaqueConstruction",
+          "identifier": "PED_Ground_Floor",
+          "display_name": "Podlaha na zemine (U~0.13)",
+          "materials": [
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_ZB_150",
+              "display_name": "ŽB podlahová deska 150mm",
+              "roughness": "MediumRough",
+              "thickness": 0.15,
+              "conductivity": 1.58,
+              "density": 2400,
+              "specific_heat": 920,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.7,
+              "visible_absorptance": 0.7
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_XPS_150",
+              "display_name": "XPS 250mm (lambda=0.034)",
+              "roughness": "MediumSmooth",
+              "thickness": 0.25,
+              "conductivity": 0.034,
+              "density": 35,
+              "specific_heat": 1450,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            }
+          ]
+        },
+        {
+          "type": "OpaqueConstruction",
+          "identifier": "PED_Int_Wall",
+          "display_name": "Interiérová stěna",
+          "materials": [
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_IntOmitka_1",
+              "display_name": "Vnitřní omítka 1",
+              "roughness": "MediumSmooth",
+              "thickness": 0.015,
+              "conductivity": 0.7,
+              "density": 1600,
+              "specific_heat": 840,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_Zdivo_Int_150",
+              "display_name": "Příčkové zdivo 150mm",
+              "roughness": "MediumRough",
+              "thickness": 0.15,
+              "conductivity": 0.52,
+              "density": 1400,
+              "specific_heat": 900,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.7,
+              "visible_absorptance": 0.7
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_IntOmitka_2",
+              "display_name": "Vnitřní omítka 2",
+              "roughness": "MediumSmooth",
+              "thickness": 0.015,
+              "conductivity": 0.7,
+              "density": 1600,
+              "specific_heat": 840,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.5,
+              "visible_absorptance": 0.5
+            }
+          ]
+        },
+        {
+          "type": "OpaqueConstruction",
+          "identifier": "PED_Int_Floor",
+          "display_name": "Mezipodlažní strop",
+          "materials": [
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_Poter",
+              "display_name": "Cement Screed 50mm",
+              "roughness": "MediumSmooth",
+              "thickness": 0.05,
+              "conductivity": 1.16,
+              "density": 2000,
+              "specific_heat": 840,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.7,
+              "visible_absorptance": 0.7
+            },
+            {
+              "type": "EnergyMaterial",
+              "identifier": "PED_ZB_Strop_200",
+              "display_name": "ŽB stropní deska 200mm",
+              "roughness": "MediumRough",
+              "thickness": 0.2,
+              "conductivity": 1.58,
+              "density": 2400,
+              "specific_heat": 920,
+              "thermal_absorptance": 0.9,
+              "solar_absorptance": 0.7,
+              "visible_absorptance": 0.7
+            }
+          ]
+        },
+        {
+          "type": "WindowConstruction",
+          "identifier": "PED_Triple_Glazing",
+          "display_name": "Izolační trojsklo (U=0.7)",
+          "materials": [
+            {
+              "type": "EnergyWindowMaterialSimpleGlazSys",
+              "identifier": "PED_Triple_Glass_Mat",
+              "display_name": "Trojsklo U=0.7 SHGC=0.50",
+              "u_factor": 0.7,
+              "shgc": 0.5,
+              "vt": 0.6
+            }
+          ]
+        },
+        {
+          "type": "WindowConstruction",
+          "identifier": "PED_Triple_Glazing_HighSHGC",
+          "display_name": "Izolacni trojsklo s vys. SHGC (jih)",
+          "materials": [
+            {
+              "type": "EnergyWindowMaterialSimpleGlazSys",
+              "identifier": "PED_Triple_Glass_HighSHGC",
+              "display_name": "Trojsklo U=0.7 SHGC=0.60 (jih)",
+              "u_factor": 0.7,
+              "shgc": 0.6,
+              "vt": 0.65
+            }
+          ]
+        },
+        {
+          "type": "WindowConstruction",
+          "identifier": "PED_Triple_Glazing_LowSHGC",
+          "display_name": "Izolacni trojsklo s niz. SHGC (E/W)",
+          "materials": [
+            {
+              "type": "EnergyWindowMaterialSimpleGlazSys",
+              "identifier": "PED_Triple_Glass_LowSHGC",
+              "display_name": "Trojsklo U=0.7 SHGC=0.30 (vychod-zapad)",
+              "u_factor": 0.7,
+              "shgc": 0.3,
+              "vt": 0.45
+            }
+          ]
+        }
+      ],
+      "materials": [
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_Omitka_Ext",
+          "display_name": "Vnější omítka",
+          "roughness": "MediumRough",
+          "thickness": 0.015,
+          "conductivity": 0.87,
+          "density": 1800,
+          "specific_heat": 840,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_EPS_200",
+          "display_name": "EPS 200mm (λ=0.032)",
+          "roughness": "MediumSmooth",
+          "thickness": 0.2,
+          "conductivity": 0.032,
+          "density": 20,
+          "specific_heat": 1450,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_Zdivo_300",
+          "display_name": "Cihelné zdivo 300mm",
+          "roughness": "MediumRough",
+          "thickness": 0.3,
+          "conductivity": 0.52,
+          "density": 1400,
+          "specific_heat": 900,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_Omitka_Int",
+          "display_name": "Vnitřní omítka",
+          "roughness": "MediumSmooth",
+          "thickness": 0.015,
+          "conductivity": 0.7,
+          "density": 1600,
+          "specific_heat": 840,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_Hydroizolace",
+          "display_name": "Hydroizolace střechy",
+          "roughness": "Smooth",
+          "thickness": 0.005,
+          "conductivity": 0.17,
+          "density": 1200,
+          "specific_heat": 1000,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.65,
+          "visible_absorptance": 0.65
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_EPS_250",
+          "display_name": "EPS 250mm (λ=0.032)",
+          "roughness": "MediumSmooth",
+          "thickness": 0.25,
+          "conductivity": 0.032,
+          "density": 20,
+          "specific_heat": 1450,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_ZB_Deska_200",
+          "display_name": "ŽB deska 200mm",
+          "roughness": "MediumRough",
+          "thickness": 0.2,
+          "conductivity": 1.58,
+          "density": 2400,
+          "specific_heat": 920,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_ZB_150",
+          "display_name": "ŽB podlahová deska 150mm",
+          "roughness": "MediumRough",
+          "thickness": 0.15,
+          "conductivity": 1.58,
+          "density": 2400,
+          "specific_heat": 920,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_XPS_150",
+          "display_name": "XPS 250mm (lambda=0.034)",
+          "roughness": "MediumSmooth",
+          "thickness": 0.25,
+          "conductivity": 0.034,
+          "density": 35,
+          "specific_heat": 1450,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_IntOmitka_1",
+          "display_name": "Vnitřní omítka 1",
+          "roughness": "MediumSmooth",
+          "thickness": 0.015,
+          "conductivity": 0.7,
+          "density": 1600,
+          "specific_heat": 840,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_Zdivo_Int_150",
+          "display_name": "Příčkové zdivo 150mm",
+          "roughness": "MediumRough",
+          "thickness": 0.15,
+          "conductivity": 0.52,
+          "density": 1400,
+          "specific_heat": 900,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_IntOmitka_2",
+          "display_name": "Vnitřní omítka 2",
+          "roughness": "MediumSmooth",
+          "thickness": 0.015,
+          "conductivity": 0.7,
+          "density": 1600,
+          "specific_heat": 840,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_Poter",
+          "display_name": "Cement Screed 50mm",
+          "roughness": "MediumSmooth",
+          "thickness": 0.05,
+          "conductivity": 1.16,
+          "density": 2000,
+          "specific_heat": 840,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "PED_ZB_Strop_200",
+          "display_name": "ŽB stropní deska 200mm",
+          "roughness": "MediumRough",
+          "thickness": 0.2,
+          "conductivity": 1.58,
+          "density": 2400,
+          "specific_heat": 920,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyWindowMaterialSimpleGlazSys",
+          "identifier": "PED_Triple_Glass_Mat",
+          "display_name": "Trojsklo U=0.7 SHGC=0.50",
+          "u_factor": 0.7,
+          "shgc": 0.5,
+          "vt": 0.6
+        },
+        {
+          "type": "EnergyWindowMaterialSimpleGlazSys",
+          "identifier": "PED_Triple_Glass_HighSHGC",
+          "display_name": "Trojsklo U=0.7 SHGC=0.60 (jih)",
+          "u_factor": 0.7,
+          "shgc": 0.6,
+          "vt": 0.65
+        },
+        {
+          "type": "EnergyWindowMaterialSimpleGlazSys",
+          "identifier": "PED_Triple_Glass_LowSHGC",
+          "display_name": "Trojsklo U=0.7 SHGC=0.30 (vychod-zapad)",
+          "u_factor": 0.7,
+          "shgc": 0.3,
+          "vt": 0.45
+        }
+      ],
+      "hvacs": [],
+      "shws": [],
+      "program_types": [],
+      "schedules": [],
+      "schedule_type_limits": [],
+      "ventilation_simulation_control": {
+        "type": "VentilationSimulationControl",
+        "vent_control_type": "SingleZone",
+        "reference_temperature": 20.0,
+        "reference_pressure": 101325.0,
+        "reference_humidity_ratio": 0.0,
+        "building_type": "LowRise",
+        "long_axis_angle": 0.0,
+        "aspect_ratio": 1.0
+      },
+      "electric_load_center": {
+        "type": "ElectricLoadCenter",
+        "inverter_efficiency": 0.96,
+        "inverter_dc_to_ac_size_ratio": 1.1
+      }
+    }
+  },
+  "rooms": [
+    {
+      "type": "Room",
+      "identifier": "BudovaA_prizemi",
+      "display_name": "Budova A — přízemí",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "PED_LowEnergy_Set",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "PED_ModernHouse_Infiltration_2010plus",
+            "flow_per_exterior_area": 7e-05,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CZ_Residential_30m3h_per_person",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "BudovaA_prizemi_Bottom",
+          "display_name": "BudovaA_prizemi_Bottom",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                15.0,
+                20.0,
+                0.0
+              ],
+              [
+                15.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                20.0,
+                0.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -0.0,
+                -0.0,
+                -1.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_prizemi_Front",
+          "display_name": "BudovaA_prizemi_Front",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                15.0,
+                20.0,
+                3.0
+              ],
+              [
+                15.0,
+                20.0,
+                0.0
+              ],
+              [
+                0.0,
+                20.0,
+                0.0
+              ],
+              [
+                0.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "o": [
+                15.0,
+                20.0,
+                0.0
+              ],
+              "x": [
+                1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_prizemi_Front_Glz0",
+              "display_name": "BudovaA_prizemi_Front_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    9.25,
+                    20.0,
+                    2.3215838362577492
+                  ],
+                  [
+                    9.25,
+                    20.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    5.75,
+                    20.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    5.75,
+                    20.0,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  "o": [
+                    9.25,
+                    20.0,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_prizemi_Right",
+          "display_name": "BudovaA_prizemi_Right",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                15.0,
+                0.0,
+                3.0
+              ],
+              [
+                15.0,
+                0.0,
+                0.0
+              ],
+              [
+                15.0,
+                20.0,
+                0.0
+              ],
+              [
+                15.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                15.0,
+                20.0,
+                3.0
+              ],
+              "x": [
+                0.0,
+                -1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_prizemi_Right_Glz0",
+              "display_name": "BudovaA_prizemi_Right_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    15.0,
+                    4.52277442494834,
+                    2.3215838362577492
+                  ],
+                  [
+                    15.0,
+                    4.52277442494834,
+                    0.6784161637422509
+                  ],
+                  [
+                    15.0,
+                    15.47722557505166,
+                    0.6784161637422509
+                  ],
+                  [
+                    15.0,
+                    15.47722557505166,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    15.0,
+                    4.52277442494834,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_prizemi_Back",
+          "display_name": "BudovaA_prizemi_Back",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                0.0,
+                3.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                15.0,
+                0.0,
+                0.0
+              ],
+              [
+                15.0,
+                0.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "x": [
+                -1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_prizemi_Back_Glz0",
+              "display_name": "BudovaA_prizemi_Back_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_HighSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.3920808187112543,
+                    0.0,
+                    2.3215838362577492
+                  ],
+                  [
+                    3.3920808187112543,
+                    0.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    11.607919181288747,
+                    0.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    11.607919181288747,
+                    0.0,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "o": [
+                    3.3920808187112543,
+                    0.0,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    -1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_prizemi_Left",
+          "display_name": "BudovaA_prizemi_Left",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                20.0,
+                3.0
+              ],
+              [
+                0.0,
+                20.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                0.0
+              ],
+              "x": [
+                0.0,
+                1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_prizemi_Left_Glz0",
+              "display_name": "BudovaA_prizemi_Left_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0.0,
+                    15.47722557505166,
+                    2.3215838362577492
+                  ],
+                  [
+                    0.0,
+                    15.47722557505166,
+                    0.6784161637422509
+                  ],
+                  [
+                    0.0,
+                    4.52277442494834,
+                    0.6784161637422509
+                  ],
+                  [
+                    0.0,
+                    4.52277442494834,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    0.0,
+                    15.47722557505166,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_prizemi_Top",
+          "display_name": "BudovaA_prizemi_Top",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                20.0,
+                3.0
+              ],
+              [
+                0.0,
+                0.0,
+                3.0
+              ],
+              [
+                15.0,
+                0.0,
+                3.0
+              ],
+              [
+                15.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "BudovaA_1patro_Bottom",
+              "BudovaA_1patro"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "BudovaA_1patro",
+      "display_name": "Budova A — 1. patro",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "PED_LowEnergy_Set",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "PED_ModernHouse_Infiltration_2010plus",
+            "flow_per_exterior_area": 7e-05,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CZ_Residential_30m3h_per_person",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "BudovaA_1patro_Bottom",
+          "display_name": "BudovaA_1patro_Bottom",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                15.0,
+                20.0,
+                3.0
+              ],
+              [
+                15.0,
+                0.0,
+                3.0
+              ],
+              [
+                0.0,
+                0.0,
+                3.0
+              ],
+              [
+                0.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -0.0,
+                -0.0,
+                -1.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "BudovaA_prizemi_Top",
+              "BudovaA_prizemi"
+            ]
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_1patro_Front",
+          "display_name": "BudovaA_1patro_Front",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                15.0,
+                20.0,
+                6.0
+              ],
+              [
+                15.0,
+                20.0,
+                3.0
+              ],
+              [
+                0.0,
+                20.0,
+                3.0
+              ],
+              [
+                0.0,
+                20.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "o": [
+                15.0,
+                20.0,
+                3.0
+              ],
+              "x": [
+                1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_1patro_Front_Glz0",
+              "display_name": "BudovaA_1patro_Front_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    9.25,
+                    20.0,
+                    5.321583836257749
+                  ],
+                  [
+                    9.25,
+                    20.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    5.75,
+                    20.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    5.75,
+                    20.0,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  "o": [
+                    9.25,
+                    20.0,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_1patro_Right",
+          "display_name": "BudovaA_1patro_Right",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                15.0,
+                0.0,
+                6.0
+              ],
+              [
+                15.0,
+                0.0,
+                3.0
+              ],
+              [
+                15.0,
+                20.0,
+                3.0
+              ],
+              [
+                15.0,
+                20.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                15.0,
+                20.0,
+                6.0
+              ],
+              "x": [
+                0.0,
+                -1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_1patro_Right_Glz0",
+              "display_name": "BudovaA_1patro_Right_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    15.0,
+                    4.52277442494834,
+                    5.321583836257749
+                  ],
+                  [
+                    15.0,
+                    4.52277442494834,
+                    3.6784161637422508
+                  ],
+                  [
+                    15.0,
+                    15.47722557505166,
+                    3.6784161637422508
+                  ],
+                  [
+                    15.0,
+                    15.47722557505166,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    15.0,
+                    4.52277442494834,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_1patro_Back",
+          "display_name": "BudovaA_1patro_Back",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                0.0,
+                6.0
+              ],
+              [
+                0.0,
+                0.0,
+                3.0
+              ],
+              [
+                15.0,
+                0.0,
+                3.0
+              ],
+              [
+                15.0,
+                0.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                -1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_1patro_Back_Glz0",
+              "display_name": "BudovaA_1patro_Back_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_HighSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.3920808187112543,
+                    0.0,
+                    5.321583836257749
+                  ],
+                  [
+                    3.3920808187112543,
+                    0.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    11.607919181288747,
+                    0.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    11.607919181288747,
+                    0.0,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "o": [
+                    3.3920808187112543,
+                    0.0,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    -1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_1patro_Left",
+          "display_name": "BudovaA_1patro_Left",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                20.0,
+                6.0
+              ],
+              [
+                0.0,
+                20.0,
+                3.0
+              ],
+              [
+                0.0,
+                0.0,
+                3.0
+              ],
+              [
+                0.0,
+                0.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                0.0,
+                1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaA_1patro_Left_Glz0",
+              "display_name": "BudovaA_1patro_Left_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0.0,
+                    15.47722557505166,
+                    5.321583836257749
+                  ],
+                  [
+                    0.0,
+                    15.47722557505166,
+                    3.6784161637422508
+                  ],
+                  [
+                    0.0,
+                    4.52277442494834,
+                    3.6784161637422508
+                  ],
+                  [
+                    0.0,
+                    4.52277442494834,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    0.0,
+                    15.47722557505166,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaA_1patro_Top",
+          "display_name": "BudovaA_1patro_Top",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0.0,
+                20.0,
+                6.0
+              ],
+              [
+                0.0,
+                0.0,
+                6.0
+              ],
+              [
+                15.0,
+                0.0,
+                6.0
+              ],
+              [
+                15.0,
+                20.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "o": [
+                0.0,
+                0.0,
+                6.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "BudovaB_prizemi",
+      "display_name": "Budova B — přízemí",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "PED_LowEnergy_Set",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "PED_ModernHouse_Infiltration_2010plus",
+            "flow_per_exterior_area": 7e-05,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CZ_Residential_30m3h_per_person",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "BudovaB_prizemi_Bottom",
+          "display_name": "BudovaB_prizemi_Bottom",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                40.0,
+                20.0,
+                0.0
+              ],
+              [
+                40.0,
+                0.0,
+                0.0
+              ],
+              [
+                25.0,
+                0.0,
+                0.0
+              ],
+              [
+                25.0,
+                20.0,
+                0.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -0.0,
+                -0.0,
+                -1.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                0.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_prizemi_Front",
+          "display_name": "BudovaB_prizemi_Front",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                40.0,
+                20.0,
+                3.0
+              ],
+              [
+                40.0,
+                20.0,
+                0.0
+              ],
+              [
+                25.0,
+                20.0,
+                0.0
+              ],
+              [
+                25.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "o": [
+                40.0,
+                20.0,
+                0.0
+              ],
+              "x": [
+                1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_prizemi_Front_Glz0",
+              "display_name": "BudovaB_prizemi_Front_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    34.25,
+                    20.0,
+                    2.3215838362577492
+                  ],
+                  [
+                    34.25,
+                    20.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    30.75,
+                    20.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    30.75,
+                    20.0,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  "o": [
+                    34.25,
+                    20.0,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_prizemi_Right",
+          "display_name": "BudovaB_prizemi_Right",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                40.0,
+                0.0,
+                3.0
+              ],
+              [
+                40.0,
+                0.0,
+                0.0
+              ],
+              [
+                40.0,
+                20.0,
+                0.0
+              ],
+              [
+                40.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                40.0,
+                20.0,
+                3.0
+              ],
+              "x": [
+                0.0,
+                -1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_prizemi_Right_Glz0",
+              "display_name": "BudovaB_prizemi_Right_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    40.0,
+                    4.52277442494834,
+                    2.3215838362577492
+                  ],
+                  [
+                    40.0,
+                    4.52277442494834,
+                    0.6784161637422509
+                  ],
+                  [
+                    40.0,
+                    15.47722557505166,
+                    0.6784161637422509
+                  ],
+                  [
+                    40.0,
+                    15.47722557505166,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    40.0,
+                    4.52277442494834,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_prizemi_Back",
+          "display_name": "BudovaB_prizemi_Back",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                25.0,
+                0.0,
+                3.0
+              ],
+              [
+                25.0,
+                0.0,
+                0.0
+              ],
+              [
+                40.0,
+                0.0,
+                0.0
+              ],
+              [
+                40.0,
+                0.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                0.0
+              ],
+              "x": [
+                -1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_prizemi_Back_Glz0",
+              "display_name": "BudovaB_prizemi_Back_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_HighSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    28.392080818711253,
+                    0.0,
+                    2.3215838362577492
+                  ],
+                  [
+                    28.392080818711253,
+                    0.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    36.60791918128874,
+                    0.0,
+                    0.6784161637422509
+                  ],
+                  [
+                    36.60791918128874,
+                    0.0,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "o": [
+                    28.392080818711253,
+                    0.0,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    -1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_prizemi_Left",
+          "display_name": "BudovaB_prizemi_Left",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                25.0,
+                20.0,
+                3.0
+              ],
+              [
+                25.0,
+                20.0,
+                0.0
+              ],
+              [
+                25.0,
+                0.0,
+                0.0
+              ],
+              [
+                25.0,
+                0.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                0.0
+              ],
+              "x": [
+                0.0,
+                1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_prizemi_Left_Glz0",
+              "display_name": "BudovaB_prizemi_Left_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    25.0,
+                    15.47722557505166,
+                    2.3215838362577492
+                  ],
+                  [
+                    25.0,
+                    15.47722557505166,
+                    0.6784161637422509
+                  ],
+                  [
+                    25.0,
+                    4.52277442494834,
+                    0.6784161637422509
+                  ],
+                  [
+                    25.0,
+                    4.52277442494834,
+                    2.3215838362577492
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    25.0,
+                    15.47722557505166,
+                    0.6784161637422509
+                  ],
+                  "x": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_prizemi_Top",
+          "display_name": "BudovaB_prizemi_Top",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                25.0,
+                20.0,
+                3.0
+              ],
+              [
+                25.0,
+                0.0,
+                3.0
+              ],
+              [
+                40.0,
+                0.0,
+                3.0
+              ],
+              [
+                40.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "BudovaB_1patro_Bottom",
+              "BudovaB_1patro"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "BudovaB_1patro",
+      "display_name": "Budova B — 1. patro",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "PED_LowEnergy_Set",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "PED_ModernHouse_Infiltration_2010plus",
+            "flow_per_exterior_area": 7e-05,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "CZ_Residential_30m3h_per_person",
+            "flow_per_person": 0.0083,
+            "flow_per_area": 0,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "BudovaB_1patro_Bottom",
+          "display_name": "BudovaB_1patro_Bottom",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                40.0,
+                20.0,
+                3.0
+              ],
+              [
+                40.0,
+                0.0,
+                3.0
+              ],
+              [
+                25.0,
+                0.0,
+                3.0
+              ],
+              [
+                25.0,
+                20.0,
+                3.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -0.0,
+                -0.0,
+                -1.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "BudovaB_prizemi_Top",
+              "BudovaB_prizemi"
+            ]
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_1patro_Front",
+          "display_name": "BudovaB_1patro_Front",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                40.0,
+                20.0,
+                6.0
+              ],
+              [
+                40.0,
+                20.0,
+                3.0
+              ],
+              [
+                25.0,
+                20.0,
+                3.0
+              ],
+              [
+                25.0,
+                20.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                1.0,
+                0.0
+              ],
+              "o": [
+                40.0,
+                20.0,
+                3.0
+              ],
+              "x": [
+                1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_1patro_Front_Glz0",
+              "display_name": "BudovaB_1patro_Front_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    34.25,
+                    20.0,
+                    5.321583836257749
+                  ],
+                  [
+                    34.25,
+                    20.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    30.75,
+                    20.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    30.75,
+                    20.0,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ],
+                  "o": [
+                    34.25,
+                    20.0,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_1patro_Right",
+          "display_name": "BudovaB_1patro_Right",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                40.0,
+                0.0,
+                6.0
+              ],
+              [
+                40.0,
+                0.0,
+                3.0
+              ],
+              [
+                40.0,
+                20.0,
+                3.0
+              ],
+              [
+                40.0,
+                20.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                40.0,
+                20.0,
+                6.0
+              ],
+              "x": [
+                0.0,
+                -1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_1patro_Right_Glz0",
+              "display_name": "BudovaB_1patro_Right_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    40.0,
+                    4.52277442494834,
+                    5.321583836257749
+                  ],
+                  [
+                    40.0,
+                    4.52277442494834,
+                    3.6784161637422508
+                  ],
+                  [
+                    40.0,
+                    15.47722557505166,
+                    3.6784161637422508
+                  ],
+                  [
+                    40.0,
+                    15.47722557505166,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    40.0,
+                    4.52277442494834,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_1patro_Back",
+          "display_name": "BudovaB_1patro_Back",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                25.0,
+                0.0,
+                6.0
+              ],
+              [
+                25.0,
+                0.0,
+                3.0
+              ],
+              [
+                40.0,
+                0.0,
+                3.0
+              ],
+              [
+                40.0,
+                0.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                -1.0,
+                0.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                -1.0,
+                -0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_1patro_Back_Glz0",
+              "display_name": "BudovaB_1patro_Back_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_HighSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    28.392080818711253,
+                    0.0,
+                    5.321583836257749
+                  ],
+                  [
+                    28.392080818711253,
+                    0.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    36.60791918128874,
+                    0.0,
+                    3.6784161637422508
+                  ],
+                  [
+                    36.60791918128874,
+                    0.0,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -1.0,
+                    0.0
+                  ],
+                  "o": [
+                    28.392080818711253,
+                    0.0,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    -1.0,
+                    -0.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_1patro_Left",
+          "display_name": "BudovaB_1patro_Left",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                25.0,
+                20.0,
+                6.0
+              ],
+              [
+                25.0,
+                20.0,
+                3.0
+              ],
+              [
+                25.0,
+                0.0,
+                3.0
+              ],
+              [
+                25.0,
+                0.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                -1.0,
+                0.0,
+                0.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                3.0
+              ],
+              "x": [
+                0.0,
+                1.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "BudovaB_1patro_Left_Glz0",
+              "display_name": "BudovaB_1patro_Left_Glz0",
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged",
+                  "construction": "PED_Triple_Glazing_LowSHGC"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    25.0,
+                    15.47722557505166,
+                    5.321583836257749
+                  ],
+                  [
+                    25.0,
+                    15.47722557505166,
+                    3.6784161637422508
+                  ],
+                  [
+                    25.0,
+                    4.52277442494834,
+                    3.6784161637422508
+                  ],
+                  [
+                    25.0,
+                    4.52277442494834,
+                    5.321583836257749
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -1.0,
+                    0.0,
+                    0.0
+                  ],
+                  "o": [
+                    25.0,
+                    15.47722557505166,
+                    3.6784161637422508
+                  ],
+                  "x": [
+                    0.0,
+                    1.0,
+                    0.0
+                  ]
+                }
+              },
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "BudovaB_1patro_Top",
+          "display_name": "BudovaB_1patro_Top",
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                25.0,
+                20.0,
+                6.0
+              ],
+              [
+                25.0,
+                0.0,
+                6.0
+              ],
+              [
+                40.0,
+                0.0,
+                6.0
+              ],
+              [
+                40.0,
+                20.0,
+                6.0
+              ]
+            ],
+            "plane": {
+              "type": "Plane",
+              "n": [
+                0.0,
+                0.0,
+                1.0
+              ],
+              "o": [
+                25.0,
+                0.0,
+                6.0
+              ],
+              "x": [
+                1.0,
+                0.0,
+                0.0
+              ]
+            }
+          },
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "tolerance": 0.01,
+  "angle_tolerance": 1.0,
+  "version": "2.0.4"
+}

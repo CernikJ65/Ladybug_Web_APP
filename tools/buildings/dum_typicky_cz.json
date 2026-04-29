@@ -1,0 +1,47 @@
+{
+  "name": "CR_Typicky_Dum_120m2",
+  "display_name": "Typicky CR rodinny dum 120 m2 (modernizace 2010+)",
+
+  "geometry": {
+    "width_x_m": 12,
+    "depth_y_m": 10,
+    "height_m": 2.7,
+    "floors": 1,
+    "north_angle_deg": 0,
+    "rooms": [
+      { "id": "Obyvak_JZ",          "x": [0, 6],  "y": [0, 5]  },
+      { "id": "Kuchyne_JV",         "x": [6, 12], "y": [0, 5]  },
+      { "id": "Loznice_SZ",         "x": [0, 6],  "y": [5, 10] },
+      { "id": "Koupelna_Chodba_SV", "x": [6, 12], "y": [5, 10] }
+    ]
+  },
+
+  "wwr_per_orientation": {
+    "south": 0.35,
+    "east":  0.20,
+    "west":  0.20,
+    "north": 0.10
+  },
+
+  "envelope": {
+    "wall_u_w_m2k":   0.26,
+    "roof_u_w_m2k":   0.16,
+    "floor_u_w_m2k":  0.31,
+    "window_u_w_m2k": 1.1,
+    "window_g_value": 0.55,
+    "window_vt":      0.65
+  },
+
+  "air": {
+    "infiltration_n50_ach":     2.0,
+    "ventilation_m3h_per_person": 30,
+    "ventilation_type":         "mechanical_with_recovery",
+    "recovery_efficiency":       0.85
+  },
+
+  "systems": {
+    "heating_setpoint_c": 20,
+    "cooling_setpoint_c": 26,
+    "heat_source":        "ASHP_or_GSHP_select_in_UI"
+  }
+}

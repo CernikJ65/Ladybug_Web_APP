@@ -11,6 +11,7 @@ import React from 'react';
 import {
   FaFile, FaCloudUploadAlt, FaHome, FaBuilding,
   FaStore, FaGraduationCap, FaHotel, FaHospital,
+  FaTimes,
 } from 'react-icons/fa';
 
 interface Props {
@@ -57,6 +58,17 @@ const HPRealForm: React.FC<Props> = (p) => (
         </span>
         <input type="file" accept=".hbjson,.json"
           onChange={e => p.onHbjson(e.target.files?.[0] || null)} />
+        {p.hbjson && (
+          <button type="button" className="hp-dropzone-clear"
+            aria-label="Odebrat soubor"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              p.onHbjson(null);
+            }}>
+            <FaTimes />
+          </button>
+        )}
       </label>
       <label className={`hp-dropzone ${p.epw ? 'has-file' : ''}`}>
         <FaCloudUploadAlt className="hp-dropzone-icon" />
@@ -68,6 +80,17 @@ const HPRealForm: React.FC<Props> = (p) => (
         </span>
         <input type="file" accept=".epw"
           onChange={e => p.onEpw(e.target.files?.[0] || null)} />
+        {p.epw && (
+          <button type="button" className="hp-dropzone-clear"
+            aria-label="Odebrat soubor"
+            onClick={e => {
+              e.preventDefault();
+              e.stopPropagation();
+              p.onEpw(null);
+            }}>
+            <FaTimes />
+          </button>
+        )}
       </label>
     </div>
 
