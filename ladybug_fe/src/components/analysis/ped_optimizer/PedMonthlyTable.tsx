@@ -1,5 +1,5 @@
 /**
- * Mesicni tabulka pro vybranou variantu — spotreba/vyroba/bilance.
+ * Měsíční tabulka — spotřeba/výroba/bilance pro vybranou variantu.
  *
  * Soubor: ladybug_fe/src/components/analysis/ped_optimizer/PedMonthlyTable.tsx
  */
@@ -15,19 +15,14 @@ const fmtS = (n: number) => (n >= 0 ? '+' : '') + fmt(n);
 
 const PedMonthlyTable: React.FC<Props> = ({ variant }) => {
   const total =
-    variant.consumption_kwh?.total ?? sumField(variant.monthly, 'consumption_kwh');
+    variant.consumption_kwh?.total
+    ?? sumField(variant.monthly, 'consumption_kwh');
   const totalPv = sumField(variant.monthly, 'pv_kwh');
   const totalBal = totalPv - total;
 
   return (
-    <div className="ped-monthly">
-      <div className="ped-monthly-title">
-        Měsíční přehled: {variant.system.label}
-        {variant.system.num_panels > 0 && (
-          <> + {variant.system.num_panels} panelů</>
-        )}
-      </div>
-      <table>
+    <div className="ped-table-card">
+      <table className="ped-table">
         <thead>
           <tr>
             <th>Měsíc</th>
@@ -51,7 +46,7 @@ const PedMonthlyTable: React.FC<Props> = ({ variant }) => {
               </td>
             </tr>
           ))}
-          <tr className="ped-total-row">
+          <tr className="ped-table-total">
             <td>Rok celkem</td>
             <td className="num ped-val-cons">{fmt(total)}</td>
             <td className="num ped-val-pv">{fmt(totalPv)}</td>

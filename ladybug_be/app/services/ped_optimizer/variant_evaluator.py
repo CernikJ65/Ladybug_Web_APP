@@ -1,26 +1,24 @@
 """
 Vyhodnoceni jedne varianty: zkombinuje spotrebu + PV vyrobu.
 
-Pro variantu PANELS_ONLY:
-  - HVAC slozky se vynuluji (zadne TC = bez topeni, bez fanu, bez cerpadel)
-  - Lights + Equipment se prevezme z dodanych referencnich dat
-    (z ASHP/GSHP/bare runu — viz orchestrator)
-  - Vytapeni neni pokryto -> UI ukaze upozorneni
+PANELS_ONLY (bez TC):
+  - HVAC slozky (cooling/fans/pumps/heat_rejection) = 0
+  - "heating" slot = TEPELNA POTREBA budovy z E+ simulace
+    (heating_delivered_kwh) - simuluje primy elektricky odpor
+    s COP=1, tedy worst-case scenar bez TC
+  - Lights + Equipment = z reference simulace
 
-Pro varianty ASHP_PANELS / GSHP_PANELS:
-  - Spotreba = vse z prislusne E+ simulace
+ASHP_PANELS / GSHP_PANELS:
+  - Spotreba = vse z prislusne E+ simulace (vc. el. spotreby TC)
   - PV = soucet TOP-N panelu
 
 Soubor: ladybug_be/app/services/ped_optimizer/variant_evaluator.py
 """
 from __future__ import annotations
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
-from .variant_planner import (
-    Variant, variant_to_dict,
-    PANELS_ONLY,
-)
+from .variant_planner import Variant, variant_to_dict, PANELS_ONLY
 from .pv_pipeline_runner import PVPipelineRunner
 
 MONTH_NAMES = [
@@ -47,12 +45,16 @@ class VariantEvaluator:
         consumption: Dict[str, Any],
         passive_only: bool,
     ) -> Dict[str, Any]:
-        """consumption: dict z ConsumptionResultsReader (annual+monthly)."""
+        """consumption: dict z ConsumptionResultsReader."""
+        heat_delivered = consumption.get("heating_delivered_kwh", {})
+        heat_annual = heat_delivered.get("annual", 0.0)
+        heat_monthly = heat_delivered.get("monthly", [0.0] * 12)
+
         annual_breakdown = self._build_annual(
-            consumption["annual_kwh"], passive_only,
+            consumption["annual_kwh"], passive_only, heat_annual,
         )
         monthly_breakdown = self._build_monthly(
-            consumption["monthly_kwh"], passive_only,
+            consumption["monthly_kwh"], passive_only, heat_monthly,
         )
 
         annual_pv = PVPipelineRunner.sum_top_n(
@@ -111,14 +113,8 @@ class VariantEvaluator:
         annual_breakdown: Dict[str, float],
         passive_only: bool,
         floor_area_m2: float,
-    ) -> Dict[str, Any] | None:
-        """Vrati SCOP + dodane teplo + teplo z prostredi pro TC variantu.
-
-        SCOP definice (jako v heatpump_real RealHPAnalyzer):
-          system_elec = heating + fans + pumps + heat_rejection
-          SCOP = delivered / system_elec
-        Tim se zahrnuji parazitni spotreby (obehova cerpadla, ventilatory).
-        """
+    ) -> Optional[Dict[str, Any]]:
+        """SCOP + dodane teplo + teplo z prostredi (jen pro TC variantu)."""
         if passive_only:
             return None
         delivered = consumption.get(
@@ -145,18 +141,19 @@ class VariantEvaluator:
             "scop": round(scop, 2),
         }
 
-    # ------------------------------------------------------------------
-    # Privatni — sestaveni breakdown
-    # ------------------------------------------------------------------
-
     @staticmethod
     def _build_annual(
-        src: Dict[str, float], passive_only: bool,
+        src: Dict[str, float],
+        passive_only: bool,
+        heating_delivered_annual: float = 0.0,
     ) -> Dict[str, float]:
         out = {k: 0.0 for k in HVAC_KEYS + PASSIVE_KEYS}
         for k in PASSIVE_KEYS:
             out[k] = src.get(k, 0.0)
-        if not passive_only:
+        if passive_only:
+            # Bez TC: tepelna potreba kryta primym el. odporem (COP=1)
+            out["heating"] = round(heating_delivered_annual, 1)
+        else:
             for k in HVAC_KEYS:
                 out[k] = src.get(k, 0.0)
         out["total"] = round(sum(out.values()), 1)
@@ -164,14 +161,20 @@ class VariantEvaluator:
 
     @staticmethod
     def _build_monthly(
-        src: Dict[str, List[float]], passive_only: bool,
+        src: Dict[str, List[float]],
+        passive_only: bool,
+        heating_delivered_monthly: Optional[List[float]] = None,
     ) -> List[Dict[str, float]]:
+        if heating_delivered_monthly is None:
+            heating_delivered_monthly = [0.0] * 12
         rows: List[Dict[str, float]] = []
         for m in range(12):
             row = {k: 0.0 for k in HVAC_KEYS + PASSIVE_KEYS}
             for k in PASSIVE_KEYS:
                 row[k] = src.get(k, [0.0] * 12)[m]
-            if not passive_only:
+            if passive_only:
+                row["heating"] = round(heating_delivered_monthly[m], 1)
+            else:
                 for k in HVAC_KEYS:
                     row[k] = src.get(k, [0.0] * 12)[m]
             row["total"] = round(sum(row.values()), 1)

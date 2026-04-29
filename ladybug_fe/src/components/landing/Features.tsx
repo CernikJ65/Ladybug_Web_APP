@@ -81,16 +81,16 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
        icon: <FaThermometerQuarter />,
      title: 'Potenciál tepelných čerpadel',
        description:
-         'Optimalizační úloha, porovnávající využití tepelného čerpadla vzduch-voda a země-voda pro budovy ve stejné lokaci',
+         'Scénář vypočítává potenciál výroby tepla, a chladu tepelných čerpadel a zároveň porovnává dva typy: vzduch-voda (ASHP) a země-voda (GSHP)',
        color: '#0891b2',
        tags: ['VRF', 'WSHP', 'HVAC'],
      },
     {
       id: 'ped-optimizer',
       icon: <FaBolt />,
-      title: 'PED optimalizátor',
+      title: 'Optimalizace Oblasti pomcí PV a TČ',
       description:
-        'Kombinovaná analýza TČ + FVE z rozpočtu. Porovnání jen panely / ASHP+panely / GSHP+panely vůči celkové spotřebě budovy.',
+        'Porovnání tří investičních scénářů v rámci zadaného rozpočtu. Cílem je dosáhnout celoroční energetické bilance budovy.',
       color: '#0d9488',
       tags: ['PED', 'Bilance', 'Rozpočet'],
     },

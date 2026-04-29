@@ -1,12 +1,11 @@
 /**
  * PED optimalizator — orchestrator.
- *
- * Layout: hero + form + (chyba|vysledky -> karty + breakdown + mesicni).
+ * Apple-clean · modrá paleta · text-only sekce a chipy.
  *
  * Soubor: ladybug_fe/src/components/analysis/ped_optimizer/PedOptimizer.tsx
  */
 import React, { useState } from 'react';
-import { FaArrowLeft, FaBolt } from 'react-icons/fa';
+import { FaArrowLeft } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import PedForm from './PedForm';
 import PedVariantCards from './PedVariantCards';
@@ -98,15 +97,13 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
     <div className="ped-page">
       <header className="ped-hero">
         <button className="ped-back" onClick={onBack}>
-          <FaArrowLeft /> Zpět
+          <FaArrowLeft /> Zpět na přehled
         </button>
-        <div className="ped-hero-badge">
-          <FaBolt /> EnergyPlus + Radiance + pvlib
-        </div>
+        <span className="ped-hero-badge">EnergyPlus + Radiance + pvlib</span>
         <h1>PED optimalizátor</h1>
         <p>
-          Porovnání 3 variant: jen panely · ASHP + panely · GSHP + panely.
-          Cíl: výroba pokryje celkovou spotřebu budovy (PED).
+          Porovnání tří investičních scénářů v rámci zadaného rozpočtu.
+          Cílem je dosáhnout celoroční energetické bilance budovy.
         </p>
       </header>
 
@@ -133,21 +130,26 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
       {result && (
         <div className="ped-results">
           <div className="ped-summary">
-            {result.location && <span>Lokalita: {result.location}</span>}
-            <span>Místností: {result.model_info.room_count}</span>
-            <span>
-              Plocha: {fmt(result.model_info.total_floor_area_m2)} m²
+            {result.location && (
+              <span className="ped-chip">
+                Lokalita <strong>{result.location}</strong>
+              </span>
+            )}
+            <span className="ped-chip">
+              Místností <strong>{result.model_info.room_count}</strong>
             </span>
-            <span>Dostupných panelů: {result.max_panels_available}</span>
-            <span>Rozpočet: {fmt(result.budget_czk)} Kč</span>
-            <span>
-              FVE: {result.pv_settings.engine} ·{' '}
-              {result.pv_settings.mounting_type === 'FixedOpenRack'
-                ? 'otevřená konstrukce'
-                : 'přilehlá ke střeše'}
+            <span className="ped-chip">
+              Plocha <strong>{fmt(result.model_info.total_floor_area_m2)}</strong> m²
+            </span>
+            <span className="ped-chip">
+              Dostupných panelů <strong>{result.max_panels_available}</strong>
+            </span>
+            <span className="ped-chip">
+              Rozpočet <strong>{fmt(result.budget_czk)}</strong> Kč
             </span>
           </div>
 
+          <h2 className="ped-section-title">Varianty</h2>
           <PedVariantCards
             variants={result.variants}
             bestIndex={result.best_index}
@@ -159,15 +161,19 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
             && selected.consumption_kwh && (
             <>
               {selected.hp_performance && (
-                <PedHpPerformance
-                  data={selected.hp_performance}
-                  hpLabel={selected.system.hp_label}
-                />
+                <>
+                  <h2 className="ped-section-title">
+                    Výkon TČ — {selected.system.hp_label}
+                  </h2>
+                  <PedHpPerformance data={selected.hp_performance} />
+                </>
               )}
-              <h3 className="ped-section-title">
-                Roční spotřeba budovy — {selected.system.label}
-              </h3>
-              <PedConsumptionBreakdown data={selected.consumption_kwh} />
+              <h2 className="ped-section-title">Roční spotřeba budovy</h2>
+              <PedConsumptionBreakdown
+                data={selected.consumption_kwh}
+                hasHeatPump={selected.system.has_hp}
+              />
+              <h2 className="ped-section-title">Měsíční bilance</h2>
               <PedMonthlyTable variant={selected} />
             </>
           )}
