@@ -2,7 +2,8 @@
  * Upload karta pro DWG/DXF konvertor.
  *
  * Drag & drop + file picker. Terén je do modelu zahrnut vždy
- * automaticky — žádný uživatelský přepínač.
+ * automaticky — žádný uživatelský přepínač. Velikost souboru
+ * v tabulkových mono číslicích vedle názvu.
  *
  * Soubor: ladybug_fe/src/components/analysis/converter/DwgUploadCard.tsx
  */
@@ -33,7 +34,6 @@ const DwgUploadCard: React.FC<Props> = (p) => (
         </p>
       </div>
     </div>
-
     <div
       className={
         'cvt-upload-zone'
@@ -57,7 +57,9 @@ const DwgUploadCard: React.FC<Props> = (p) => (
       {p.file && (
         <div className="cvt-upload-filename">
           <FaFileAlt /> {p.file.name}
-          {' '}({(p.file.size / 1024).toFixed(0)} KB)
+          <span className="cvt-upload-filename-meta">
+            {(p.file.size / 1024).toFixed(0)} KB
+          </span>
         </div>
       )}
       <input
@@ -70,13 +72,11 @@ const DwgUploadCard: React.FC<Props> = (p) => (
         }
       />
     </div>
-
     {p.error && (
       <div className="cvt-error">
         <FaTimesCircle /> {p.error}
       </div>
     )}
-
     <button
       className="cvt-submit"
       disabled={!p.file}

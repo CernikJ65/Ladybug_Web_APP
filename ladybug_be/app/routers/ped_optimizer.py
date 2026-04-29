@@ -18,8 +18,12 @@ from __future__ import annotations
 
 import os
 import tempfile
+from typing import Optional
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.concurrency import run_in_threadpool
+
+from ..services.progress import progress_scope, registry
 
 router = APIRouter()
 
@@ -38,6 +42,7 @@ async def analyze_ped(
     pv_cost_per_panel: float = Form(18_000),
     pv_efficiency: float = Form(0.20),
     mounting_type: str = Form("FixedOpenRack"),
+    job_id: Optional[str] = Form(None),
 ):
     """PED analyza: ASHP/GSHP/jen panely vs rozpocet (Radiance+pvlib)."""
     _validate(
@@ -46,17 +51,51 @@ async def analyze_ped(
         ashp_cost, gshp_cost, pv_cost_per_panel,
         pv_efficiency, mounting_type,
     )
+    if job_id:
+        registry.create(job_id)
+
     hbjson_path = _save(await hbjson_file.read(), ".hbjson")
     epw_path = _save(await epw_file.read(), ".epw")
 
     try:
-        from ..services.ped_optimizer import PEDOptimizer, CostConfig
-
-        cfg = CostConfig(
-            ashp_total_czk=ashp_cost,
-            gshp_total_czk=gshp_cost,
-            pv_cost_per_panel_czk=pv_cost_per_panel,
+        return await run_in_threadpool(
+            _run_ped,
+            hbjson_path, epw_path,
+            budget_czk, heating_setpoint_c,
+            ashp_cost, gshp_cost, pv_cost_per_panel,
+            pv_efficiency, mounting_type, job_id,
         )
+
+    except ImportError as e:
+        raise HTTPException(500, f"Chybi knihovny: {e}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Chyba PED analyzy: {e}")
+    finally:
+        _cleanup(hbjson_path, epw_path)
+
+
+def _run_ped(
+    hbjson_path: str,
+    epw_path: str,
+    budget_czk: float,
+    heating_setpoint_c: float,
+    ashp_cost: float,
+    gshp_cost: float,
+    pv_cost_per_panel: float,
+    pv_efficiency: float,
+    mounting_type: str,
+    job_id: Optional[str],
+) -> dict:
+    from ..services.ped_optimizer import PEDOptimizer, CostConfig
+
+    cfg = CostConfig(
+        ashp_total_czk=ashp_cost,
+        gshp_total_czk=gshp_cost,
+        pv_cost_per_panel_czk=pv_cost_per_panel,
+    )
+    with progress_scope(job_id):
         optimizer = PEDOptimizer(
             hbjson_path=hbjson_path,
             epw_path=epw_path,
@@ -68,15 +107,6 @@ async def analyze_ped(
             mounting_type=mounting_type,
         )
         return optimizer.analyze()
-
-    except ImportError as e:
-        raise HTTPException(500, f"Chybi knihovny: {e}")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, f"Chyba PED analyzy: {e}")
-    finally:
-        _cleanup(hbjson_path, epw_path)
 
 
 # ---------------------------------------------------------------------------

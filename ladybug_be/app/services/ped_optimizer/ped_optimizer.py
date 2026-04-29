@@ -28,6 +28,7 @@ from .consumption_simulator import ConsumptionSimulator
 from .consumption_runner import run_consumption_simulations
 from .pv_pipeline_runner import PVPipelineRunner
 from .variant_evaluator import VariantEvaluator
+from ..progress import report_progress
 
 
 class PEDOptimizer:
@@ -59,7 +60,7 @@ class PEDOptimizer:
 
     def analyze(self) -> Dict[str, Any]:
         """Spusti vsechno a vrati strukturovany vysledek."""
-        # 1. Solar pipeline — pustime ji jen pro maximalni N (panels-only)
+        report_progress("init", 2, "Spouštím PED analýzu…")
         max_panels_budget = int(
             self._budget // self._cfg.pv_cost_per_panel_czk,
         )
@@ -70,15 +71,14 @@ class PEDOptimizer:
             system_losses=self._losses,
             mounting_type=self._mounting,
         )
+        report_progress("solar", 5, "Radiance + pvlib výpočet panelů…")
         pv = pv_runner.run(max_panels_budget)
         max_avail = pv["max_available"]
 
-        # 2. Variant planning
+        report_progress("plan", 24, "Plánuji varianty…")
         planner = VariantPlanner(self._cfg)
         variants = planner.plan(self._budget, max_avail)
 
-        # 3. Spotreba (ASHP + GSHP simulace + zdroj lights/equipment)
-        # CZ kalibrace bezi automaticky pro building_type='Residential'
         preparer = RealHPModelPreparer(
             hbjson_path=self._hbjson,
             building_type=self._btype,
@@ -90,11 +90,33 @@ class PEDOptimizer:
         )
         climate = EPWClimateExtractor(self._epw)
         sim = ConsumptionSimulator(self._epw, climate.get_design_days())
+
+        report_progress("ashp", 27, "EnergyPlus simulace ASHP…")
+
+        def _ashp_prog(frac: float) -> None:
+            report_progress(
+                "ashp", 27 + frac * 33, "EnergyPlus simulace ASHP…",
+            )
+
+        def _gshp_prog(frac: float) -> None:
+            report_progress(
+                "gshp", 60 + frac * 33, "EnergyPlus simulace GSHP…",
+            )
+
+        def _bare_prog(frac: float) -> None:
+            report_progress(
+                "bare", 27 + frac * 66,
+                "EnergyPlus simulace osvětlení/spotřebičů…",
+            )
+
         ashp_cons, gshp_cons, passive_source = run_consumption_simulations(
             preparer, sim, variants,
+            on_ashp_progress=_ashp_prog,
+            on_gshp_progress=_gshp_prog,
+            on_bare_progress=_bare_prog,
         )
 
-        # 4. Vyhodnoceni
+        report_progress("evaluate", 95, "Vyhodnocuji varianty…")
         floor_area = preparer.get_total_floor_area()
         evaluator = VariantEvaluator(pv, floor_area_m2=floor_area)
         results: List[Dict[str, Any]] = []

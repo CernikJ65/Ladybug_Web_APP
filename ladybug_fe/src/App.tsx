@@ -6,6 +6,7 @@
  */
 import { useState, useEffect, useCallback, lazy, Suspense, type FC } from 'react';
 import { ViewCacheProvider } from './context/ViewCacheContext';
+import { SharedFilesProvider } from './context/SharedFilesContext';
 import LandingPage from './components/LandingPage';
 
 type BackProps = { onBack: () => void };
@@ -200,21 +201,23 @@ function App() {
 
   return (
     <ViewCacheProvider>
-      {currentView === 'landing' && (
-        <LandingPage onFeatureClick={handleFeatureClick} />
-      )}
-      {currentView !== 'landing' && (
-        <Suspense fallback={<RouteFallback />}>
-          {currentView === 'solar' && <SolarAnalysis onBack={back} />}
-          {currentView === 'solar-advanced' && <SolarAnalysisAdvanced onBack={back} />}
-          {currentView === 'hbjson' && <HBJSONViewer onBack={back} />}
-          {currentView === 'builder' && <HBJSONBuilder onBack={back} />}
-          {currentView === 'heatpump' && <HeatPumpAnalysis onBack={back} />}
-          {currentView === 'heatpump-real' && <HeatPumpReal onBack={back} />}
-          {currentView === 'ped-optimizer' && <PedOptimizer onBack={back} />}
-          {currentView === 'converter' && <DwgConverter onBack={back} />}
-        </Suspense>
-      )}
+      <SharedFilesProvider>
+        {currentView === 'landing' && (
+          <LandingPage onFeatureClick={handleFeatureClick} />
+        )}
+        {currentView !== 'landing' && (
+          <Suspense fallback={<RouteFallback />}>
+            {currentView === 'solar' && <SolarAnalysis onBack={back} />}
+            {currentView === 'solar-advanced' && <SolarAnalysisAdvanced onBack={back} />}
+            {currentView === 'hbjson' && <HBJSONViewer onBack={back} />}
+            {currentView === 'builder' && <HBJSONBuilder onBack={back} />}
+            {currentView === 'heatpump' && <HeatPumpAnalysis onBack={back} />}
+            {currentView === 'heatpump-real' && <HeatPumpReal onBack={back} />}
+            {currentView === 'ped-optimizer' && <PedOptimizer onBack={back} />}
+            {currentView === 'converter' && <DwgConverter onBack={back} />}
+          </Suspense>
+        )}
+      </SharedFilesProvider>
     </ViewCacheProvider>
   );
 }

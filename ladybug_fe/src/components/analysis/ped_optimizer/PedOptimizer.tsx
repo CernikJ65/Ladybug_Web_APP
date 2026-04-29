@@ -4,9 +4,12 @@
  *
  * Soubor: ladybug_fe/src/components/analysis/ped_optimizer/PedOptimizer.tsx
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
+import { useSimulationProgress } from './../../../hooks/useSimulationProgress';
+import { useSharedFiles } from './../../../context/SharedFilesContext';
+import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
 import PedForm from './PedForm';
 import PedVariantCards from './PedVariantCards';
 import PedMonthlyTable from './PedMonthlyTable';
@@ -50,6 +53,16 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
   const [result, setResult] = useState<PedApiResult | null>(null);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  const progress = useSimulationProgress(loading ? jobId : null);
+  const sharedFiles = useSharedFiles();
+
+  useEffect(() => {
+    setHbjson(sharedFiles.getHbjson());
+    setEpw(sharedFiles.getEpw());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useViewStateCache<CachedState>(
     'ped-optimizer',
@@ -75,12 +88,17 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
       setError('Nahrajte oba soubory — HBJSON i EPW');
       return;
     }
+    const newJobId =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setJobId(newJobId);
     setLoading(true); setError(null); setResult(null);
     try {
       const data = await runPedAnalysis({
         hbjson, epw, budget, heatingSetpoint,
         ashpCost, gshpCost, pvCostPerPanel, pvEfficiency,
-        mountingType,
+        mountingType, jobId: newJobId,
       });
       setResult(data);
       setSelectedIdx(data.best_index);
@@ -95,11 +113,17 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="ped-page">
+      <SimulationProgressOverlay
+        open={loading}
+        progress={progress}
+        title="PED analýza"
+      />
+
       <header className="ped-hero">
         <button className="ped-back" onClick={onBack}>
           <FaArrowLeft /> Zpět na přehled
         </button>
-        <span className="ped-hero-badge">EnergyPlus + Radiance + pvlib</span>
+       
         <h1>PED optimalizátor</h1>
         <p>
           Porovnání tří investičních scénářů v rámci zadaného rozpočtu.
@@ -115,7 +139,8 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
         pvEfficiency={pvEfficiency}
         mountingType={mountingType}
         loading={loading}
-        onHbjson={setHbjson} onEpw={setEpw}
+        onHbjson={(f) => { setHbjson(f); sharedFiles.setHbjson(f); }}
+        onEpw={(f) => { setEpw(f); sharedFiles.setEpw(f); }}
         onBudget={setBudget}
         onHeatingSetpoint={setHeatingSetpoint}
         onAshpCost={setAshpCost} onGshpCost={setGshpCost}
@@ -142,7 +167,7 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
               Plocha <strong>{fmt(result.model_info.total_floor_area_m2)}</strong> m²
             </span>
             <span className="ped-chip">
-              Dostupných panelů <strong>{result.max_panels_available}</strong>
+              Maximalní počet panelů <strong>{result.max_panels_available}</strong>
             </span>
             <span className="ped-chip">
               Rozpočet <strong>{fmt(result.budget_czk)}</strong> Kč

@@ -5,9 +5,12 @@
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpReal.tsx
  */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
+import { useSimulationProgress } from './../../../hooks/useSimulationProgress';
+import { useSharedFiles } from './../../../context/SharedFilesContext';
+import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
 import HPRealForm from './HPRealForm';
 import HPRealOverview from './HPRealOverview';
 import HPRealDemand from './HPRealDemand';
@@ -43,6 +46,16 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<RealHPResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+
+  const progress = useSimulationProgress(loading ? jobId : null);
+  const sharedFiles = useSharedFiles();
+
+  useEffect(() => {
+    setHbjson(sharedFiles.getHbjson());
+    setEpw(sharedFiles.getEpw());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* Zachování stavu při návratu z landing page (stejně jako solar/heatpump) */
   useViewStateCache<CachedState>(
@@ -69,6 +82,11 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
       setError('Nahrajte oba soubory — HBJSON i EPW');
       return;
     }
+    const newJobId =
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `job-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    setJobId(newJobId);
     setLoading(true);
     setError(null);
     setResult(null);
@@ -80,6 +98,7 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
     fd.append('cooling_setpoint_c', coolingSp.toString());
     fd.append('heat_recovery', heatRecovery.toString());
     fd.append('heating_only', heatingOnly.toString());
+    fd.append('job_id', newJobId);
     try {
       const res = await fetch(`${API}/analyze`, {
         method: 'POST', body: fd,
@@ -98,6 +117,12 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="hp-page">
+      <SimulationProgressOverlay
+        open={loading}
+        progress={progress}
+        title="Simulace tepelných čerpadel"
+      />
+
       <header className="hp-hero">
         <button className="hp-back" onClick={onBack}>
           <FaArrowLeft /> Zpět na přehled
@@ -116,7 +141,8 @@ Zároveň porovnává dva druhy čerpadel, vzduch-voda (ASHP) a země-voda (GSHP
         heatRecovery={heatRecovery}
         heatingOnly={heatingOnly}
         loading={loading}
-        onHbjson={setHbjson} onEpw={setEpw}
+        onHbjson={(f) => { setHbjson(f); sharedFiles.setHbjson(f); }}
+        onEpw={(f) => { setEpw(f); sharedFiles.setEpw(f); }}
         onBuildingType={setBuildingType}
         onHeatingSp={setHeatingSp}
         onCoolingSp={setCoolingSp}

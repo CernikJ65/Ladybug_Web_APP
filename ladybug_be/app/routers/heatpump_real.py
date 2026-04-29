@@ -11,8 +11,12 @@ Setpointy: pokud neposlany, pouzije Ladybug default z programu.
 Soubor: ladybug_be/app/routers/heatpump_real.py
 """
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.concurrency import run_in_threadpool
+from typing import Optional
 import tempfile
 import os
+
+from ..services.progress import progress_scope, registry
 
 router = APIRouter()
 
@@ -31,6 +35,7 @@ async def analyze_real_heatpump(
     cooling_setpoint_c: float = Form(26.0),
     heat_recovery: float = Form(0.0),
     heating_only: bool = Form(False),
+    job_id: Optional[str] = Form(None),
 ):
     """Celorocni simulace TC s realnym HVAC.
 
@@ -43,13 +48,43 @@ async def analyze_real_heatpump(
         heating_setpoint_c, cooling_setpoint_c, heat_recovery,
         heating_only,
     )
+    if job_id:
+        registry.create(job_id)
+
     hbjson_path = _save(await hbjson_file.read(), ".hbjson")
     epw_path = _save(await epw_file.read(), ".epw")
 
     try:
-        from ..services.heatpump_real.real_hp_analyzer import (
-            RealHPAnalyzer,
+        return await run_in_threadpool(
+            _run_analysis,
+            hbjson_path, epw_path, building_type,
+            heating_setpoint_c, cooling_setpoint_c,
+            heat_recovery, heating_only, job_id,
         )
+    except ImportError as e:
+        raise HTTPException(500, f"Chybi knihovny: {e}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(500, f"Chyba simulace: {e}")
+    finally:
+        _cleanup(hbjson_path, epw_path)
+
+
+def _run_analysis(
+    hbjson_path: str,
+    epw_path: str,
+    building_type: str,
+    heating_setpoint_c: float,
+    cooling_setpoint_c: float,
+    heat_recovery: float,
+    heating_only: bool,
+    job_id: Optional[str],
+) -> dict:
+    from ..services.heatpump_real.real_hp_analyzer import (
+        RealHPAnalyzer,
+    )
+    with progress_scope(job_id):
         analyzer = RealHPAnalyzer(
             hbjson_path=hbjson_path,
             epw_path=epw_path,
@@ -60,14 +95,6 @@ async def analyze_real_heatpump(
             heating_only=heating_only,
         )
         return analyzer.analyze()
-    except ImportError as e:
-        raise HTTPException(500, f"Chybi knihovny: {e}")
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, f"Chyba simulace: {e}")
-    finally:
-        _cleanup(hbjson_path, epw_path)
 
 
 def _validate(

@@ -21,6 +21,7 @@ from typing import Dict, Any, Optional, List
 from .real_hp_model_preparer import RealHPModelPreparer
 from .real_hp_simulator import RealHPSimulator
 from ..epw_climate_extractor import EPWClimateExtractor
+from ..progress import report_progress
 
 
 class RealHPAnalyzer:
@@ -51,17 +52,37 @@ class RealHPAnalyzer:
         self._apply_cz = apply_cz_calibration
 
     def analyze(self) -> Dict[str, Any]:
+        report_progress("init", 2, "Příprava modelu…")
         rooms = self._preparer.get_rooms_info()
         area = self._preparer.get_total_floor_area()
         dds = self._climate.get_design_days()
         sim = RealHPSimulator(self._epw_path, dds)
 
+        report_progress("model_ashp", 5, "Sestavuji ASHP model…")
+        ashp_model = self._preparer.prepare_ashp()
+        report_progress("ashp", 8, "EnergyPlus simulace ASHP…")
+
+        def _ashp_progress(frac: float) -> None:
+            report_progress(
+                "ashp", 8 + frac * 42, "EnergyPlus simulace ASHP…",
+            )
+
         print("\n>>> ASHP (vzduch-voda) <<<")
-        ashp_res = sim.simulate(self._preparer.prepare_ashp())
+        ashp_res = sim.simulate(ashp_model, on_progress=_ashp_progress)
+
+        report_progress("model_gshp", 52, "Sestavuji GSHP model…")
+        gshp_model = self._preparer.prepare_gshp()
+        report_progress("gshp", 55, "EnergyPlus simulace GSHP…")
+
+        def _gshp_progress(frac: float) -> None:
+            report_progress(
+                "gshp", 55 + frac * 40, "EnergyPlus simulace GSHP…",
+            )
 
         print("\n>>> GSHP (zeme-voda) <<<")
-        gshp_res = sim.simulate(self._preparer.prepare_gshp())
+        gshp_res = sim.simulate(gshp_model, on_progress=_gshp_progress)
 
+        report_progress("results", 97, "Sestavuji výsledky…")
         demand = self._building_demand(ashp_res, area, rooms)
 
         return {

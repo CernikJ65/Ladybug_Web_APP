@@ -18,7 +18,7 @@ import os
 import shutil
 import tempfile
 import time
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Callable
 
 from honeybee.model import Model
 from honeybee_energy.simulation.parameter import SimulationParameter
@@ -31,6 +31,7 @@ from ladybug.epw import EPW
 from .consumption_results_reader import (
     ConsumptionResultsReader, ALL_METERS, HEAT_OUT,
 )
+from ..pv_ep_runner import run_ep_with_progress
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,11 @@ class ConsumptionSimulator:
         self._dds = dds
         self._heating_only = heating_only
 
-    def simulate(self, model: Model) -> Dict[str, Any]:
+    def simulate(
+        self,
+        model: Model,
+        on_progress: Optional[Callable[[float], None]] = None,
+    ) -> Dict[str, Any]:
         """Vrati {annual_kwh: {...}, monthly_kwh: {...}}."""
         with tempfile.TemporaryDirectory(prefix="ped_") as tmp:
             sp = self._build_sim_par()
@@ -67,7 +72,12 @@ class ConsumptionSimulator:
             self._patch_idf_doas_backup_heater(idf)
             self._inject_meters(idf)
             shutil.copy(idf, fr"C:\debug\ped_{ts}.idf")
-            sql, _, _, _, err = run_idf(idf, self._epw)
+            if on_progress is not None:
+                sql, err = run_ep_with_progress(
+                    idf, self._epw, on_progress,
+                )
+            else:
+                sql, _, _, _, err = run_idf(idf, self._epw)
             if sql and os.path.isfile(sql):
                 shutil.copy(sql, fr"C:\debug\ped_{ts}.sql")
             if err and os.path.isfile(err):

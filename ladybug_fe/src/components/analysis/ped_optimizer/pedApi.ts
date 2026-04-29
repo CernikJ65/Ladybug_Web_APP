@@ -17,6 +17,7 @@ export interface PedRequest {
   pvCostPerPanel: number;
   pvEfficiency: number;
   mountingType: MountingType;
+  jobId?: string;
 }
 
 export async function runPedAnalysis(
@@ -32,6 +33,7 @@ export async function runPedAnalysis(
   fd.append('pv_cost_per_panel', req.pvCostPerPanel.toString());
   fd.append('pv_efficiency', (req.pvEfficiency / 100).toString());
   fd.append('mounting_type', req.mountingType);
+  if (req.jobId) fd.append('job_id', req.jobId);
   const res = await fetch(`${API}/analyze`, { method: 'POST', body: fd });
   if (!res.ok) {
     const e = await res.json();

@@ -12,6 +12,7 @@ import TourOverlay from '../../help/TourOverlay';
 import { getSolarAdvancedSteps } from '../../help/content/solarAdvancedSteps';
 import { useSimulationProgress } from '../../../hooks/useSimulationProgress';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
+import { useSharedFiles } from './../../../context/SharedFilesContext';
 import './SolarAnalysisAdvanced.css';
 
 /* ───── Typy ───── */
@@ -178,10 +179,20 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     }
   );
 
+  const sharedFiles = useSharedFiles();
+
+  useEffect(() => {
+    setHbjsonFile(sharedFiles.getHbjson());
+    setEpwFile(sharedFiles.getEpw());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleFileChange = (
-    setter: React.Dispatch<React.SetStateAction<File | null>>
+    setter: React.Dispatch<React.SetStateAction<File | null>>,
+    sharedSetter?: (f: File | null) => void,
   ) => (f: File | null) => {
     setter(f);
+    if (sharedSetter) sharedSetter(f);
     setError(null);
     setResult(null);
   };
@@ -305,7 +316,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               sub="Geometrie budovy (.hbjson)"
               file={hbjsonFile}
               accept=".hbjson,.json"
-              onChange={handleFileChange(setHbjsonFile)}
+              onChange={handleFileChange(setHbjsonFile, sharedFiles.setHbjson)}
               icon={<FaFile />}
             />
             <FileBox
@@ -314,7 +325,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               sub="Klimatická data (.epw)"
               file={epwFile}
               accept=".epw"
-              onChange={handleFileChange(setEpwFile)}
+              onChange={handleFileChange(setEpwFile, sharedFiles.setEpw)}
               icon={<FaCloudUploadAlt />}
             />
           </div>
