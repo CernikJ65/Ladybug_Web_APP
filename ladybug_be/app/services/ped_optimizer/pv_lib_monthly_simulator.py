@@ -30,7 +30,7 @@ import pvlib
 from honeybee_energy.generator.pv import PVProperties
 
 from ..panel_placer import PanelPosition
-from ..pv_simulator import infer_module_type
+from ..pvlib_calculator import infer_module_type
 from ..pvlib_weather import load_epw_weather, poa_hourly_shape
 
 # Stejne tabulky jako PVLibCalculator — vyhybame se duplicite chovani.
@@ -161,7 +161,7 @@ class PVLibMonthlySimulator:
 
     @staticmethod
     def _default_loss() -> float:
-        """Stejny rozpis ztrat jako PVSimulator/PVLibCalculator."""
+        """Stejny rozpis ztrat jako PVLibCalculator."""
         return PVProperties.loss_fraction_from_components(
             age=0.0,
             light_induced_degradation=0.015,

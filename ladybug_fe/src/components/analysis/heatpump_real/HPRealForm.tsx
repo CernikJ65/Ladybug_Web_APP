@@ -100,8 +100,7 @@ const HPRealForm: React.FC<Props> = (p) => (
       <span className="hp-step-title">Typ budovy</span>
     </div>
     <p className="hp-form-note">
-      Ventilace a vnitřní zisky (obsazenost, osvětlení, spotřebiče)
-      se přebírají z Ladybug programu dle typu budovy.
+      Vybere jedne z přednsatavenych Ladybug šablon pro simulaci tepelné potřeby budovy.
     </p>
     <div className="hp-type-grid">
       {BUILDS.map(b => (

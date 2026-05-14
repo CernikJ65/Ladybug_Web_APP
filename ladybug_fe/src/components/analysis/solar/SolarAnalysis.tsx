@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   FaCloudSun, FaUpload, FaSpinner, FaArrowLeft,
   FaWind, FaThermometerHalf, FaCompass, FaTimes,
 } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
+import { useSharedFiles } from './../../../context/SharedFilesContext';
 import WindView, { type WindData } from './WindView';
 import TemperatureView, { type TemperatureData } from './TemperatureView';
 import SunpathView, { type SunpathData } from './SunpathView';
@@ -55,10 +56,35 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
     [activeTab, hasLocation],
   );
 
+  const sharedFiles = useSharedFiles();
+
+  useEffect(() => {
+    const f = sharedFiles.getEpw();
+    if (f) {
+      setFile(f);
+      setFileName(f.name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useViewStateCache<CachedState>(
     'solar',
     { file, fileName, location, windData, tempData, sunpathData, error },
     (c: CachedState) => {
+      /* Shared kontext má přednost — pokud byl EPW v jiné stránce odebrán
+         nebo nahrazen, nesmí se obnovit z lokální cache. Při změně souboru
+         pozbývají smyslu i odvozená data (location/wind/temp/sunpath). */
+      const sharedEpw = sharedFiles.getEpw();
+      if (sharedEpw !== c.file) {
+        setFile(sharedEpw);
+        setFileName(sharedEpw?.name ?? null);
+        setLocation(null);
+        setWindData(null);
+        setTempData(null);
+        setSunpathData(null);
+        setError(null);
+        return;
+      }
       setFile(c.file); setFileName(c.fileName); setLocation(c.location);
       setWindData(c.windData); setTempData(c.tempData);
       setSunpathData(c.sunpathData); setError(c.error);
@@ -73,6 +99,7 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
     setTempData(null);
     setSunpathData(null);
     setError(null);
+    sharedFiles.setEpw(null);
     const input = document.getElementById('epw-upload') as HTMLInputElement | null;
     if (input) input.value = '';
   };
@@ -143,8 +170,13 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
 
       <div className="upload-area">
         <input type="file" accept=".epw" id="epw-upload" style={{ display: 'none' }}
-          onChange={e => { setFile(e.target.files?.[0] || null);
-            setFileName(e.target.files?.[0]?.name || null); setError(null); }} />
+          onChange={e => {
+            const f = e.target.files?.[0] || null;
+            setFile(f);
+            setFileName(f?.name || null);
+            setError(null);
+            sharedFiles.setEpw(f);
+          }} />
         <label htmlFor="epw-upload" className="upload-label">
           <FaUpload size={32} color="#f0a500" />
           <p>{fileName || 'Klikněte pro výběr EPW souboru'}</p>

@@ -32,9 +32,6 @@ class PanelPosition:
     col: int = 0
     radiation_kwh_m2: float = 0.0
     annual_production_kwh: float = 0.0
-    production_ep_kwh: Optional[float] = None
-    production_pvlib_kwh: Optional[float] = None
-    ep_solar_potential_kwh_m2: Optional[float] = None
 
     @property
     def geometry(self) -> Face3D:

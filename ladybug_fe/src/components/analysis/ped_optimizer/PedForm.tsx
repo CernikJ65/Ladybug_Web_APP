@@ -1,16 +1,14 @@
 /**
- * Formulář PED optimalizátoru — tři karty bez popisných vět.
- *
- * Number inputy řeší dva problémy:
- *  - umožňují kompletní vymazání (raw string state, parent dostane
- *    jen platná čísla; po blur se prázdný input doplní z parentu)
- *  - zachovávají nativní šipky spinnerů (CSS je už neskrývá)
+ * Formulář PED optimalizátoru — jeden kontejner, 4 číslované sekce.
+ * Sjednoceno s heatpump-real layoutem (form-step pattern),
+ * file-box ze solar-advanced, vertikální Apple-style stepper pro ceny i rozpočet.
  *
  * Soubor: ladybug_fe/src/components/analysis/ped_optimizer/PedForm.tsx
  */
 import React, { useState, useEffect } from 'react';
 import {
-  FaCube, FaCloudSun, FaCheckCircle, FaSpinner, FaTimes,
+  FaFile, FaCloudUploadAlt, FaCheckCircle, FaTimes,
+  FaSpinner, FaArrowRight, FaPlay,
 } from 'react-icons/fa';
 import type { MountingType } from './pedTypes';
 
@@ -49,14 +47,20 @@ function useNumberField(value: number, onChange: (v: number) => void) {
   return { raw, handleChange, handleBlur };
 }
 
-interface UploadProps {
-  file: File | null; accept: string;
-  label: string; icon: React.ReactNode;
+/* ── FileBox ── */
+
+interface FileBoxProps {
+  id: string;
+  file: File | null;
+  accept: string;
+  label: string;
+  sub: string;
+  icon: React.ReactNode;
   onChange: (f: File | null) => void;
 }
 
-const Upload: React.FC<UploadProps> = ({
-  file, accept, label, icon, onChange,
+const FileBox: React.FC<FileBoxProps> = ({
+  id, file, accept, label, sub, icon, onChange,
 }) => {
   const handleClear = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -64,122 +68,315 @@ const Upload: React.FC<UploadProps> = ({
     onChange(null);
   };
   return (
-    <label className={`ped-upload ${file ? 'ready' : ''}`}>
-      <input type="file" accept={accept} hidden
-        onChange={(e) => onChange(e.target.files?.[0] ?? null)} />
-      <span className="ped-upload-icon">
-        {file ? <FaCheckCircle /> : icon}
-      </span>
-      <span className="ped-upload-text">
-        <span className="ped-upload-label">{label}</span>
-        {file
-          ? <span className="ped-upload-name">{file.name}</span>
-          : <span className="ped-upload-placeholder">Vybrat soubor</span>}
-      </span>
-      {file && (
-        <button type="button" className="ped-upload-clear"
-          onClick={handleClear} aria-label="Odebrat soubor">
-          <FaTimes />
-        </button>
-      )}
-    </label>
-  );
-};
-
-interface NumFieldProps {
-  label: string; value: number;
-  onChange: (v: number) => void;
-  min: number; max?: number; step?: number;
-}
-
-const NumField: React.FC<NumFieldProps> = ({
-  label, value, onChange, min, max, step,
-}) => {
-  const { raw, handleChange, handleBlur } = useNumberField(value, onChange);
-  return (
-    <div className="ped-field">
-      <span className="ped-field-label">{label}</span>
-      <input className="ped-input" type="number"
-        min={min} max={max} step={step}
-        value={raw}
-        onChange={handleChange}
-        onBlur={handleBlur} />
+    <div className={`ped-file-box ${file ? 'has-file' : ''}`}>
+      <label htmlFor={`ped-${id}`}>
+        <div className="ped-file-inner">
+          <div className="ped-file-icon">{icon}</div>
+          <div className="ped-file-text">
+            <h4>{label}</h4>
+            <p>{sub}</p>
+          </div>
+        </div>
+        <input
+          id={`ped-${id}`}
+          type="file"
+          accept={accept}
+          style={{ display: 'none' }}
+          onChange={(e) => e.target.files?.[0] && onChange(e.target.files[0])}
+        />
+        {file && (
+          <div className="ped-file-ok">
+            <FaCheckCircle />
+            <span className="ped-file-ok-name">{file.name}</span>
+            <button
+              type="button"
+              className="ped-file-clear"
+              onClick={handleClear}
+              aria-label="Odstranit soubor"
+              title="Odstranit soubor"
+            >
+              <FaTimes />
+            </button>
+          </div>
+        )}
+      </label>
     </div>
   );
 };
+
+/* ── Slider (Apple-style) ── */
+
+interface SliderProps {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step?: number;
+  display: string;
+  onChange: (v: number) => void;
+}
+
+const Slider: React.FC<SliderProps> = ({
+  label, value, min, max, step = 1, display, onChange,
+}) => {
+  const pct = ((value - min) / (max - min)) * 100;
+  return (
+    <div className="ped-field">
+      <label>{label}</label>
+      <div className="ped-slider-wrap">
+        <div className="ped-slider-track">
+          <div
+            className="ped-slider-fill"
+            style={{ width: `${pct}%` }}
+          />
+          <input
+            type="range"
+            className="ped-slider"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(e) => onChange(+e.target.value)}
+          />
+        </div>
+        <span className="ped-slider-val">{display}</span>
+      </div>
+    </div>
+  );
+};
+
+/* ── PriceField — Apple-style vertikální stepper ── */
+
+interface PriceFieldProps {
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  min: number;
+  max?: number;
+  step: number;
+  unit: string;
+}
+
+const PriceField: React.FC<PriceFieldProps> = ({
+  label, value, onChange, min, max, step, unit,
+}) => {
+  const { raw, handleChange, handleBlur } = useNumberField(value, onChange);
+  const stepUp = () => {
+    const next = value + step;
+    if (max !== undefined && next > max) return;
+    onChange(next);
+  };
+  const stepDown = () => {
+    onChange(Math.max(min, value - step));
+  };
+  return (
+    <div className="ped-field">
+      <label>{label}</label>
+      <div className="ped-pricefield">
+        <input
+          className="ped-pricefield-input"
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          value={raw}
+          onChange={handleChange}
+          onBlur={handleBlur}
+        />
+        <span className="ped-pricefield-unit">{unit}</span>
+        <div className="ped-pricefield-steps">
+          <button
+            type="button"
+            className="ped-pricefield-step ped-pricefield-step--up"
+            onClick={stepUp}
+            aria-label={`Zvýšit o ${step}`}
+            tabIndex={-1}
+          />
+          <button
+            type="button"
+            className="ped-pricefield-step ped-pricefield-step--down"
+            onClick={stepDown}
+            aria-label={`Snížit o ${step}`}
+            tabIndex={-1}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── BudgetField (zvýrazněný řádek + Apple-style stepper) ── */
+
+const BUDGET_STEP = 10_000;
+const BUDGET_MIN = 10_000;
 
 const BudgetField: React.FC<{
   value: number; onChange: (v: number) => void;
 }> = ({ value, onChange }) => {
   const { raw, handleChange, handleBlur } = useNumberField(value, onChange);
+  const stepDown = () => onChange(Math.max(BUDGET_MIN, value - BUDGET_STEP));
+  const stepUp = () => onChange(value + BUDGET_STEP);
   return (
     <div className="ped-budget">
-      <span className="ped-budget-label">Investiční rozpočet</span>
-      <div className="ped-budget-input-wrap">
-        <input className="ped-budget-input" type="number"
-          min={10000} step={10000} value={raw}
-          onChange={handleChange}
-          onBlur={handleBlur} />
-        <span className="ped-budget-currency">Kč</span>
+      <span className="ped-budget-label"></span>
+      <div className="ped-budget-row">
+        <div className="ped-budget-input-wrap">
+          <input
+            className="ped-budget-input"
+            type="number"
+            min={BUDGET_MIN}
+            step={BUDGET_STEP}
+            value={raw}
+            onChange={handleChange}
+            onBlur={handleBlur}
+          />
+          <span className="ped-budget-currency">Kč</span>
+        </div>
+        <div className="ped-budget-steps">
+          <button
+            type="button"
+            className="ped-budget-arrow ped-budget-arrow--up"
+            onClick={stepUp}
+            aria-label="Zvýšit o 10 000 Kč"
+            tabIndex={-1}
+          />
+          <button
+            type="button"
+            className="ped-budget-arrow ped-budget-arrow--down"
+            onClick={stepDown}
+            aria-label="Snížit o 10 000 Kč"
+            tabIndex={-1}
+          />
+        </div>
       </div>
     </div>
   );
 };
 
+/* ── PedForm ── */
+
 const PedForm: React.FC<Props> = (p) => (
-  <div className="ped-form-wrap">
-    <div className="ped-card">
-      <h2 className="ped-card-title">Vstupní data</h2>
-      <div className="ped-upload-grid">
-        <Upload file={p.hbjson} accept=".hbjson,.json"
-          label="HBJSON model" icon={<FaCube />}
-          onChange={p.onHbjson} />
-        <Upload file={p.epw} accept=".epw"
-          label="EPW počasí" icon={<FaCloudSun />}
-          onChange={p.onEpw} />
+  <div className="ped-form">
+
+    {/* ── 1. Vstupní soubory ── */}
+    <div className="ped-form-step">
+      <span className="ped-step-num">1</span>
+      <span className="ped-step-title">Vstupní soubory</span>
+    </div>
+    <div className="ped-files">
+      <FileBox
+        id="hbjson"
+        file={p.hbjson}
+        accept=".hbjson,.json"
+        label="HBJSON model"
+        sub="Geometrie budovy (.hbjson)"
+        icon={<FaFile />}
+        onChange={p.onHbjson}
+      />
+      <FileBox
+        id="epw"
+        file={p.epw}
+        accept=".epw"
+        label="EPW soubor"
+        sub="Klimatická data (.epw)"
+        icon={<FaCloudUploadAlt />}
+        onChange={p.onEpw}
+      />
+    </div>
+
+    {/* ── 2. Investiční rozpočet ── */}
+    <div className="ped-form-step">
+      <span className="ped-step-num">2</span>
+      <span className="ped-step-title">Investiční rozpočet</span>
+    </div>
+    <p className="ped-form-note">
+      Maximální částka, kterou je možné na osazení oblasti vynaložit.
+    </p>
+    <BudgetField value={p.budget} onChange={p.onBudget} />
+
+    {/* ── 3. Parametry simulace ── */}
+    <div className="ped-form-step">
+      <span className="ped-step-num">3</span>
+      <span className="ped-step-title">Parametry simulace</span>
+    </div>
+    <p className="ped-form-note">
+      Setpoint vytápění, účinnost panelů a typ montáže.
+    </p>
+    <div className="ped-params-grid">
+      <Slider
+        label="Teplota vytápění"
+        value={p.heatingSetpoint}
+        onChange={p.onHeatingSetpoint}
+        min={16} max={26} step={1}
+        display={`${p.heatingSetpoint} °C`}
+      />
+      <Slider
+        label="Účinnost FVE"
+        value={p.pvEfficiency}
+        onChange={p.onPvEfficiency}
+        min={19} max={24} step={1}
+        display={`${p.pvEfficiency} %`}
+      />
+      <div className="ped-field">
+        <label>Typ montáže</label>
+        <select
+          className="ped-select"
+          value={p.mountingType}
+          onChange={(e) =>
+            p.onMountingType(e.target.value as MountingType)
+          }
+        >
+          <option value="FixedOpenRack">Otevřená konstrukce</option>
+          <option value="FixedRoofMounted">Přilehlá ke střeše</option>
+        </select>
       </div>
     </div>
 
-    <div className="ped-card">
-      <h2 className="ped-card-title">Parametry simulace</h2>
-      <BudgetField value={p.budget} onChange={p.onBudget} />
-      <div className="ped-field-grid">
-        <NumField label="Teplota vytápění (°C)" value={p.heatingSetpoint}
-          onChange={p.onHeatingSetpoint} min={16} max={25} step={0.5} />
-        <NumField label="Účinnost FVE (%)" value={p.pvEfficiency}
-          onChange={p.onPvEfficiency} min={5} max={30} step={1} />
-        <div className="ped-field">
-          <span className="ped-field-label">Montáž panelů</span>
-          <select className="ped-select" value={p.mountingType}
-            onChange={(e) =>
-              p.onMountingType(e.target.value as MountingType)}>
-            <option value="FixedOpenRack">Otevřená konstrukce</option>
-            <option value="FixedRoofMounted">Přilehlá ke střeše</option>
-          </select>
-        </div>
-      </div>
+    {/* ── 4. Ceny komponent ── */}
+    <div className="ped-form-step">
+      <span className="ped-step-num">4</span>
+      <span className="ped-step-title">Ceny komponent</span>
+    </div>
+    <p className="ped-form-note">
+      Investiční náklady jednotlivých prvků v Kč.
+    </p>
+    <div className="ped-params-grid">
+      <PriceField
+        label="Čerpadlo ASHP vzduch/voda"
+        value={p.ashpCost}
+        onChange={p.onAshpCost}
+        min={50000} step={10000}
+        unit="Kč"
+      />
+      <PriceField
+        label="Čerpadlo GSHP země/voda"
+        value={p.gshpCost}
+        onChange={p.onGshpCost}
+        min={50000} step={10000}
+        unit="Kč"
+      />
+      <PriceField
+        label="Cena za panel"
+        value={p.pvCostPerPanel}
+        onChange={p.onPvCostPerPanel}
+        min={5000} step={1000}
+        unit="Kč"
+      />
     </div>
 
-    <div className="ped-card">
-      <h2 className="ped-card-title">Ceny komponent</h2>
-      <div className="ped-field-grid">
-        <NumField label="ASHP — vzduch/voda (Kč)"
-          value={p.ashpCost}
-          onChange={p.onAshpCost} min={50000} step={10000} />
-        <NumField label="GSHP — země/voda (Kč)"
-          value={p.gshpCost}
-          onChange={p.onGshpCost} min={50000} step={10000} />
-        <NumField label="Cena za panel (Kč)"
-          value={p.pvCostPerPanel}
-          onChange={p.onPvCostPerPanel} min={5000} step={1000} />
-      </div>
-    </div>
-
-    <button className="ped-run" onClick={p.onRun}
-      disabled={p.loading || !p.hbjson || !p.epw}>
-      {p.loading
-        ? <><FaSpinner className="ped-spinner" /> Probíhá simulace…</>
-        : 'Spustit PED analýzu'}
+    {/* ── Run button ── */}
+    <button
+      className="ped-run"
+      onClick={p.onRun}
+      disabled={p.loading || !p.hbjson || !p.epw}
+    >
+      <span className="ped-run-mark">
+        {p.loading ? <FaSpinner className="ped-spinner" /> : <FaPlay />}
+      </span>
+      <span>
+        {p.loading ? 'Probíhá simulace…' : 'Spustit PED analýzu'}
+      </span>
+      {!p.loading && <FaArrowRight className="ped-run-arrow" />}
     </button>
   </div>
 );

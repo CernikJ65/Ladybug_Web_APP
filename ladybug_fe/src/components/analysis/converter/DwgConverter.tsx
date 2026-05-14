@@ -94,12 +94,9 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
         <button className="cvt-back" onClick={onBack}>
           <FaArrowLeft /> Zpět
         </button>
-        <span className="cvt-hero-badge">DWG / DXF → HBJSON</span>
-        <h1>CAD Konvertor</h1>
-        <p>
-          Převeďte DWG nebo DXF soubor na Honeybee model
-          pro energetické simulace
-        </p>
+       
+        <h1>Převod DWG formátu na HBJSON</h1>
+        
       </div>
 
       <div className="cvt-content">

@@ -55,7 +55,7 @@ const HPRealSection: React.FC<Props> = ({
               {fmt(data.annual_heating_kwh)}
             </span>
             <span className="hp-pump-stat-unit">
-              kWh tepla / rok
+              Vyrobí kWh tepla / rok
             </span>
           </div>
           <span className="hp-pump-stat-side">
@@ -71,7 +71,7 @@ const HPRealSection: React.FC<Props> = ({
                 {fmt(data.annual_cooling_kwh)}
               </span>
               <span className="hp-pump-stat-unit">
-                kWh chladu / rok
+                Vyrobí kWh chladu / rok
               </span>
             </div>
             <span className="hp-pump-stat-side">
@@ -100,15 +100,19 @@ const HPRealSection: React.FC<Props> = ({
             {MO.map((mo, i) => {
               const h = monthH[i] ?? 0;
               const c = monthC[i] ?? 0;
+              const hPct = (h / maxBar) * 100;
+              const cPct = (c / maxBar) * 100;
+              const hVis = h > 0 ? Math.max(hPct, 2) : 0;
+              const cVis = c > 0 ? Math.max(cPct, 2) : 0;
               return (
                 <div key={i} className="hpr-bar-col">
                   <div className="hpr-bar-stack">
                     <div className="hpr-bar-heat"
-                      style={{ height: `${(h / maxBar) * 100}%` }}
+                      style={{ height: `${hVis}%` }}
                       title={`${mo}: teplo ${fmt(h)} kWh`} />
                     {!heatingOnly && (
                       <div className="hpr-bar-cool"
-                        style={{ height: `${(c / maxBar) * 100}%` }}
+                        style={{ height: `${cVis}%` }}
                         title={`${mo}: chlad ${fmt(c)} kWh`} />
                     )}
                   </div>

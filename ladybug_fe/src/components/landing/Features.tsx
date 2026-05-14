@@ -8,7 +8,7 @@
 import React, { useCallback, type ReactNode } from 'react';
 import {
   FaSun, FaWind, FaChartLine,
-  FaCube, FaSolarPanel, FaFire, FaBolt,
+  FaCube, FaSolarPanel, FaFire, FaBalanceScale,
   FaFileImport,
   FaThermometerQuarter,
 } from 'react-icons/fa';
@@ -66,31 +66,31 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       color: '#e67e22',
       tags: ['Radiance', 'HBJSON'],
     },
-    {
-      id: 'heatpump',
-      icon: <FaFire />,
-      title: 'Potenciál tepelných čerpadel',
-      description:
-        'Optimalizační úloha, porovnávající využití tepelného čerpadla ',
-      color: '#14b8a6',
-      tags: ['EnergyPlus', 'COP'],
-    },
+    // {
+    //   id: 'heatpump',
+    //   icon: <FaFire />,
+    //   title: 'Potenciál tepelných čerpadel',
+    //   description:
+    //     'Optimalizační úloha, porovnávající využití tepelného čerpadla ',
+    //   color: '#14b8a6',
+    //   tags: ['EnergyPlus', 'COP'],
+    // },
     // TODO: odkomentovat po prezentaci
      {
        id: 'heatpump-real',
        icon: <FaThermometerQuarter />,
      title: 'Potenciál tepelných čerpadel',
        description:
-         'Scénář vypočítává potenciál výroby tepla, a chladu tepelných čerpadel a zároveň porovnává dva typy: vzduch-voda (ASHP) a země-voda (GSHP)',
+         'Scénář simuluje potenciál výroby tepla, a chladu tepelných čerpadel a zároveň porovnává dva typy: vzduch-voda (ASHP) a země-voda (GSHP)',
        color: '#0891b2',
        tags: ['VRF', 'WSHP', 'HVAC'],
      },
     {
       id: 'ped-optimizer',
-      icon: <FaBolt />,
-      title: 'Optimalizace Oblasti pomcí PV a TČ',
+      icon: <FaBalanceScale />,
+      title: 'Optimalizace Oblasti pomocí PV a TČ',
       description:
-        'Porovnání tří investičních scénářů v rámci zadaného rozpočtu. Cílem je dosáhnout celoroční energetické bilance budovy.',
+        'Uživatel zadá investiční rozpočet a v rámci zadaného rozpočtu simulace osadí oblast energetickými agenty třemi způsoby. ',
       color: '#0d9488',
       tags: ['PED', 'Bilance', 'Rozpočet'],
     },
@@ -103,20 +103,20 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       color: '#b45309',
       tags: ['DWG', 'DXF', 'Honeybee'],
     },
-    {
-      id: 'wind',
-      icon: <FaWind />,
-      title: '?',
-      description: '?',
-      color: '#3498db',
-    },
-    {
-      id: 'energy',
-      icon: <FaChartLine />,
-      title: '?',
-      description: '?',
-      color: '#2ecc71',
-    },
+    // {
+    //   id: 'wind',
+    //   icon: <FaWind />,
+    //   title: '?',
+    //   description: '?',
+    //   color: '#3498db',
+    // },
+    // {
+    //   id: 'energy',
+    //   icon: <FaChartLine />,
+    //   title: '?',
+    //   description: '?',
+    //   color: '#2ecc71',
+    // },
   ];
 
   return (

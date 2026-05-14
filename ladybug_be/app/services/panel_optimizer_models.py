@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 from .panel_placer import PanelPosition
 
@@ -20,11 +20,6 @@ class PanelResult:
     radiation_kwh_m2: float
     annual_production_kwh: float
     capacity_kwp: float
-    # Volitelné per-engine hodnoty — vyplní se jen když běží daný engine
-    production_ep_kwh: Optional[float] = None
-    production_pvlib_kwh: Optional[float] = None
-    # EP implicit POA (unshaded, z EPW) — pro porovnání s Radiance (shaded)
-    ep_solar_potential_kwh_m2: Optional[float] = None
 
 
 @dataclass
@@ -42,7 +37,7 @@ class OptimizationResult:
 def panel_position_to_result(
     p: PanelPosition, pv_efficiency: float
 ) -> PanelResult:
-    """PanelPosition → PanelResult (vč. volitelných per-engine hodnot)."""
+    """PanelPosition → PanelResult."""
     return PanelResult(
         id=p.id,
         roof_id=p.roof_id,
@@ -57,18 +52,6 @@ def panel_position_to_result(
         radiation_kwh_m2=p.radiation_kwh_m2,
         annual_production_kwh=p.annual_production_kwh,
         capacity_kwp=round(p.area * pv_efficiency, 3),
-        production_ep_kwh=(
-            round(p.production_ep_kwh, 2)
-            if p.production_ep_kwh is not None else None
-        ),
-        production_pvlib_kwh=(
-            round(p.production_pvlib_kwh, 2)
-            if p.production_pvlib_kwh is not None else None
-        ),
-        ep_solar_potential_kwh_m2=(
-            round(p.ep_solar_potential_kwh_m2, 2)
-            if p.ep_solar_potential_kwh_m2 is not None else None
-        ),
     )
 
 
@@ -85,7 +68,7 @@ def result_to_dict(v: OptimizationResult) -> Dict[str, Any]:
 
 
 def _panel_result_to_dict(p: PanelResult) -> Dict[str, Any]:
-    out: Dict[str, Any] = {
+    return {
         "id": p.id,
         "roof_id": p.roof_id,
         "center": p.center,
@@ -96,10 +79,3 @@ def _panel_result_to_dict(p: PanelResult) -> Dict[str, Any]:
         "annual_production_kwh": p.annual_production_kwh,
         "capacity_kwp": p.capacity_kwp,
     }
-    if p.production_ep_kwh is not None:
-        out["production_ep_kwh"] = p.production_ep_kwh
-    if p.production_pvlib_kwh is not None:
-        out["production_pvlib_kwh"] = p.production_pvlib_kwh
-    if p.ep_solar_potential_kwh_m2 is not None:
-        out["ep_solar_potential_kwh_m2"] = p.ep_solar_potential_kwh_m2
-    return out

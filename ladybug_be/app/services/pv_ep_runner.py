@@ -1,5 +1,8 @@
 """
-Spouštění EnergyPlus simulace pro PV engine.
+Spouštění EnergyPlus simulace — generický runner.
+
+Používají heatpump a PED consumption simulace. Solární PV panely běží
+přes Radiance + pvlib, EP runner pro ně nepoužíváme.
 
 Dvě cesty: `run_ep_with_progress` streamuje EP stdout a volá `on_progress`
 callback na každém "Continuing Simulation at MM/DD" (13 eventů/rok), nebo

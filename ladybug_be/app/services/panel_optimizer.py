@@ -44,29 +44,23 @@ class PanelOptimizer:
                 2,
             )
 
-    def apply_energyplus_production(
-        self, panels: List[PanelPosition], ep_results: Dict[str, Any]
-    ) -> None:
-        """Přepíše výrobu hodnotami z EnergyPlus + uloží EP shaded POA."""
-        self._apply_engine_production(panels, ep_results, "production_ep_kwh")
-        # EP navíc poskytuje reálnou stíněnou POA per shade — přepiš
-        # pvlib-derived hodnotu ep_solar_potential_kwh_m2 za EP-native.
-        ep_poa_by_id = {
-            r["panel_id"]: r.get("ep_solar_potential_kwh_m2")
-            for r in ep_results.get("panel_results", [])
-        }
-        for panel in panels:
-            ep_poa = ep_poa_by_id.get(panel.id)
-            if ep_poa is not None and ep_poa > 0:
-                panel.ep_solar_potential_kwh_m2 = ep_poa
-
     def apply_pvlib_production(
         self, panels: List[PanelPosition], pvlib_results: Dict[str, Any]
     ) -> None:
         """Přepíše výrobu hodnotami z pvlib PVWatts (Radiance POA)."""
-        self._apply_engine_production(
-            panels, pvlib_results, "production_pvlib_kwh"
-        )
+        panel_data = pvlib_results.get("panel_results", [])
+        if not panel_data:
+            return
+        lookup = {r["panel_id"]: r["annual_production_kwh"] for r in panel_data}
+        for panel in panels:
+            if panel.id not in lookup:
+                continue
+            value = lookup[panel.id]
+            # annual_production_kwh používá optimize() k řazení → přepisuj jen
+            # pokud engine vrátil >0 (ochrana proti zkažení radiation-based
+            # výroby, pokud pvlib z nějakého důvodu vrátil nulu).
+            if value > 0:
+                panel.annual_production_kwh = value
 
     def optimize(
         self,
@@ -100,29 +94,6 @@ class PanelOptimizer:
     # ------------------------------------------------------------------
     # Interní
     # ------------------------------------------------------------------
-
-    @staticmethod
-    def _apply_engine_production(
-        panels: List[PanelPosition],
-        engine_results: Dict[str, Any],
-        panel_attr: str,
-    ) -> None:
-        panel_data = engine_results.get("panel_results", [])
-        if not panel_data:
-            return
-        lookup = {r["panel_id"]: r["annual_production_kwh"] for r in panel_data}
-        for panel in panels:
-            if panel.id not in lookup:
-                continue
-            value = lookup[panel.id]
-            # Per-engine hodnotu zapisuj vždy (i 0), aby FE věděl, že engine
-            # proběhl a mohl ji zobrazit ve sloupci porovnání.
-            setattr(panel, panel_attr, value)
-            # annual_production_kwh používá optimize() k řazení → přepisuj jen
-            # pokud engine vrátil >0 (ochrana proti zkažení radiation-based
-            # výroby, pokud EP/pvlib z nějakého důvodu vrátil nulu).
-            if value > 0:
-                panel.annual_production_kwh = value
 
     def _build_result(
         self, selected: List[PanelPosition], count: int

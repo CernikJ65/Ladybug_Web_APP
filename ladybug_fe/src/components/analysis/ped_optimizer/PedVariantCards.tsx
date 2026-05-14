@@ -65,9 +65,6 @@ const AvailableBody: React.FC<{ v: PedVariant }> = ({ v }) => (
       </span>
       <span className="ped-variant-balance-unit">kWh / rok</span>
     </div>
-    {v.heating_uncovered && (
-      <div className="ped-variant-warn">Vytápění není zahrnuto</div>
-    )}
 
     <div className="ped-variant-rows">
       <Row
@@ -94,11 +91,6 @@ const AvailableBody: React.FC<{ v: PedVariant }> = ({ v }) => (
           <span className="ped-variant-cost-row-unit">Kč</span>
         </span>
       </div>
-      <div className="ped-variant-cost-detail">
-        {buildCostBreakdown(v)}
-        {v.system.remaining_czk > 0
-          && ` · zbývá ${fmt(v.system.remaining_czk)} Kč`}
-      </div>
     </div>
   </>
 );
@@ -119,16 +111,5 @@ const Row: React.FC<RowProps> = ({ label, tone, num, unit }) => (
     </span>
   </div>
 );
-
-function buildCostBreakdown(v: PedVariant): string {
-  const parts: string[] = [];
-  if (v.system.has_hp) {
-    parts.push(`${v.system.hp_label} ${fmt(v.system.hp_cost_czk)}`);
-  }
-  if (v.system.num_panels > 0) {
-    parts.push(`${v.system.num_panels}× panel ${fmt(v.system.pv_cost_czk)}`);
-  }
-  return parts.join(' + ');
-}
 
 export default PedVariantCards;

@@ -5,12 +5,15 @@
  *
  * Soubor: ladybug_fe/src/components/analysis/heatpump_real/HeatPumpReal.tsx
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import { useSimulationProgress } from './../../../hooks/useSimulationProgress';
 import { useSharedFiles } from './../../../context/SharedFilesContext';
 import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
+import HelpButton from '../../help/HelpButton';
+import TourOverlay from '../../help/TourOverlay';
+import { getHeatpumpRealSteps } from '../../help/content/heatpumpRealSteps';
 import HPRealForm from './HPRealForm';
 import HPRealOverview from './HPRealOverview';
 import HPRealDemand from './HPRealDemand';
@@ -47,9 +50,15 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
   const [result, setResult] = useState<RealHPResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const progress = useSimulationProgress(loading ? jobId : null);
   const sharedFiles = useSharedFiles();
+
+  const tourSteps = useMemo(
+    () => getHeatpumpRealSteps(result !== null),
+    [result],
+  );
 
   useEffect(() => {
     setHbjson(sharedFiles.getHbjson());
@@ -117,6 +126,13 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="hp-page">
+      <HelpButton onClick={() => setTourOpen(true)} />
+      <TourOverlay
+        isActive={tourOpen}
+        onClose={() => setTourOpen(false)}
+        steps={tourSteps}
+      />
+
       <SimulationProgressOverlay
         open={loading}
         progress={progress}

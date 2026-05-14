@@ -28,7 +28,6 @@ async def optimize_panels(
     panel_spacing: float = Form(0.3),
     max_tilt: float = Form(60.0),
     mounting_type: str = Form("FixedOpenRack"),
-    pv_engine: str = Form("energyplus"),
     job_id: Optional[str] = Form(None),
 ):
     """Optimalizuje rozmístění FV panelů na střechách."""
@@ -42,11 +41,6 @@ async def optimize_panels(
         raise HTTPException(
             400,
             "pv_efficiency musí být v rozsahu 0.19–0.24 (19–24 %).",
-        )
-    pv_engine = (pv_engine or "energyplus").lower()
-    if pv_engine not in ("energyplus", "pvlib", "both"):
-        raise HTTPException(
-            400, "pv_engine musí být 'energyplus', 'pvlib' nebo 'both'"
         )
 
     # Registruj job hned, ať první polling z FE nedostane 404 (FE
@@ -71,7 +65,6 @@ async def optimize_panels(
             panel_spacing,
             max_tilt,
             mounting_type,
-            pv_engine,
             job_id,
         )
     except ImportError as e:

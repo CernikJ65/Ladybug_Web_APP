@@ -1,15 +1,21 @@
 /**
  * PED optimalizator — orchestrator.
- * Apple-clean · modrá paleta · text-only sekce a chipy.
+ * Apple-clean · modrá paleta · sjednoceno se solar-advanced.
  *
  * Soubor: ladybug_fe/src/components/analysis/ped_optimizer/PedOptimizer.tsx
  */
-import React, { useState, useEffect } from 'react';
-import { FaArrowLeft } from 'react-icons/fa';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  FaArrowLeft, FaMapMarkerAlt, FaBuilding,
+  FaSolarPanel, FaWallet,
+} from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import { useSimulationProgress } from './../../../hooks/useSimulationProgress';
 import { useSharedFiles } from './../../../context/SharedFilesContext';
 import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
+import HelpButton from '../../help/HelpButton';
+import TourOverlay from '../../help/TourOverlay';
+import { getPedOptimizerSteps } from '../../help/content/pedOptimizerSteps';
 import PedForm from './PedForm';
 import PedVariantCards from './PedVariantCards';
 import PedMonthlyTable from './PedMonthlyTable';
@@ -54,9 +60,15 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
+  const [tourOpen, setTourOpen] = useState(false);
 
   const progress = useSimulationProgress(loading ? jobId : null);
   const sharedFiles = useSharedFiles();
+
+  const tourSteps = useMemo(
+    () => getPedOptimizerSteps(result !== null),
+    [result],
+  );
 
   useEffect(() => {
     setHbjson(sharedFiles.getHbjson());
@@ -113,20 +125,28 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="ped-page">
+      <HelpButton onClick={() => setTourOpen(true)} />
+      <TourOverlay
+        isActive={tourOpen}
+        onClose={() => setTourOpen(false)}
+        steps={tourSteps}
+      />
+
       <SimulationProgressOverlay
         open={loading}
         progress={progress}
         title="PED analýza"
       />
 
+      {/* Hero */}
       <header className="ped-hero">
         <button className="ped-back" onClick={onBack}>
           <FaArrowLeft /> Zpět na přehled
         </button>
        
-        <h1>PED optimalizátor</h1>
+        <h1>Optimalizace Oblasti pomocí PV a TČ</h1>
         <p>
-          Porovnání tří investičních scénářů v rámci zadaného rozpočtu.
+          Uživatel zadá investiční rozpočet a v rámci zadaného rozpočtu simulace osadí oblast energetickými agenty třemi způsoby.
           Cílem je dosáhnout celoroční energetické bilance budovy.
         </p>
       </header>
@@ -154,22 +174,27 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
 
       {result && (
         <div className="ped-results">
-          <div className="ped-summary">
+          <div className="ped-info-strip">
             {result.location && (
               <span className="ped-chip">
+                <FaMapMarkerAlt />
                 Lokalita <strong>{result.location}</strong>
               </span>
             )}
             <span className="ped-chip">
+              <FaBuilding />
               Místností <strong>{result.model_info.room_count}</strong>
             </span>
             <span className="ped-chip">
+              <FaBuilding />
               Plocha <strong>{fmt(result.model_info.total_floor_area_m2)}</strong> m²
             </span>
             <span className="ped-chip">
-              Maximalní počet panelů <strong>{result.max_panels_available}</strong>
+              <FaSolarPanel />
+              Max panelů <strong>{result.max_panels_available}</strong>
             </span>
             <span className="ped-chip">
+              <FaWallet />
               Rozpočet <strong>{fmt(result.budget_czk)}</strong> Kč
             </span>
           </div>
@@ -188,7 +213,7 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
               {selected.hp_performance && (
                 <>
                   <h2 className="ped-section-title">
-                    Výkon TČ — {selected.system.hp_label}
+                    Výkon TČ {selected.system.hp_label}
                   </h2>
                   <PedHpPerformance data={selected.hp_performance} />
                 </>

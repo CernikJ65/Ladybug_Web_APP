@@ -258,3 +258,47 @@
 .saa-page .tour-counter {
   color: var(--saa-blue);
 }
+
+/* ============================================================
+   ── Scoped overrides — PED Optimizer (light blue theme) ──
+   ----------------------------------------------------------
+   Stejné přemapování jako u solar-advanced — PED používá
+   identickou modrou paletu, takže help systém má vypadat
+   shodně.
+   ============================================================ */
+
+.ped-page {
+  --hp-bg: var(--ped-bg);
+  --hp-surface: var(--ped-surface);
+  --hp-surface-2: var(--ped-surface-2);
+  --hp-border: var(--ped-border);
+  --hp-border-light: var(--ped-border-light);
+  --hp-text: var(--ped-text);
+  --hp-text-muted: var(--ped-text-muted);
+  --hp-text-dim: var(--ped-text-dim);
+  --hp-heading: var(--ped-heading);
+  --hp-amber: var(--ped-blue);
+  --hp-amber-bright: var(--ped-blue-light);
+}
+
+.ped-page .help-trigger {
+  box-shadow: 0 4px 14px rgba(41, 128, 185, .15);
+}
+.ped-page .help-trigger:hover {
+  color: #fff;
+  background: var(--ped-blue);
+  border-color: var(--ped-blue);
+}
+
+.ped-page .tour-tooltip {
+  box-shadow: var(--ped-shadow-lg);
+}
+
+.ped-page .tour-btn.primary,
+.ped-page .tour-btn.primary:hover {
+  color: #fff;
+}
+
+.ped-page .tour-counter {
+  color: var(--ped-blue);
+}

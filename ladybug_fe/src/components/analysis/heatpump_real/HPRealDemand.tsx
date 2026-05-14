@@ -46,7 +46,9 @@ const HPRealDemand: React.FC<Props> = ({
           <span className="hp-kpi-val">
             {fmt(demand.annual_heating_kwh)}
           </span>
-          <span className="hp-kpi-lbl">Vytápění kWh/rok</span>
+          <span className="hp-kpi-lbl">
+            Potřeba vytápění <span className="hp-kpi-unit">kWh/rok</span>
+          </span>
         </div>
         {!heatingOnly && (
           <div className="hp-kpi">
@@ -54,7 +56,9 @@ const HPRealDemand: React.FC<Props> = ({
             <span className="hp-kpi-val">
               {fmt(demand.annual_cooling_kwh)}
             </span>
-            <span className="hp-kpi-lbl">Chlazení kWh/rok</span>
+            <span className="hp-kpi-lbl">
+              Chlazení <span className="hp-kpi-unit">kWh/rok</span>
+            </span>
           </div>
         )}
       </div>

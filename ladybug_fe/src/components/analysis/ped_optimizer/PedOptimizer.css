@@ -1,6 +1,9 @@
 /* ==========================================================
-   PedOptimizer.css — Apple-Inspired · Blue · Sladěno se solar-advanced
-   Fonty: Sora (UI) + JetBrains Mono (jen čísla)
+   PedOptimizer.css — Apple-Inspired · Blue
+   Layout sjednocen s heatpump-real (form-step pattern),
+   file-box převzato ze solar-advanced (× clear button),
+   vertikální Apple-style stepper pro ceny i rozpočet,
+   barevná typografie hodnot v tabulkách (cons/pv/pos/neg).
    Soubor: ladybug_fe/src/components/analysis/ped_optimizer/PedOptimizer.css
    ========================================================== */
 
@@ -22,8 +25,10 @@
   --ped-blue: #2980b9;
   --ped-blue-light: #3498db;
   --ped-blue-pale: #ebf5fb;
-  --ped-blue-glow: rgba(41, 128, 185, .08);
+  --ped-blue-glow: rgba(41, 128, 185, .12);
 
+  --ped-green: #10b981;
+  --ped-green-pale: #ecfdf5;
   --ped-amber: #f59e0b;
   --ped-emerald: #10b981;
   --ped-red: #ef4444;
@@ -87,29 +92,12 @@
   background: rgba(255, 255, 255, .04);
   pointer-events: none;
 }
-
-.ped-hero-badge {
-  position: relative;
-  z-index: 1;
-  display: inline-block;
-  padding: .25rem .75rem;
-  margin-top: .5rem;
-  font-size: .65rem;
-  font-weight: 700;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, .95);
-  background: rgba(255, 255, 255, .15);
-  border: 1px solid rgba(255, 255, 255, .25);
-  border-radius: 16px;
-  font-family: var(--ped-mono);
-}
 .ped-hero h1 {
   position: relative;
   z-index: 1;
-  font-size: 1.85rem;
+  font-size: 1.8rem;
   font-weight: 800;
-  margin: .5rem 0 0;
+  margin: .6rem 0 0;
   letter-spacing: -.03em;
   color: #fff;
 }
@@ -118,11 +106,13 @@
   z-index: 1;
   font-size: .88rem;
   font-weight: 400;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, .85);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .82);
   margin: 0;
   max-width: 560px;
 }
+
+/* ── Back button ── */
 
 .ped-back {
   position: absolute;
@@ -132,11 +122,11 @@
   display: inline-flex;
   align-items: center;
   gap: .4rem;
-  background: rgba(255, 255, 255, .12);
-  border: 1px solid rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .15);
+  border: 1px solid rgba(255, 255, 255, .25);
   border-radius: 8px;
-  padding: .45rem .9rem;
-  font-size: .8rem;
+  padding: .5rem 1rem;
+  font-size: .85rem;
   font-weight: 600;
   color: #fff;
   cursor: pointer;
@@ -144,151 +134,214 @@
   font-family: var(--ped-font);
 }
 .ped-back:hover {
-  background: rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .28);
 }
 
-/* ── Form wrap ── */
+/* ============================================================
+   FORMULÁŘ — JEDEN KONTEJNER, ČÍSLOVANÉ SEKCE
+   ============================================================ */
 
-.ped-form-wrap {
-  max-width: 900px;
-  margin: -24px auto 0;
-  padding: 0 1.25rem;
+.ped-form {
+  max-width: 760px;
+  margin: -28px auto 2rem;
+  background: var(--ped-surface);
+  padding: 1.5rem 1.75rem 1.75rem;
+  border-radius: var(--ped-radius);
+  border: 1px solid var(--ped-border);
+  box-shadow: var(--ped-shadow);
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  animation: ped-fadeUp .5s ease-out;
 }
 
-/* ── Card ── */
-
-.ped-card {
-  background: var(--ped-surface);
-  border: 1px solid var(--ped-border);
-  border-radius: var(--ped-radius);
-  padding: 1.25rem 1.5rem 1.4rem;
-  box-shadow: var(--ped-shadow);
-}
-.ped-card-title {
-  font-size: 1.02rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-  color: var(--ped-heading);
+@keyframes ped-fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Upload zone ── */
+/* ── Sekce — kruhový badge + titulek ── */
 
-.ped-upload-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: .75rem;
-}
-.ped-upload {
-  position: relative;
+.ped-form-step {
   display: flex;
   align-items: center;
-  gap: .75rem;
-  padding: .9rem 1rem;
-  background: var(--ped-surface-2);
-  border: 1px dashed var(--ped-border-light);
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: .85rem;
-  color: var(--ped-text-muted);
-  transition: border-color .15s, background .15s;
+  gap: .55rem;
+  margin: 1.6rem 0 .55rem;
 }
-.ped-upload:hover {
-  border-color: var(--ped-blue);
-  background: var(--ped-blue-pale);
+.ped-form-step:first-child {
+  margin-top: 0;
 }
-.ped-upload.ready {
-  border-style: solid;
-  border-color: var(--ped-blue);
-  background: var(--ped-blue-pale);
-  color: var(--ped-text);
-}
-.ped-upload-icon {
-  font-size: 1rem;
-  flex-shrink: 0;
-  color: var(--ped-text-dim);
-}
-.ped-upload.ready .ped-upload-icon {
-  color: var(--ped-blue);
-}
-.ped-upload-text {
+.ped-step-num {
   display: flex;
-  flex-direction: column;
-  gap: .15rem;
-  min-width: 0;
-  flex: 1;
-}
-.ped-upload-label {
-  font-size: .78rem;
-  font-weight: 500;
-  color: var(--ped-text-muted);
-  letter-spacing: -.005em;
-}
-.ped-upload.ready .ped-upload-label {
-  color: var(--ped-blue);
-  font-weight: 600;
-}
-.ped-upload-name {
-  font-size: .85rem;
-  font-weight: 600;
-  color: var(--ped-heading);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ped-upload-placeholder {
-  font-size: .85rem;
-  font-weight: 500;
-  color: var(--ped-text-muted);
-}
-
-.ped-upload-clear {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: transparent;
-  border: none;
-  color: var(--ped-text-muted);
-  cursor: pointer;
+  background: var(--ped-blue);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  font-family: var(--ped-mono);
   flex-shrink: 0;
-  font-size: .75rem;
-  transition: background .15s, color .15s;
-  padding: 0;
 }
-.ped-upload-clear:hover {
-  background: var(--ped-red-pale);
-  color: var(--ped-red);
+.ped-step-title {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--ped-heading);
+  letter-spacing: -.01em;
+  font-family: var(--ped-font);
+}
+.ped-form-note {
+  margin: -.15rem 0 .85rem;
+  font-size: .78rem;
+  line-height: 1.45;
+  color: var(--ped-text-muted);
+  font-family: var(--ped-font);
 }
 
-/* ── Budget block ── */
+/* ── Files (saa-file-box pattern, horizontální layout, × clear) ── */
+
+.ped-files {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+}
+
+.ped-file-box {
+  position: relative;
+  border: 1.5px dashed var(--ped-border-light);
+  border-radius: 10px;
+  background: var(--ped-surface-2);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all .25s;
+}
+.ped-file-box:hover {
+  border-color: var(--ped-blue-light);
+  background: var(--ped-blue-pale);
+}
+.ped-file-box.has-file {
+  border-color: var(--ped-green);
+  border-style: solid;
+  background: var(--ped-green-pale);
+}
+.ped-file-box label {
+  cursor: pointer;
+  display: block;
+}
+.ped-file-inner {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .85rem 1rem;
+}
+.ped-file-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: var(--ped-blue-pale);
+  color: var(--ped-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  flex-shrink: 0;
+}
+.ped-file-box.has-file .ped-file-icon {
+  background: var(--ped-green-pale);
+  color: var(--ped-green);
+}
+.ped-file-text {
+  min-width: 0;
+  flex: 1;
+}
+.ped-file-text h4 {
+  font-size: .84rem;
+  margin: 0;
+  color: var(--ped-heading);
+  font-weight: 600;
+  font-family: var(--ped-font);
+}
+.ped-file-text p {
+  font-size: .72rem;
+  margin: .1rem 0 0;
+  color: var(--ped-text-dim);
+  font-family: var(--ped-font);
+}
+.ped-file-ok {
+  position: relative;
+  padding: .35rem .85rem;
+  background: var(--ped-green-pale);
+  border-top: 1px solid #bbf7d0;
+  font-size: .73rem;
+  color: #166534;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-family: var(--ped-mono);
+}
+.ped-file-ok-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+.ped-file-clear {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(22, 101, 52, .12);
+  color: #166534;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .65rem;
+  transition: all .15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+.ped-file-clear:hover {
+  background: #dc2626;
+  color: #fff;
+  transform: scale(1.1);
+}
+.ped-file-clear:active {
+  transform: scale(.95);
+}
+
+/* ── Investiční rozpočet — zvýrazněný blok + Apple-style stepper ── */
 
 .ped-budget {
   display: flex;
   flex-direction: column;
   gap: .35rem;
   padding: .9rem 1rem;
-  background: var(--ped-surface-2);
-  border: 1px solid var(--ped-border);
+  background: var(--ped-blue-pale);
+  border: 1px solid #bfdbfe;
   border-radius: 10px;
-  margin-bottom: 1rem;
 }
 .ped-budget-label {
   font-size: .78rem;
-  font-weight: 500;
-  color: var(--ped-text-muted);
+  font-weight: 600;
+  color: var(--ped-blue);
   letter-spacing: -.005em;
+  font-family: var(--ped-font);
+}
+.ped-budget-row {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
 }
 .ped-budget-input-wrap {
+  flex: 1;
   display: flex;
   align-items: baseline;
   gap: .5rem;
+  min-width: 0;
 }
 .ped-budget-input {
   flex: 1;
@@ -303,14 +356,8 @@
   letter-spacing: -.025em;
   padding: 0;
   width: 100%;
+  min-width: 0;
 }
-.ped-budget-currency {
-  font-size: .9rem;
-  font-weight: 600;
-  color: var(--ped-text-muted);
-}
-
-/* skrýt nativní spinnery jen u rozpočtu (velký display number) */
 .ped-budget-input::-webkit-outer-spin-button,
 .ped-budget-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -319,84 +366,370 @@
 .ped-budget-input[type=number] {
   -moz-appearance: textfield;
 }
+.ped-budget-currency {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ped-text-muted);
+  flex-shrink: 0;
+  font-family: var(--ped-font);
+}
+.ped-budget-steps {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 32px;
+  height: 50px;
+  padding: 4px;
+  background: rgba(255, 255, 255, .55);
+  border-radius: 9px;
+  border: 1px solid rgba(191, 219, 254, .65);
+}
+.ped-budget-arrow {
+  position: relative;
+  flex: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  border-radius: 6px;
+  transition: background .12s;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
+.ped-budget-arrow::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  transition: border-color .12s;
+}
+.ped-budget-arrow--up::before {
+  border-bottom: 6px solid var(--ped-blue);
+}
+.ped-budget-arrow--down::before {
+  border-top: 6px solid var(--ped-blue);
+}
+.ped-budget-arrow:hover {
+  background: rgba(41, 128, 185, .12);
+}
+.ped-budget-arrow:active {
+  background: rgba(41, 128, 185, .2);
+}
 
-/* ── Field grid ── */
+/* ── Params grid ── */
 
-.ped-field-grid {
+.ped-params-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: .75rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem .9rem;
 }
 .ped-field {
   display: flex;
   flex-direction: column;
   gap: .35rem;
+  min-width: 0;
 }
-.ped-field-label {
-  font-size: .85rem;
-  font-weight: 500;
+.ped-field--full {
+  grid-column: 1 / -1;
+}
+.ped-field label {
+  font-size: .78rem;
+  font-weight: 600;
   color: var(--ped-text-muted);
   letter-spacing: -.005em;
+  font-family: var(--ped-font);
 }
-.ped-input,
+
+/* ── PriceField — Apple-style vertikální stepper bez separátorů ── */
+
+.ped-pricefield {
+  display: flex;
+  align-items: stretch;
+  background: var(--ped-surface-2);
+  border: 1px solid var(--ped-border);
+  border-radius: 9px;
+  overflow: hidden;
+  transition: border-color .15s, box-shadow .15s;
+  height: 40px;
+}
+.ped-pricefield:focus-within {
+  border-color: var(--ped-blue);
+  box-shadow: 0 0 0 3px var(--ped-blue-glow);
+  background: #fff;
+}
+.ped-pricefield-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 0 .55rem 0 .85rem;
+  font-family: var(--ped-font);
+  font-variant-numeric: tabular-nums;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--ped-heading);
+  letter-spacing: -.005em;
+  min-width: 0;
+}
+.ped-pricefield-input::-webkit-outer-spin-button,
+.ped-pricefield-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.ped-pricefield-input[type=number] {
+  -moz-appearance: textfield;
+}
+.ped-pricefield-unit {
+  display: flex;
+  align-items: center;
+  padding: 0 .7rem 0 0;
+  font-size: .76rem;
+  font-weight: 600;
+  color: var(--ped-text-muted);
+  font-family: var(--ped-font);
+  flex-shrink: 0;
+  user-select: none;
+}
+.ped-pricefield-steps {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 26px;
+  padding: 4px 4px 4px 0;
+}
+.ped-pricefield-step {
+  position: relative;
+  flex: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  border-radius: 5px;
+  transition: background .12s;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
+.ped-pricefield-step::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translate(-50%, -50%);
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  transition: border-color .12s;
+}
+.ped-pricefield-step--up::before {
+  border-bottom: 5px solid #b0b8c2;
+}
+.ped-pricefield-step--down::before {
+  border-top: 5px solid #b0b8c2;
+}
+.ped-pricefield-step:hover {
+  background: rgba(41, 128, 185, .08);
+}
+.ped-pricefield-step--up:hover::before {
+  border-bottom-color: var(--ped-blue);
+}
+.ped-pricefield-step--down:hover::before {
+  border-top-color: var(--ped-blue);
+}
+.ped-pricefield-step:active {
+  background: rgba(41, 128, 185, .15);
+}
+
+/* ── Select ── */
+
 .ped-select {
   background: var(--ped-surface-2);
   border: 1px solid var(--ped-border);
   color: var(--ped-heading);
-  padding: .55rem .75rem;
+  padding: .58rem .8rem;
   border-radius: 8px;
   font-size: .85rem;
   font-weight: 500;
   outline: none;
   transition: border-color .15s, box-shadow .15s;
   font-family: var(--ped-font);
+  appearance: none;
+  -webkit-appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--ped-text-muted) 50%),
+    linear-gradient(135deg, var(--ped-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  padding-right: 2rem;
 }
-.ped-input:focus,
 .ped-select:focus {
   border-color: var(--ped-blue);
   box-shadow: 0 0 0 3px var(--ped-blue-glow);
 }
-.ped-select {
-  appearance: none;
+
+/* ── Slider (Apple-style) ── */
+
+.ped-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+.ped-slider-track {
+  position: relative;
+  flex: 1;
+  height: 4px;
+  border-radius: 100px;
+  background: #e5e7eb;
+}
+.ped-slider-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 100px;
+  background: var(--ped-blue);
+  pointer-events: none;
+  transition: width .15s cubic-bezier(.4, 0, .2, 1);
+}
+.ped-slider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  transform: translateY(-50%);
   -webkit-appearance: none;
-  background:
-    linear-gradient(45deg, transparent 50%, var(--ped-text-muted) 50%) calc(100% - 14px) 50% / 5px 5px no-repeat,
-    linear-gradient(135deg, var(--ped-text-muted) 50%, transparent 50%) calc(100% - 10px) 50% / 5px 5px no-repeat,
-    var(--ped-surface-2);
+  appearance: none;
+  background: transparent;
   cursor: pointer;
-  padding-right: 2rem;
+  z-index: 2;
+}
+.ped-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 100px;
+  background: transparent;
+}
+.ped-slider::-moz-range-track {
+  height: 4px;
+  border: none;
+  border-radius: 100px;
+  background: transparent;
+}
+.ped-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -8px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 .5px rgba(0, 0, 0, .1),
+    0 1px 2px rgba(0, 0, 0, .1),
+    0 3px 6px rgba(0, 0, 0, .08);
+  cursor: grab;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.ped-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 0 .5px rgba(0, 0, 0, .1),
+    0 1px 2px rgba(0, 0, 0, .1),
+    0 3px 6px rgba(0, 0, 0, .08);
+  cursor: grab;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.ped-slider:active::-webkit-slider-thumb {
+  transform: scale(1.08);
+  cursor: grabbing;
+}
+.ped-slider:active::-moz-range-thumb {
+  transform: scale(1.08);
+  cursor: grabbing;
+}
+.ped-slider-val {
+  min-width: 64px;
+  padding: .3rem .6rem;
+  text-align: center;
+  font-family: var(--ped-mono);
+  font-size: .76rem;
+  font-weight: 700;
+  color: var(--ped-blue);
+  background: var(--ped-blue-pale);
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  white-space: nowrap;
+  user-select: none;
+  letter-spacing: -.01em;
 }
 
 /* ── Run button ── */
 
 .ped-run {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: .55rem;
+  gap: .5rem;
   width: 100%;
-  margin-top: .25rem;
-  padding: .85rem 1.5rem;
-  background: linear-gradient(135deg, var(--ped-blue) 0%, var(--ped-blue-light) 100%);
-  color: #fff;
+  min-height: 46px;
+  margin-top: 1.5rem;
+  padding: .75rem 1rem;
   border: none;
   border-radius: 10px;
+  background: linear-gradient(135deg, var(--ped-blue) 0%, var(--ped-blue-light) 100%);
+  color: #fff;
   font-family: var(--ped-font);
   font-size: .95rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: -.005em;
   cursor: pointer;
   box-shadow: 0 4px 14px rgba(41, 128, 185, .25);
-  transition: transform .15s, box-shadow .15s;
+  transition: transform .15s, box-shadow .18s;
 }
 .ped-run:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(41, 128, 185, .35);
 }
+.ped-run:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(41, 128, 185, .3);
+}
 .ped-run:disabled {
-  opacity: .45;
-  cursor: not-allowed;
+  background: #9ca3af;
   box-shadow: none;
+  cursor: not-allowed;
+}
+.ped-run-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.ped-run-arrow {
+  width: 13px;
+  height: 13px;
+  opacity: .9;
+  transition: transform .18s ease;
+}
+.ped-run:hover:not(:disabled) .ped-run-arrow {
+  transform: translateX(2px);
 }
 .ped-spinner {
   animation: ped-rot .7s linear infinite;
@@ -408,49 +741,54 @@
 /* ── Error ── */
 
 .ped-error {
-  max-width: 900px;
+  max-width: 760px;
   margin: 1rem auto 0;
-  padding: .8rem 1.1rem;
+  padding: .75rem 1.25rem;
   background: var(--ped-red-pale);
-  border: 1px solid rgba(239, 68, 68, .3);
+  color: #991b1b;
+  border: 1px solid #fecaca;
   border-radius: 10px;
-  color: #b91c1c;
   font-size: .85rem;
   font-weight: 500;
+  font-family: var(--ped-font);
 }
 
 /* ── Results wrap ── */
 
 .ped-results {
-  max-width: 1180px;
-  margin: 2rem auto 0;
-  padding: 0 1.5rem;
-  animation: ped-fade .4s ease-out;
-}
-@keyframes ped-fade {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: ped-fadeUp .4s ease-out;
 }
 
-/* ── Summary chips ── */
+/* ── Info chips ── */
 
-.ped-summary {
+.ped-info-strip {
   display: flex;
   flex-wrap: wrap;
   gap: .5rem;
-  margin-bottom: 1.5rem;
 }
 .ped-chip {
   display: inline-flex;
   align-items: center;
   gap: .35rem;
-  padding: .4rem .85rem;
+  padding: .4rem .75rem;
   background: var(--ped-surface);
   border: 1px solid var(--ped-border);
-  border-radius: 999px;
-  font-size: .8rem;
-  color: var(--ped-text-muted);
+  border-radius: 8px;
+  font-size: .78rem;
   font-weight: 500;
+  color: var(--ped-text-muted);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .03);
+  font-family: var(--ped-font);
+}
+.ped-chip svg {
+  font-size: .72rem;
+  color: var(--ped-blue);
 }
 .ped-chip strong {
   color: var(--ped-heading);
@@ -466,8 +804,9 @@
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--ped-heading);
-  margin: 1.8rem 0 .9rem;
+  margin: 1.4rem 0 .8rem;
   letter-spacing: -.015em;
+  font-family: var(--ped-font);
 }
 
 /* ── Variant cards ── */
@@ -476,7 +815,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: .5rem;
 }
 .ped-variant {
   position: relative;
@@ -510,15 +849,16 @@
   font-weight: 700;
   color: var(--ped-heading);
   letter-spacing: -.01em;
+  font-family: var(--ped-font);
 }
 .ped-variant-name-sub {
   font-size: .8rem;
   color: var(--ped-text-muted);
   font-weight: 500;
   margin-top: .15rem;
+  font-family: var(--ped-font);
 }
 
-/* Balance: number (mono, tabular) + unit (sora, muted) */
 .ped-variant-balance {
   display: flex;
   align-items: baseline;
@@ -542,20 +882,6 @@
   font-family: var(--ped-font);
 }
 
-.ped-variant-status {
-  font-size: .82rem;
-  font-weight: 500;
-  color: var(--ped-text-muted);
-  margin-bottom: .3rem;
-}
-.ped-variant-warn {
-  margin-top: .35rem;
-  font-size: .78rem;
-  color: var(--ped-amber);
-  font-weight: 500;
-}
-
-/* Rows: each value = number + unit */
 .ped-variant-rows {
   display: flex;
   flex-direction: column;
@@ -573,6 +899,7 @@
 .ped-variant-row-label {
   color: var(--ped-text-muted);
   font-weight: 500;
+  font-family: var(--ped-font);
 }
 .ped-variant-row-value {
   display: inline-flex;
@@ -594,8 +921,8 @@
 .ped-variant-row-value.pv .ped-variant-row-num { color: var(--ped-amber); }
 .ped-variant-row-value.cons .ped-variant-row-num { color: var(--ped-blue); }
 .ped-variant-row-value.deficit .ped-variant-row-num { color: var(--ped-red); }
+.ped-variant-row-value.saving .ped-variant-row-num { color: var(--ped-emerald); }
 
-/* Cost row: number (mono, tabular) + Kč (sora, muted) */
 .ped-variant-cost {
   margin-top: 1rem;
   padding-top: .75rem;
@@ -610,6 +937,7 @@
 .ped-variant-cost-row-label {
   color: var(--ped-text-muted);
   font-weight: 500;
+  font-family: var(--ped-font);
 }
 .ped-variant-cost-row-value {
   display: inline-flex;
@@ -627,13 +955,7 @@
   font-size: .82rem;
   font-weight: 500;
   color: var(--ped-text-muted);
-}
-.ped-variant-cost-detail {
-  font-size: .76rem;
-  color: var(--ped-text-dim);
-  margin-top: .25rem;
-  letter-spacing: -.005em;
-  line-height: 1.45;
+  font-family: var(--ped-font);
 }
 
 .ped-variant-unavail {
@@ -647,21 +969,22 @@
   font-weight: 600;
   font-size: .88rem;
   margin-bottom: .25rem;
+  font-family: var(--ped-font);
 }
 .ped-variant-unavail small {
   display: block;
   font-size: .76rem;
   color: var(--ped-text-dim);
   line-height: 1.5;
+  font-family: var(--ped-font);
 }
 
-/* ── HP performance grid (jen 2 dlaždice) ── */
+/* ── HP performance grid ── */
 
 .ped-hp-perf {
   background: var(--ped-surface);
   border: 1px solid var(--ped-border);
   border-radius: var(--ped-radius);
-  margin-bottom: 1.5rem;
   overflow: hidden;
   box-shadow: var(--ped-shadow);
 }
@@ -682,6 +1005,7 @@
   font-weight: 500;
   color: var(--ped-text-muted);
   letter-spacing: -.005em;
+  font-family: var(--ped-font);
 }
 .ped-hp-tile-value {
   font-size: 1.5rem;
@@ -693,12 +1017,6 @@
   line-height: 1.1;
   margin-top: .15rem;
 }
-.ped-hp-tile-sub {
-  font-size: .76rem;
-  color: var(--ped-text-dim);
-  line-height: 1.45;
-  margin-top: .2rem;
-}
 
 /* ── Tables ── */
 
@@ -707,7 +1025,6 @@
   border: 1px solid var(--ped-border);
   border-radius: var(--ped-radius);
   overflow: hidden;
-  margin-bottom: 1.4rem;
   box-shadow: var(--ped-shadow);
 }
 .ped-table {
@@ -730,6 +1047,10 @@
   color: var(--ped-text-muted);
   font-family: var(--ped-mono);
 }
+.ped-table td {
+  font-family: var(--ped-font);
+  color: var(--ped-text);
+}
 .ped-table .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -743,25 +1064,56 @@
   border-top: 2px solid var(--ped-border-light);
   border-bottom: none !important;
 }
+
+/* Barevné hodnoty v buňkách tabulky — vyšší specificita než .ped-table td */
+.ped-table td.ped-val-pv { color: var(--ped-amber); font-weight: 700; }
+.ped-table td.ped-val-cons { color: var(--ped-blue); font-weight: 700; }
+.ped-table td.ped-val-pos { color: var(--ped-emerald); font-weight: 800; }
+.ped-table td.ped-val-neg { color: var(--ped-red); font-weight: 800; }
+.ped-val-pct { color: var(--ped-text-dim); font-size: .78rem; }
+
+/* Stejné třídy mimo tabulku (pro jistotu zachovat) */
 .ped-val-pv { color: var(--ped-amber); font-weight: 700; }
 .ped-val-cons { color: var(--ped-blue); font-weight: 700; }
 .ped-val-pos { color: var(--ped-emerald); font-weight: 800; }
 .ped-val-neg { color: var(--ped-red); font-weight: 800; }
-.ped-val-pct { color: var(--ped-text-dim); font-size: .78rem; }
+
+/* Úspora na vytápění v tabulce — zelená hodnota, jinak stejný styl jako řádky */
+.ped-table-saving td {
+  border-bottom: none;
+  font-weight: 700;
+  color: var(--ped-emerald);
+}
+.ped-table-saving td:first-child {
+  color: var(--ped-text);
+  font-weight: 600;
+}
 
 /* ── Responsive ── */
 
 @media (max-width: 720px) {
-  .ped-upload-grid { grid-template-columns: 1fr; }
-  .ped-hero h1 { font-size: 1.5rem; }
+  .ped-hero { padding: 1.25rem 1rem 3rem; }
+  .ped-hero h1 { font-size: 1.45rem; }
   .ped-hero p { font-size: .82rem; }
+  .ped-back {
+    position: relative;
+    top: auto;
+    left: auto;
+    align-self: flex-start;
+    margin-bottom: .5rem;
+  }
+  .ped-form {
+    margin: -20px 1rem 2rem;
+    padding: 1.15rem 1rem 1.25rem;
+  }
+  .ped-files { grid-template-columns: 1fr; }
+  .ped-params-grid { grid-template-columns: 1fr; }
   .ped-budget-input { font-size: 1.4rem; }
-  .ped-results { padding: 0 1rem; }
-  .ped-form-wrap { padding: 0 1rem; }
+  .ped-results { padding: 1.25rem 1rem 2rem; }
 }
 @media (max-width: 540px) {
   .ped-hp-tile { border-right: none; border-bottom: 1px solid var(--ped-border); }
   .ped-hp-tile:last-child { border-bottom: none; }
-  .ped-summary { gap: .35rem; }
-  .ped-chip { font-size: .76rem; padding: .35rem .7rem; }
+  .ped-info-strip { gap: .35rem; }
+  .ped-chip { font-size: .76rem; padding: .35rem .65rem; }
 }

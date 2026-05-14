@@ -1682,18 +1682,6 @@
   font-weight: 600;
 }
 
-/* ── Sol. pot. (EP) zvýraznění bez JSX zásahu ──
-   Když je v JSX pv_engine === 'both', řádek tabulky má
-   10 buněk a 7. sloupec (Sol. pot. EP) nemá vlastní třídu.
-   Detekuju 10sloupcový režim přes :has() a odbarvím 7. td
-   stejně jako val-hl. Funguje v Chrome 105+, Firefox 121+,
-   Safari 15.4+.                                                */
-
-.saa-table tbody tr:has(td:nth-child(10)) td:nth-child(7) {
-  color: #111827;
-  font-weight: 600;
-}
-
 /* ── Jemný scrollbar uvnitř table-wrap ── */
 
 .saa-table-wrap::-webkit-scrollbar {

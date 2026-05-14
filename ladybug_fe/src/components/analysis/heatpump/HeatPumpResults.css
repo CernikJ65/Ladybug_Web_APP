@@ -183,6 +183,9 @@
   text-transform: uppercase; letter-spacing: .03em;
   font-family: var(--hp-mono);
 }
+.hp-kpi-unit {
+  text-transform: none;
+}
 
 /* ── Context note ── */
 

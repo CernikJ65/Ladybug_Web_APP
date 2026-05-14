@@ -24,7 +24,7 @@ interface Panel {
   tilt: number; azimuth: number; radiation_kwh_m2: number;
   annual_production_kwh: number; area_m2: number;
 }
-interface Props { panels: Panel[]; roofs?: RoofMeta[]; }
+interface Props { panels: Panel[]; roofs?: RoofMeta[]; panelOrder?: Map<number, number>; }
 
 /* ───── Heat colors ───── */
 
@@ -82,9 +82,10 @@ const PAD = 24;
 interface RVP {
   roofId: string; panels: Panel[]; roofMeta?: RoofMeta;
   gMinR: number; gMaxR: number;
+  panelOrder?: Map<number, number>;
 }
 
-const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => {
+const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panelOrder }) => {
   const [hov, setHov] = useState<number | null>(null);
 
   const L = useMemo(() => {
@@ -119,6 +120,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => 
   const tilt = roofMeta?.tilt ?? panels[0]?.tilt ?? 0;
   const ori = orientationLabel(roofMeta, panels[0]?.azimuth ?? 180, tilt);
   const uid = roofId.replace(/[^a-zA-Z0-9]/g, '_');
+  const roofNames = roofId.split('+').map(s => s.trim()).filter(Boolean);
 
   return (
     <div style={{
@@ -134,17 +136,39 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => 
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'baseline',
+          alignItems: 'flex-start',
           gap: 8,
         }}>
-          <span style={{
-            fontSize: 13.5,
-            fontWeight: 600,
-            color: '#111827',
-            letterSpacing: '-0.01em',
-          }}>
-            {panels.length} {panels.length === 1 ? 'panel' : panels.length < 5 ? 'panely' : 'panelů'}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {roofNames.map((name, idx) => (
+                <span
+                  key={`${name}-${idx}`}
+                  title={name}
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: '#111827',
+                    letterSpacing: '-0.01em',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+            <span style={{
+              fontSize: 11.5,
+              fontWeight: 500,
+              color: '#6b7280',
+              letterSpacing: '-0.005em',
+            }}>
+              {panels.length} {panels.length === 1 ? 'panel' : panels.length < 5 ? 'panely' : 'panelů'}
+            </span>
+          </div>
           <span style={{
             fontSize: 13,
             color: '#111827',
@@ -152,6 +176,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => 
             letterSpacing: '-0.01em',
             whiteSpace: 'nowrap',
             textAlign: 'right',
+            paddingTop: 1,
           }}>
             {tilt < 5 ? 'plochá střecha' : `sklon ${tilt.toFixed(0)}°, orientace na ${ori}`}
           </span>
@@ -281,46 +306,6 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => 
           );
         })}
 
-        {/* Tooltip */}
-        {hov !== null && (() => {
-          const p = panels.find(pp => pp.id === hov);
-          if (!p) return null;
-          const { x, y } = toS(p.center[0], p.center[1]);
-          const tw = 152, th = 44;
-          let tx = x + pw / 2 + 8, ty = y - th / 2;
-          if (tx + tw > SVG_W - 4) tx = x - pw / 2 - tw - 8;
-          if (ty < 4) ty = 4;
-          if (ty + th > SVG_H - 4) ty = SVG_H - th - 4;
-          return (
-            <g>
-              <rect
-                x={tx} y={ty}
-                width={tw} height={th}
-                rx={6}
-                fill="#111827"
-                fillOpacity={0.95}
-              />
-              <text
-                x={tx + 10} y={ty + 17}
-                fill="#fbbf24"
-                fontSize={11}
-                fontWeight={600}
-                fontFamily="'JetBrains Mono', monospace"
-              >
-                {p.radiation_kwh_m2.toFixed(0)} kWh/m²
-              </text>
-              <text
-                x={tx + 10} y={ty + 33}
-                fill="#d1d5db"
-                fontSize={10}
-                fontFamily="'JetBrains Mono', monospace"
-              >
-                výroba {p.annual_production_kwh.toFixed(0)} kWh/rok
-              </text>
-            </g>
-          );
-        })()}
-
         {/* Rozměrový popisek šířky — pod plochou */}
         <text
           x={ox + dW / 2}
@@ -430,6 +415,69 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => 
             </g>
           );
         })()}
+
+        {/* Tooltip */}
+        {hov !== null && (() => {
+          const p = panels.find(pp => pp.id === hov);
+          if (!p) return null;
+          const { x, y } = toS(p.center[0], p.center[1]);
+          const ord = panelOrder?.get(p.id);
+          const tw = 178, th = ord !== undefined ? 76 : 60;
+          let tx = x + pw / 2 + 8, ty = y - th / 2;
+          if (tx + tw > SVG_W - 4) tx = x - pw / 2 - tw - 8;
+          if (ty < 4) ty = 4;
+          if (ty + th > SVG_H - 4) ty = SVG_H - th - 4;
+          const yRad = ord !== undefined ? 32 : 17;
+          const yProd = ord !== undefined ? 48 : 33;
+          const yCoord = ord !== undefined ? 64 : 49;
+          return (
+            <g>
+              <rect
+                x={tx} y={ty}
+                width={tw} height={th}
+                rx={6}
+                fill="#111827"
+                fillOpacity={0.95}
+              />
+              {ord !== undefined && (
+                <text
+                  x={tx + 10} y={ty + 16}
+                  fill="#a5b4fc"
+                  fontSize={10.5}
+                  fontWeight={700}
+                  fontFamily="'JetBrains Mono', monospace"
+                >
+                  #{ord} panel
+                </text>
+              )}
+              <text
+                x={tx + 10} y={ty + yRad}
+                fill="#fbbf24"
+                fontSize={11}
+                fontWeight={600}
+                fontFamily="'JetBrains Mono', monospace"
+              >
+                {p.radiation_kwh_m2.toFixed(0)} kWh/m²
+              </text>
+              <text
+                x={tx + 10} y={ty + yProd}
+                fill="#d1d5db"
+                fontSize={10}
+                fontFamily="'JetBrains Mono', monospace"
+              >
+                výroba {p.annual_production_kwh.toFixed(0)} kWh/rok
+              </text>
+              <text
+                x={tx + 10} y={ty + yCoord}
+                fill="#9ca3af"
+                fontSize={10}
+                fontFamily="'JetBrains Mono', monospace"
+              >
+                x {p.center[0].toFixed(1)}  y {p.center[1].toFixed(1)} m
+              </text>
+            </g>
+          );
+        })()}
       </svg>
 
       {/* Footer */}
@@ -503,7 +551,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR }) => 
 
 const INITIAL_VISIBLE = 4;
 
-const PanelMapView: React.FC<Props> = ({ panels, roofs }) => {
+const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
   const [showAll, setShowAll] = useState(false);
 
   const data = useMemo(() => {
@@ -612,6 +660,7 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs }) => {
             roofMeta={data.rI.get(rid)}
             gMinR={data.gMinR}
             gMaxR={data.gMaxR}
+            panelOrder={panelOrder}
           />
         ))}
       </div>

@@ -30,7 +30,7 @@ const DwgUploadCard: React.FC<Props> = (p) => (
       <div>
         <h2>Nahrát CAD soubor</h2>
         <p className="cvt-card-sub">
-          DWG nebo DXF z CadMapperu, AutoCADu apod.
+          Vlože soubor fomátu DWG
         </p>
       </div>
     </div>
@@ -52,7 +52,7 @@ const DwgUploadCard: React.FC<Props> = (p) => (
         {p.file ? 'Soubor vybrán' : 'Přetáhněte soubor sem'}
       </div>
       <div className="cvt-upload-hint">
-        {p.file ? '' : 'nebo klikněte pro výběr · .dwg, .dxf'}
+        {p.file ? '' : 'nebo klikněte pro výběr · .dwg'}
       </div>
       {p.file && (
         <div className="cvt-upload-filename">

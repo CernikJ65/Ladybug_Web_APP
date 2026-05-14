@@ -6,8 +6,6 @@ Obsahuje i roof_world_bounds helper, protože ten je čistě prezentační
 """
 from __future__ import annotations
 
-from typing import Optional
-
 
 def roof_world_bounds(geometry) -> dict:
     """Světový bounding box střechy v XY rovině (pro FE vizualizaci)."""
@@ -38,12 +36,9 @@ def build_response(
     panel_height: float,
     panel_spacing: float,
     pv_efficiency: float,
-    pv_sim,
+    pvlib_calc,
     mounting_type: str,
-    engine_label_parts: list,
-    pv_engine: str,
-    ep_results: Optional[dict],
-    pvlib_results: Optional[dict],
+    pvlib_results: dict,
     results: dict,
 ) -> dict:
     """Sestaví finální JSON response pro frontend."""
@@ -64,12 +59,6 @@ def build_response(
     # Logický počet střech = unikátní parent rooms.
     # Sedlová střecha = 2 plochy, ale 1 "střecha".
     logical_roof_count = len({r.parent_id for r in roofs})
-
-    engine_totals: dict = {}
-    if ep_results is not None:
-        engine_totals["energyplus_kwh"] = ep_results["annual_production_kwh"]
-    if pvlib_results is not None:
-        engine_totals["pvlib_kwh"] = pvlib_results["annual_production_kwh"]
 
     return {
         "model_info": {
@@ -93,14 +82,14 @@ def build_response(
             "panel_area_m2": round(panel_width * panel_height, 2),
             "spacing_m": panel_spacing,
             "pv_efficiency": pv_efficiency,
-            "active_area_fraction": pv_sim.active_area_fraction,
+            "active_area_fraction": pvlib_calc.active_area_fraction,
             "panel_age_years": 0,
-            "system_losses": pv_sim.get_loss_breakdown(),
-            "module_type": pv_sim.module_type,
+            "system_losses": pvlib_calc.get_loss_breakdown(),
+            "module_type": pvlib_calc.module_type,
             "mounting_type": mounting_type,
         },
-        "simulation_engine": "+".join(engine_label_parts),
-        "pv_engine": pv_engine,
-        "engine_totals": engine_totals,
+        "simulation_engine": pvlib_results.get(
+            "simulation_engine", "pvlib_PVWatts"
+        ),
         "optimization": results,
     }

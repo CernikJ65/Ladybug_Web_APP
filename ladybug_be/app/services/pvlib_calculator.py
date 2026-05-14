@@ -13,8 +13,14 @@ import pvlib
 from honeybee_energy.generator.pv import PVProperties
 
 from .panel_placer import PanelPosition
-from .pv_simulator import infer_module_type
 from .pvlib_weather import load_epw_weather, poa_hourly_shape
+
+
+def infer_module_type(rated_efficiency: float) -> str:
+    """Z účinnosti odvodí typ PV modulu (Standard / Premium)."""
+    if rated_efficiency < 0.18:
+        return "Standard"
+    return "Premium"
 
 "uprava vyroby podle toho jak je pnale zahraty typ se pocita dle učinnosti panelu"
 _PVWATTS_GAMMA_BY_MODULE = {
@@ -44,8 +50,7 @@ class PVLibCalculator:
         self.epw_path = epw_path
         self.rated_efficiency = rated_efficiency
         if system_loss_fraction is None:
-            # Konzistentní s PVSimulator — age_degradation 0 %
-            # pro simulaci nového systému v roce 0.
+            # age_degradation 0 % pro simulaci nového systému v roce 0.
             # Vsechny komponenty zapisujeme explicitne, aby vypocet
             # byl 1:1 shodny s tim, co reportuje get_loss_breakdown()
             # (zadne skryte defaulty z honeybee, ktere by se mohly
@@ -72,7 +77,7 @@ class PVLibCalculator:
     "potom se nacte pocasi, nasledne se nacte ponteical a dle pocasi rozdeli do hodin"
     "a nasledne probiha vypocet vyroby"
     def simulate(self, panels: List[PanelPosition]) -> Dict[str, Any]:
-        """Hlavní vstup — vrátí stejný tvar dictu jako PVSimulator.simulate()."""
+        """Hlavní vstup — vrátí dict s annual_production_kwh + per-panel daty."""
         if not panels:
             return self._empty_result()
 
@@ -99,13 +104,11 @@ class PVLibCalculator:
             "simulation_engine": "pvlib_PVWatts",
             "hourly_available": False,
         }
-    "ztratty paneli stejne jako v PVSimulatoru"
+    "ztratty paneli"
     def get_loss_breakdown(self) -> Dict[str, float]:
-        """Stejný rozpis ztrát jako PVSimulator — klíče musí přesně
-        odpovídat PVProperties.loss_fraction_from_components, jinak
-        FE reportuje jiné hodnoty, než simulace skutečně používá.
-        (Pozor: dříve zde bylo snow:1.0 — chyba v reportu, simulace
-        ale pracovala s 0.0 z PVProperties default.)"""
+        """Rozpis ztrát — klíče musí přesně odpovídat
+        PVProperties.loss_fraction_from_components, jinak FE reportuje
+        jiné hodnoty, než simulace skutečně používá."""
         return {
             "age": 0.0,
             "light_induced_degradation": 0.015,

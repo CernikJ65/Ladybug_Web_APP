@@ -40,7 +40,7 @@ const HPRealOverview: React.FC<Props> = ({ result: r }) => {
       <div className="hp-card-head">
         <FaBuilding className="hp-card-icon" />
         <div>
-          <h2>Budova</h2>
+          <h2>Místnosti (Zóny vytápění)</h2>
           <p className="hp-card-sub">
             Místnosti a celková podlahová plocha
           </p>

@@ -41,12 +41,12 @@ const HPRealComparison: React.FC<Props> = ({
         <button type="button"
           className={`hp-compare-tab ${tab === 'ashp' ? 'active' : ''}`}
           onClick={() => setTab('ashp')}>
-          <FaWind /> ASHP
+          <FaWind /> ASHP Vzduch-voda
         </button>
         <button type="button"
           className={`hp-compare-tab ${tab === 'gshp' ? 'active' : ''}`}
           onClick={() => setTab('gshp')}>
-          <FaMountain /> GSHP
+          <FaMountain /> GSHP Země-voda
         </button>
       </div>
 

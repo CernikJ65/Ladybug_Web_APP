@@ -34,7 +34,7 @@ export const getSolarAdvancedSteps = (hasResult: boolean): TourStep[] => {
     {
       selector: '.saa-run',
       title: 'Spuštění optimalizace',
-      body: 'Po stisknutí tohoto tlačítka backend přečte HBJSON, vyfiltruje vhodné střešní plochy a v EnergyPlus PVWatts spočte roční výrobu pro každou variantu.',
+      body: 'Po stisknutí tohoto tlačítka backend přečte HBJSON, vyfiltruje vhodné střešní plochy a přes Radiance + pvlib PVWatts spočte roční výrobu pro každou variantu.',
     },
   ];
 
