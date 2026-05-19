@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Room } from './HbjsonBuilderTypes';
+import { useT } from '../../../i18n/useT';
 
 interface RoomListProps {
   floorId: string;
@@ -19,19 +20,20 @@ const RoomList: React.FC<RoomListProps> = ({
   onRemoveRoom,
   onUpdateRoom
 }) => {
+  const t = useT();
   return (
     <div className="builder-section">
       <div className="builder-section-header">
-        <h3>Místnosti</h3>
+        <h3>{t('Místnosti')}</h3>
         <button onClick={onAddRoom} className="btn-add">
-          + Přidat místnost
+          {t('+ Přidat místnost')}
         </button>
       </div>
 
       <div className="builder-list">
         {rooms.length === 0 ? (
           <div className="builder-empty">
-            Žádné místnosti. Klikněte na "+ Přidat místnost" pro vytvoření.
+            {t('Žádné místnosti. Klikněte na "+ Přidat místnost" pro vytvoření.')}
           </div>
         ) : (
           rooms.map((room) => {
@@ -52,7 +54,7 @@ const RoomList: React.FC<RoomListProps> = ({
                       onRemoveRoom(room.id);
                     }}
                     className="btn-remove"
-                    title="Odstranit místnost"
+                    title={t('Odstranit místnost')}
                   >
                     ×
                   </button>
@@ -65,19 +67,19 @@ const RoomList: React.FC<RoomListProps> = ({
                 {selectedRoom === room.id && (
                   <div className="builder-item-details">
                     <div className="form-group">
-                      <label>Název místnosti</label>
+                      <label>{t('Název místnosti')}</label>
                       <input
                         type="text"
                         value={room.name}
                         onChange={(e) => onUpdateRoom(room.id, 'name', e.target.value)}
                         onClick={(e) => e.stopPropagation()}
-                        placeholder="Název místnosti"
+                        placeholder={t('Název místnosti')}
                       />
                     </div>
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label>Šířka (m)</label>
+                        <label>{t('Šířka (m)')}</label>
                         <input
                           type="number"
                           value={room.width}
@@ -89,7 +91,7 @@ const RoomList: React.FC<RoomListProps> = ({
                       </div>
 
                       <div className="form-group">
-                        <label>Délka (m)</label>
+                        <label>{t('Délka (m)')}</label>
                         <input
                           type="number"
                           value={room.length}
@@ -102,7 +104,7 @@ const RoomList: React.FC<RoomListProps> = ({
                     </div>
 
                     <div className="form-group">
-                      <label>Výška stropu (m)</label>
+                      <label>{t('Výška stropu (m)')}</label>
                       <input
                         type="number"
                         value={room.height}
@@ -115,7 +117,7 @@ const RoomList: React.FC<RoomListProps> = ({
 
                     <div className="form-row">
                       <div className="form-group">
-                        <label>Pozice X (m)</label>
+                        <label>{t('Pozice X (m)')}</label>
                         <input
                           type="number"
                           value={room.positionX}
@@ -127,7 +129,7 @@ const RoomList: React.FC<RoomListProps> = ({
                       </div>
 
                       <div className="form-group">
-                        <label>Pozice Y (m)</label>
+                        <label>{t('Pozice Y (m)')}</label>
                         <input
                           type="number"
                           value={room.positionY}
@@ -140,7 +142,7 @@ const RoomList: React.FC<RoomListProps> = ({
                     </div>
 
                     <div className="builder-info">
-                      Plocha: {area.toFixed(1)} m² | Objem: {volume.toFixed(1)} m³ | Oken: {room.windows.length}
+                      {t('Plocha')}: {area.toFixed(1)} m² | {t('Objem')}: {volume.toFixed(1)} m³ | {t('Oken')}: {room.windows.length}
                     </div>
                   </div>
                 )}

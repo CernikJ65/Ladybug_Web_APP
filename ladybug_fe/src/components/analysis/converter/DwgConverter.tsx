@@ -11,6 +11,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 import type { ConvertResult } from './DwgTypes';
 import DwgUploadCard from './DwgUploadCard';
 import DwgResultCards from './DwgResultCards';
+import { useT } from '../../../i18n/useT';
 import './DwgConverter.css';
 
 const API = 'http://127.0.0.1:8000/api/converter';
@@ -18,6 +19,7 @@ const API = 'http://127.0.0.1:8000/api/converter';
 interface Props { onBack: () => void; }
 
 const DwgConverter: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +30,13 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
   const handleFile = useCallback((f: File) => {
     const name = f.name.toLowerCase();
     if (!name.endsWith('.dwg') && !name.endsWith('.dxf')) {
-      setError('Podporované formáty: .dwg, .dxf');
+      setError(t('Podporované formáty: .dwg, .dxf'));
       return;
     }
     setFile(f);
     setError(null);
     setResult(null);
-  }, []);
+  }, [t]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -61,7 +63,7 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
       }
       setResult(await res.json());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Neznámá chyba');
+      setError(e instanceof Error ? e.message : t('Neznámá chyba'));
     } finally {
       setLoading(false);
     }
@@ -92,10 +94,10 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
     <div className="cvt-page">
       <div className="cvt-hero">
         <button className="cvt-back" onClick={onBack}>
-          <FaArrowLeft /> Zpět
+          <FaArrowLeft /> {t('Zpět')}
         </button>
-       
-        <h1>Převod DWG formátu na HBJSON</h1>
+
+        <h1>{t('Převod DWG formátu na HBJSON')}</h1>
         
       </div>
 
@@ -117,9 +119,9 @@ const DwgConverter: React.FC<Props> = ({ onBack }) => {
           <div className="cvt-card">
             <div className="cvt-loading">
               <div className="cvt-spinner" />
-              <div className="cvt-loading-text">Konverze probíhá…</div>
+              <div className="cvt-loading-text">{t('Konverze probíhá…')}</div>
               <div className="cvt-loading-sub">
-                DWG → DXF → ladybug_geometry → Honeybee HBJSON
+                {t('DWG → DXF → ladybug_geometry → Honeybee HBJSON')}
               </div>
             </div>
           </div>

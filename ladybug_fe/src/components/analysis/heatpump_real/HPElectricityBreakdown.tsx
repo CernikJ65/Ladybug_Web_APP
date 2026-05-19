@@ -9,6 +9,7 @@
  */
 import React from 'react';
 import { fmt } from './hpRealUtils';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   breakdown: Record<string, number>;
@@ -25,6 +26,7 @@ const COLORS: Record<string, string> = {
 const FALLBACK = '#2dd4bf';
 
 const HPElectricityBreakdown: React.FC<Props> = ({ breakdown }) => {
+  const t = useT();
   const entries = Object.entries(breakdown)
     .sort(([, a], [, b]) => b - a);
   const total = entries.reduce((s, [, v]) => s + v, 0);
@@ -41,7 +43,7 @@ const HPElectricityBreakdown: React.FC<Props> = ({ breakdown }) => {
               width: `${(val / total) * 100}%`,
               background: COLORS[name] || FALLBACK,
             }}
-            title={`${name}: ${fmt(val)} kWh`} />
+            title={`${t(name)}: ${fmt(val)} kWh`} />
         ))}
       </div>
       <div className="hpe-rows">
@@ -49,7 +51,7 @@ const HPElectricityBreakdown: React.FC<Props> = ({ breakdown }) => {
           <div key={name} className="hpe-row">
             <span className="hpe-dot"
               style={{ background: COLORS[name] || FALLBACK }} />
-            <span className="hpe-name">{name}</span>
+            <span className="hpe-name">{t(name)}</span>
             <span className="hpe-pct">
               {Math.round((val / total) * 100)}%
             </span>

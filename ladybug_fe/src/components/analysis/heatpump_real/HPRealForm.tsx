@@ -13,6 +13,7 @@ import {
   FaStore, FaGraduationCap, FaHotel, FaHospital,
   FaTimes,
 } from 'react-icons/fa';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   hbjson: File | null; epw: File | null;
@@ -31,36 +32,37 @@ interface Props {
   onRun: () => void;
 }
 
-const BUILDS = [
-  { v: 'Residential', l: 'Rezidenční', i: <FaHome />, d: 'Byty, domy' },
-  { v: 'Office', l: 'Kancelářská', i: <FaBuilding />, d: 'Kanceláře' },
-  { v: 'Retail', l: 'Obchodní', i: <FaStore />, d: 'Obchody' },
-  { v: 'School', l: 'Školní', i: <FaGraduationCap />, d: 'Školy' },
-  { v: 'Hotel', l: 'Hotelová', i: <FaHotel />, d: 'Hotely' },
-  { v: 'Hospital', l: 'Nemocniční', i: <FaHospital />, d: 'Nemocnice' },
-];
-
-const HPRealForm: React.FC<Props> = (p) => (
+const HPRealForm: React.FC<Props> = (p) => {
+  const t = useT();
+  const BUILDS = [
+    { v: 'Residential', l: t('Rezidenční'), i: <FaHome />, d: t('Byty, domy') },
+    { v: 'Office', l: t('Kancelářská'), i: <FaBuilding />, d: t('Kanceláře') },
+    { v: 'Retail', l: t('Obchodní'), i: <FaStore />, d: t('Obchody') },
+    { v: 'School', l: t('Školní'), i: <FaGraduationCap />, d: t('Školy') },
+    { v: 'Hotel', l: t('Hotelová'), i: <FaHotel />, d: t('Hotely') },
+    { v: 'Hospital', l: t('Nemocniční'), i: <FaHospital />, d: t('Nemocnice') },
+  ];
+  return (
   <div className="hp-form">
     {/* ── 1. Soubory ── */}
     <div className="hp-form-step">
       <span className="hp-step-num">1</span>
-      <span className="hp-step-title">Vstupní soubory</span>
+      <span className="hp-step-title">{t('Vstupní soubory')}</span>
     </div>
     <div className="hp-files">
       <label className={`hp-dropzone ${p.hbjson ? 'has-file' : ''}`}>
         <FaFile className="hp-dropzone-icon" />
         <span className="hp-dropzone-text">
-          {p.hbjson ? p.hbjson.name : 'HBJSON model budovy'}
+          {p.hbjson ? p.hbjson.name : t('HBJSON model budovy')}
         </span>
         <span className="hp-dropzone-hint">
-          {p.hbjson ? 'Změnit' : '.hbjson / .json'}
+          {p.hbjson ? t('Změnit') : '.hbjson / .json'}
         </span>
         <input type="file" accept=".hbjson,.json"
           onChange={e => p.onHbjson(e.target.files?.[0] || null)} />
         {p.hbjson && (
           <button type="button" className="hp-dropzone-clear"
-            aria-label="Odebrat soubor"
+            aria-label={t('Odebrat soubor')}
             onClick={e => {
               e.preventDefault();
               e.stopPropagation();
@@ -73,16 +75,16 @@ const HPRealForm: React.FC<Props> = (p) => (
       <label className={`hp-dropzone ${p.epw ? 'has-file' : ''}`}>
         <FaCloudUploadAlt className="hp-dropzone-icon" />
         <span className="hp-dropzone-text">
-          {p.epw ? p.epw.name : 'EPW klimatická data'}
+          {p.epw ? p.epw.name : t('EPW klimatická data')}
         </span>
         <span className="hp-dropzone-hint">
-          {p.epw ? 'Změnit' : '.epw'}
+          {p.epw ? t('Změnit') : '.epw'}
         </span>
         <input type="file" accept=".epw"
           onChange={e => p.onEpw(e.target.files?.[0] || null)} />
         {p.epw && (
           <button type="button" className="hp-dropzone-clear"
-            aria-label="Odebrat soubor"
+            aria-label={t('Odebrat soubor')}
             onClick={e => {
               e.preventDefault();
               e.stopPropagation();
@@ -97,10 +99,10 @@ const HPRealForm: React.FC<Props> = (p) => (
     {/* ── 2. Typ budovy ── */}
     <div className="hp-form-step">
       <span className="hp-step-num">2</span>
-      <span className="hp-step-title">Typ budovy</span>
+      <span className="hp-step-title">{t('Typ budovy')}</span>
     </div>
     <p className="hp-form-note">
-      Vybere jedne z přednsatavenych Ladybug šablon pro simulaci tepelné potřeby budovy.
+      {t('Vybere jedne z přednsatavenych Ladybug šablon pro simulaci tepelné potřeby budovy.')}
     </p>
     <div className="hp-type-grid">
       {BUILDS.map(b => (
@@ -117,42 +119,42 @@ const HPRealForm: React.FC<Props> = (p) => (
     {/* ── 3. Režim simulace ── */}
     <div className="hp-form-step">
       <span className="hp-step-num">3</span>
-      <span className="hp-step-title">Režim simulace</span>
+      <span className="hp-step-title">{t('Režim simulace')}</span>
     </div>
     <div className="hp-mode-seg" role="tablist">
       <button type="button"
         className={`hp-mode-btn ${!p.heatingOnly ? 'active' : ''}`}
         onClick={() => p.onHeatingOnly(false)}>
-        Vytápění a chlazení
+        {t('Vytápění a chlazení')}
       </button>
       <button type="button"
         className={`hp-mode-btn ${p.heatingOnly ? 'active' : ''}`}
         onClick={() => p.onHeatingOnly(true)}>
-        Pouze vytápění
+        {t('Pouze vytápění')}
       </button>
     </div>
 
     {/* ── 4. Setpointy + rekuperace ── */}
     <div className="hp-form-step">
       <span className="hp-step-num">4</span>
-      <span className="hp-step-title">Setpointy a rekuperace</span>
+      <span className="hp-step-title">{t('Setpointy a rekuperace')}</span>
     </div>
 
     <div className="hp-params-grid">
-      <Slider label="Setpoint vytápění" min={16} max={25} step={1}
+      <Slider label={t('Setpoint vytápění')} min={16} max={25} step={1}
         value={p.heatingSp}
         display={`${p.heatingSp} °C`}
         onChange={p.onHeatingSp} />
       {!p.heatingOnly && (
-        <Slider label="Setpoint chlazení" min={22} max={30} step={1}
+        <Slider label={t('Setpoint chlazení')} min={22} max={30} step={1}
           value={p.coolingSp}
           display={`${p.coolingSp} °C`}
           onChange={p.onCoolingSp} />
       )}
-      <Slider label="Rekuperace (ERV)" min={0} max={0.95} step={0.05}
+      <Slider label={t('Rekuperace (ERV)')} min={0} max={0.95} step={0.05}
         value={p.heatRecovery}
         display={p.heatRecovery === 0
-          ? 'Vyp. (bez ventilace)'
+          ? t('Vyp. (bez ventilace)')
           : `${Math.round(p.heatRecovery * 100)} %`}
         onChange={p.onHeatRecovery} />
     </div>
@@ -160,13 +162,14 @@ const HPRealForm: React.FC<Props> = (p) => (
     <button className="hp-run" onClick={p.onRun}
       disabled={p.loading || !p.hbjson || !p.epw}>
       {p.loading ? (
-        <><span className="hp-spin">⟳</span> Simuluji 2× EnergyPlus…</>
+        <><span className="hp-spin">⟳</span> {t('Simuluji 2× EnergyPlus…')}</>
       ) : (
-        'Spustit celoroční simulaci'
+        t('Spustit celoroční simulaci')
       )}
     </button>
   </div>
-);
+  );
+};
 
 const Slider: React.FC<{
   label: string; min: number; max: number; step: number;

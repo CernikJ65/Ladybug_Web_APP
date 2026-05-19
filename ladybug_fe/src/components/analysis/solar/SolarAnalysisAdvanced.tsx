@@ -13,6 +13,8 @@ import { getSolarAdvancedSteps } from '../../help/content/solarAdvancedSteps';
 import { useSimulationProgress } from '../../../hooks/useSimulationProgress';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import { useSharedFiles } from './../../../context/SharedFilesContext';
+import { useT } from '../../../i18n/useT';
+import type { TFn } from '../../../i18n/useT';
 import './SolarAnalysisAdvanced.css';
 
 /* ───── Typy ───── */
@@ -114,16 +116,14 @@ const PV_EFF_DEFAULT = 20;
    Defaultni honeybee/PVWatts hodnota = 0.96 → 4 % ztrata. */
 const INVERTER_LOSS = 0.04;
 
-/* ───── Options pro AppleSelect ───── */
-
-const MOUNT_TYPE_OPTIONS = [
-  { value: 'FixedOpenRack',    label: 'Otevřená konstrukce' },
-  { value: 'FixedRoofMounted', label: 'Střešní montáž' },
-];
-
 /* ───── Komponenta ───── */
 
 const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
+  const MOUNT_TYPE_OPTIONS = [
+    { value: 'FixedOpenRack',    label: t('Otevřená konstrukce') },
+    { value: 'FixedRoofMounted', label: t('Střešní montáž') },
+  ];
   const [hbjsonFile, setHbjsonFile] = useState<File | null>(null);
   const [epwFile, setEpwFile]       = useState<File | null>(null);
   const [loading, setLoading]       = useState(false);
@@ -179,7 +179,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   };
 
   const run = async () => {
-    if (!hbjsonFile || !epwFile) { setError('Vyberte oba soubory'); return; }
+    if (!hbjsonFile || !epwFile) { setError(t('Vyberte oba soubory')); return; }
     const newJobId =
       typeof crypto !== 'undefined' && 'randomUUID' in crypto
         ? crypto.randomUUID()
@@ -203,12 +203,12 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
       });
       if (!res.ok) {
         const e = await res.json();
-        throw new Error(e.detail || 'Chyba');
+        throw new Error(e.detail || t('Chyba'));
       }
       const data: AnalysisResult = await res.json();
       setResult(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Neznámá chyba');
+      setError(e instanceof Error ? e.message : t('Neznámá chyba'));
     } finally {
       setLoading(false);
     }
@@ -230,8 +230,8 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 
   const mountLabel = (v: string) => {
     switch (v) {
-      case 'FixedOpenRack': return 'Otevřená konstrukce';
-      case 'FixedRoofMounted': return 'Střešní montáž';
+      case 'FixedOpenRack': return t('Otevřená konstrukce');
+      case 'FixedRoofMounted': return t('Střešní montáž');
       default: return v;
     }
   };
@@ -239,15 +239,15 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const cardinalLabel = (v: string | undefined): string => {
     if (!v) return '';
     const map: Record<string, string> = {
-      North: 'sever',
-      'North-East': 'severovýchod',
-      East: 'východ',
-      'South-East': 'jihovýchod',
-      South: 'jih',
-      'South-West': 'jihozápad',
-      West: 'západ',
-      'North-West': 'severozápad',
-      Horizontal: 'vodorovně',
+      North: t('sever'),
+      'North-East': t('severovýchod'),
+      East: t('východ'),
+      'South-East': t('jihovýchod'),
+      South: t('jih'),
+      'South-West': t('jihozápad'),
+      West: t('západ'),
+      'North-West': t('severozápad'),
+      Horizontal: t('vodorovně'),
     };
     return map[v] ?? v;
   };
@@ -264,18 +264,18 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
       <SimulationProgressOverlay
         open={loading}
         progress={progress}
-        title="Solární analýza"
+        title={t('Solární analýza')}
       />
 
       {/* Hero */}
       <header className="saa-hero">
         <button className="saa-back" onClick={onBack}>
-          <FaArrowLeft /> Zpět na přehled
+          <FaArrowLeft /> {t('Zpět na přehled')}
         </button>
-        
-        <h1>Solární analýza</h1>
+
+        <h1>{t('Solární analýza')}</h1>
         <p>
-          Scénar, který na základě EPW a HBJSON dat simuluje solární potenciál dopadu slunečního zářeni na panely a na základě toto následně similuje kolik je panel schopen produkovat .
+          {t('Scénar, který na základě EPW a HBJSON dat simuluje solární potenciál dopadu slunečního zářeni na panely a na základě toto následně similuje kolik je panel schopen produkovat .')}
         </p>
       </header>
 
@@ -285,28 +285,30 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
           <div className="saa-card-head">
             <span className="saa-card-icon"><FaCloudUploadAlt /></span>
             <div>
-              <h2>Vstupní soubory</h2>
-              <p className="saa-card-sub">Nahrajte model budovy a klimatická data</p>
+              <h2>{t('Vstupní soubory')}</h2>
+              <p className="saa-card-sub">{t('Nahrajte model budovy a klimatická data')}</p>
             </div>
           </div>
           <div className="saa-upload-grid">
             <FileBox
               id="hbjson"
-              label="HBJSON model"
-              sub="Geometrie budovy (.hbjson)"
+              label={t('HBJSON model')}
+              sub={t('Geometrie budovy (.hbjson)')}
               file={hbjsonFile}
               accept=".hbjson,.json"
               onChange={handleFileChange(setHbjsonFile, sharedFiles.setHbjson)}
               icon={<FaFile />}
+              t={t}
             />
             <FileBox
               id="epw"
-              label="EPW soubor"
-              sub="Klimatická data (.epw)"
+              label={t('EPW soubor')}
+              sub={t('Klimatická data (.epw)')}
               file={epwFile}
               accept=".epw"
               onChange={handleFileChange(setEpwFile, sharedFiles.setEpw)}
               icon={<FaCloudUploadAlt />}
+              t={t}
             />
           </div>
         </div>
@@ -315,13 +317,13 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
           <div className="saa-card-head">
             <span className="saa-card-icon"><FaSolarPanel /></span>
             <div>
-              <h2>Konfigurace simulace</h2>
-              <p className="saa-card-sub">Počet panelů a parametry simulace</p>
+              <h2>{t('Konfigurace simulace')}</h2>
+              <p className="saa-card-sub">{t('Počet panelů a parametry simulace')}</p>
             </div>
           </div>
 
           <div className="saa-stepper">
-            <span className="saa-stepper-label"><FaSolarPanel /> Počet panelů</span>
+            <span className="saa-stepper-label"><FaSolarPanel /> {t('Počet panelů')}</span>
             <div className="saa-stepper-control">
               <button
                 type="button"
@@ -345,10 +347,10 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
           </div>
 
           <details className="saa-params">
-            <summary><FaCog /> Pokročilé parametry</summary>
+            <summary><FaCog /> {t('Pokročilé parametry')}</summary>
             <div className="saa-params-body">
               <Slider
-                label="Účinnost panelu"
+                label={t('Účinnost panelu')}
                 value={pvEff}
                 min={PV_EFF_MIN}
                 max={PV_EFF_MAX}
@@ -357,21 +359,21 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                 onChange={setPvEff}
               />
               <Slider
-                label="Maximální sklon střechy"
+                label={t('Maximální sklon střechy')}
                 value={maxTilt}
                 min={30}
                 max={90}
                 unit="°"
-                hint="Plochy nad tímto sklonem se přeskočí"
+                hint={t('Plochy nad tímto sklonem se přeskočí')}
                 onChange={setMaxTilt}
               />
               <div className="saa-select-row">
-                <label>Typ montáže</label>
+                <label>{t('Typ montáže')}</label>
                 <AppleSelect
                   value={mountType}
                   options={MOUNT_TYPE_OPTIONS}
                   onChange={setMountType}
-                  ariaLabel="Typ montáže"
+                  ariaLabel={t('Typ montáže')}
                 />
               </div>
             </div>
@@ -386,7 +388,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               {loading ? <FaSpinner className="saa-spin" /> : <FaSun />}
             </span>
             <span className="saa-run-copy">
-              {loading ? 'Počítám pvlib + Radiance…' : 'Spustit optimalizaci'}
+              {loading ? t('Počítám pvlib + Radiance…') : t('Spustit optimalizaci')}
             </span>
             {!loading && <FaArrowRight className="saa-run-arrow" />}
           </button>
@@ -396,7 +398,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
       {/* Chyba */}
       {error && (
         <div className="saa-error">
-          <strong>Chyba:</strong> {error}
+          <strong>{t('Chyba:')}</strong> {error}
         </div>
       )}
 
@@ -413,16 +415,16 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             <div className="saa-info-chip">
               <FaBuilding />
               <span>
-                {result.model_info.roof_count} {result.model_info.roof_count === 1 ? 'střecha' : 'střech'}
+                {result.model_info.roof_count} {result.model_info.roof_count === 1 ? t('střecha') : t('střech')}
                 {result.model_info.roof_surface_count && result.model_info.roof_surface_count !== result.model_info.roof_count
-                  ? ` (${result.model_info.roof_surface_count} ploch)`
+                  ? ` (${result.model_info.roof_surface_count} ${t('ploch')})`
                   : ''}
                 {' · '}{result.model_info.total_roof_area_m2.toFixed(0)} m²
               </span>
             </div>
             <div className="saa-info-chip">
               <FaSolarPanel />
-              <span>Max {result.optimization.max_panels_available} panelů</span>
+              <span>{t('Max')} {result.optimization.max_panels_available} {t('panelů')}</span>
             </div>
             
              
@@ -431,10 +433,10 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 
           {/* KPI metriky */}
           <div className="saa-kpi-row">
-            <KPI icon={<FaBolt />} value={`${fmt(sel.total_production_kwh)} kWh`} label="Roční výroba" accent />
-            <KPI icon={<FaSolarPanel />} value={`${sel.total_capacity_kwp.toFixed(2)} kWp`} label="Instalovaný výkon" />
-            <KPI icon={<FaRulerCombined />} value={`${sel.total_area_m2.toFixed(1)} m²`} label="Plocha panelů" />
-            <KPI icon={<FaSun />} value={`${sel.avg_radiation_kwh_m2.toFixed(0)} kWh/m²`} label="Solární potenciál" />
+            <KPI icon={<FaBolt />} value={`${fmt(sel.total_production_kwh)} kWh`} label={t('Roční výroba')} accent />
+            <KPI icon={<FaSolarPanel />} value={`${sel.total_capacity_kwp.toFixed(2)} kWp`} label={t('Instalovaný výkon')} />
+            <KPI icon={<FaRulerCombined />} value={`${sel.total_area_m2.toFixed(1)} m²`} label={t('Plocha panelů')} />
+            <KPI icon={<FaSun />} value={`${sel.avg_radiation_kwh_m2.toFixed(0)} kWh/m²`} label={t('Solární potenciál')} />
           </div>
 
           {/* Detail karty + mapa */}
@@ -443,44 +445,44 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
               <div className="saa-card-head">
                 <span className="saa-card-icon"><FaCog /></span>
                 <div>
-                  <h2>Parametry panelů</h2>
-                  <p className="saa-card-sub">Konfigurace FV instalace</p>
+                  <h2>{t('Parametry panelů')}</h2>
+                  <p className="saa-card-sub">{t('Konfigurace FV instalace')}</p>
                 </div>
               </div>
               <div className="saa-detail-rows">
                 {/* Modul a montáž */}
-                <DetailRow label="Typ montáže" value={mountLabel(result.panel_config.mounting_type)} />
-                <DetailRow label="Účinnost FV" value={`${(result.panel_config.pv_efficiency * 100).toFixed(0)} %`} />
+                <DetailRow label={t('Typ montáže')} value={mountLabel(result.panel_config.mounting_type)} />
+                <DetailRow label={t('Účinnost FV')} value={`${(result.panel_config.pv_efficiency * 100).toFixed(0)} %`} />
 
                 {/* Geometrie */}
                 {result.panel_config.panel_width_m !== undefined && result.panel_config.panel_height_m !== undefined && (
                   <DetailRow
-                    label="Rozměry panelu"
+                    label={t('Rozměry panelu')}
                     value={`${result.panel_config.panel_width_m} × ${result.panel_config.panel_height_m} m`}
                   />
                 )}
                 {result.panel_config.panel_area_m2 !== undefined && (
-                  <DetailRow label="Plocha panelu" value={`${result.panel_config.panel_area_m2} m²`} />
+                  <DetailRow label={t('Plocha panelu')} value={`${result.panel_config.panel_area_m2} m²`} />
                 )}
                 {result.panel_config.active_area_fraction !== undefined && (
                   <DetailRow
-                    label="Aktivní plocha"
+                    label={t('Aktivní plocha')}
                     value={`${(result.panel_config.active_area_fraction * 100).toFixed(0)} %`}
                   />
                 )}
                 {result.panel_config.spacing_m !== undefined && (
-                  <DetailRow label="Mezera mezi panely" value={`${result.panel_config.spacing_m} m`} />
+                  <DetailRow label={t('Mezera mezi panely')} value={`${result.panel_config.spacing_m} m`} />
                 )}
 
                 {/* Stáří */}
                 {result.panel_config.panel_age_years !== undefined && (
-                  <DetailRow label="Stáří systému" value={`${result.panel_config.panel_age_years} let`} />
+                  <DetailRow label={t('Stáří systému')} value={`${result.panel_config.panel_age_years} ${t('let')}`} />
                 )}
 
                 {/* Orientace */}
-                <DetailRow label="Optimální sklon" value={`${result.optimal_orientation.tilt_degrees.toFixed(1)}°`} />
+                <DetailRow label={t('Optimální sklon')} value={`${result.optimal_orientation.tilt_degrees.toFixed(1)}°`} />
                 <DetailRow
-                  label="Optimální směr natočení"
+                  label={t('Optimální směr natočení')}
                   value={
                     result.optimal_orientation.cardinal_direction
                       ? `${result.optimal_orientation.azimuth_degrees.toFixed(0)}° (${cardinalLabel(result.optimal_orientation.cardinal_direction)})`
@@ -497,7 +499,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                       onClick={() => setLossesOpen(o => !o)}
                       aria-expanded={lossesOpen}
                     >
-                      <span className="saa-losses-label">Celkové ztráty</span>
+                      <span className="saa-losses-label">{t('Celkové ztráty')}</span>
                       <span className="saa-losses-meta">
                         <strong>{pct(combinedLossValue(result.panel_config.system_losses.total))}</strong>
                         <span className="saa-losses-chev" aria-hidden="true" />
@@ -506,26 +508,26 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 
                     <div className="saa-losses-body">
                       <div className="saa-losses-section">
-                        <div className="saa-losses-section-title">Komponenty systému</div>
-                        <SubRow label="Degradace stárnutím" value={pct(result.panel_config.system_losses.age)} />
-                        <SubRow label="Počáteční pokles výkonu (do stabilizace)" value={pct(result.panel_config.system_losses.light_induced_degradation)} />
-                        <SubRow label="Znečištění panelu" value={pct(result.panel_config.system_losses.soiling)} />
-                        <SubRow label="Sníh" value={pct(result.panel_config.system_losses.snow)} />
-                        <SubRow label="Odchylka výrobce" value={pct(result.panel_config.system_losses.manufacturer_nameplate_tolerance)} />
-                        <SubRow label="Nesoulad mezi moduly" value={pct(result.panel_config.system_losses.cell_characteristic_mismatch)} />
-                        <SubRow label="Ztráty ve vedení (například kabely)" value={pct(result.panel_config.system_losses.wiring)} />
-                        <SubRow label="Elektrické konektory (například odpor)" value={pct(result.panel_config.system_losses.electrical_connection)} />
-                        <SubRow label="Dostupnost sítě (výpadky)" value={pct(result.panel_config.system_losses.grid_availability)} />
-                        <SubRow label="Systémové ztráty (dílčí součet)" value={pct(result.panel_config.system_losses.total)} emphasized />
+                        <div className="saa-losses-section-title">{t('Komponenty systému')}</div>
+                        <SubRow label={t('Degradace stárnutím')} value={pct(result.panel_config.system_losses.age)} />
+                        <SubRow label={t('Počáteční pokles výkonu (do stabilizace)')} value={pct(result.panel_config.system_losses.light_induced_degradation)} />
+                        <SubRow label={t('Znečištění panelu')} value={pct(result.panel_config.system_losses.soiling)} />
+                        <SubRow label={t('Sníh')} value={pct(result.panel_config.system_losses.snow)} />
+                        <SubRow label={t('Odchylka výrobce')} value={pct(result.panel_config.system_losses.manufacturer_nameplate_tolerance)} />
+                        <SubRow label={t('Nesoulad mezi moduly')} value={pct(result.panel_config.system_losses.cell_characteristic_mismatch)} />
+                        <SubRow label={t('Ztráty ve vedení (například kabely)')} value={pct(result.panel_config.system_losses.wiring)} />
+                        <SubRow label={t('Elektrické konektory (například odpor)')} value={pct(result.panel_config.system_losses.electrical_connection)} />
+                        <SubRow label={t('Dostupnost sítě (výpadky)')} value={pct(result.panel_config.system_losses.grid_availability)} />
+                        <SubRow label={t('Systémové ztráty (dílčí součet)')} value={pct(result.panel_config.system_losses.total)} emphasized />
                       </div>
 
                       <div className="saa-losses-section">
-                        <div className="saa-losses-section-title">Panel vyrábí stejnosměrný proud (DC), ale domácnost a síť používají hlavně střídavý proud</div>
-                        <SubRow label="Ztráta při převodu DC/AC" value={pct(INVERTER_LOSS)} emphasized />
+                        <div className="saa-losses-section-title">{t('Panel vyrábí stejnosměrný proud (DC), ale domácnost a síť používají hlavně střídavý proud')}</div>
+                        <SubRow label={t('Ztráta při převodu DC/AC')} value={pct(INVERTER_LOSS)} emphasized />
                       </div>
 
                       <p className="saa-losses-note">
-                        Celkové ztráty se kombinují multiplikativně, nikoliv prostým součtem.
+                        {t('Celkové ztráty se kombinují multiplikativně, nikoliv prostým součtem.')}
                       </p>
                     </div>
                   </div>
@@ -545,8 +547,8 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
             <div className="saa-card-head">
               <span className="saa-card-icon"><FaThList /></span>
               <div>
-                <h2>Detail panelů ({sel.num_panels} ks)</h2>
-                <p className="saa-card-sub">Seřazeno dle roční výroby od nejlepšího</p>
+                <h2>{t('Detail panelů ({{n}} ks)', { n: sel.num_panels })}</h2>
+                <p className="saa-card-sub">{t('Seřazeno dle roční výroby od nejlepšího')}</p>
               </div>
             </div>
             <div className="saa-table-wrap">
@@ -554,13 +556,13 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
                 <thead>
                   <tr>
                     <th>#</th>
-                    <th>Střecha</th>
-                    <th>Plocha</th>
-                    <th>Sklon</th>
-                    <th>Směr</th>
-                    <th title="Stíněná POA z Radiance (SkyMatrix ray tracing, stínění od budovy)">Sol. pot. (Radiance)</th>
-                    <th>Výroba</th>
-                    <th>Instalovaný výkon</th>
+                    <th>{t('Střecha')}</th>
+                    <th>{t('Plocha')}</th>
+                    <th>{t('Sklon')}</th>
+                    <th>{t('Směr')}</th>
+                    <th title={t('Stíněná POA z Radiance (SkyMatrix ray tracing, stínění od budovy)')}>{t('Sol. pot. (Radiance)')}</th>
+                    <th>{t('Výroba')}</th>
+                    <th>{t('Instalovaný výkon')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -589,7 +591,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
 /* ───── Subkomponenty ───── */
 
 function FileBox({
-  id, label, sub, file, accept, onChange, icon,
+  id, label, sub, file, accept, onChange, icon, t,
 }: {
   id: string;
   label: string;
@@ -598,6 +600,7 @@ function FileBox({
   accept: string;
   onChange: (f: File | null) => void;
   icon: React.ReactNode;
+  t: TFn;
 }) {
   const handleClear = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -631,8 +634,8 @@ function FileBox({
               type="button"
               className="saa-file-clear"
               onClick={handleClear}
-              aria-label="Odstranit soubor"
-              title="Odstranit soubor"
+              aria-label={t('Odstranit soubor')}
+              title={t('Odstranit soubor')}
             >
               <FaTimes />
             </button>

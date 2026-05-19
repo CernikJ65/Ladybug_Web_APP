@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import type { RoomDemand } from './hpRealUtils';
 import { fmt } from './hpRealUtils';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   rooms: RoomDemand[];
@@ -24,6 +25,7 @@ const ROOM_LIMIT = 5;
 const HPRealRoomList: React.FC<Props> = ({
   rooms, heatingOnly = false,
 }) => {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
 
   if (!rooms || rooms.length === 0) return null;
@@ -36,7 +38,7 @@ const HPRealRoomList: React.FC<Props> = ({
 
   return (
     <>
-      <h3 className="hp-sub-title">Produkce po místnostech</h3>
+      <h3 className="hp-sub-title">{t('Produkce po místnostech')}</h3>
       <div className="hpr-room-list">
         {visible.map((r, idx) => (
           <div key={r.identifier} className="hpr-room-row">
@@ -74,11 +76,11 @@ const HPRealRoomList: React.FC<Props> = ({
           onClick={() => setExpanded(v => !v)}
         >
           {expanded ? (
-            <><FaChevronUp /> Sbalit</>
+            <><FaChevronUp /> {t('Sbalit')}</>
           ) : (
             <>
               <FaChevronDown />
-              Zobrazit všech {sorted.length}
+              {t('Zobrazit všech {{n}}', { n: sorted.length })}
             </>
           )}
         </button>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaCompass, FaSun } from 'react-icons/fa';
+import { useT } from '../../../i18n/useT';
 
 /* ---------- exportované typy ---------- */
 export interface SunPoint {
@@ -75,6 +76,7 @@ interface TooltipInfo { x: number; y: number; month: string; hour: number; alt: 
 
 /* ---------- komponenta ---------- */
 const SunpathView: React.FC<Props> = ({ data }) => {
+  const t = useT();
   const { daily_arcs, day_length } = data;
   const [hovered, setHovered] = useState<number | null>(null);
   const [tip, setTip] = useState<TooltipInfo | null>(null);
@@ -96,7 +98,7 @@ const SunpathView: React.FC<Props> = ({ data }) => {
     setTip({
       x: toX(closest.hour ?? 0),
       y: toY(closest.altitude),
-      month: arc.name,
+      month: t(arc.name),
       hour: closest.hour ?? 0,
       alt: closest.altitude,
     });
@@ -104,7 +106,7 @@ const SunpathView: React.FC<Props> = ({ data }) => {
 
   return (
     <div className="sv">
-      <h3 className="tv-title"><FaCompass />Pozice slunce 21. dne v měsíci</h3>
+      <h3 className="tv-title"><FaCompass />{t('Pozice slunce 21. dne v měsíci')}</h3>
       <div className="sv-diagram-wrap">
         <svg viewBox={`0 0 ${W} ${H}`} className="sv-svg"
           onMouseMove={handleMove}
@@ -144,11 +146,11 @@ const SunpathView: React.FC<Props> = ({ data }) => {
           {/* Axis labels */}
           <text x={W / 2} y={H - 2} textAnchor="middle"
             fontSize="13" fill="#ffffff"
-            fontFamily="'Outfit', sans-serif">Hodina dne</text>
+            fontFamily="'Outfit', sans-serif">{t('Hodina dne')}</text>
           <text x={12} y={H / 2} textAnchor="middle"
             fontSize="13" fill="#ffffff"
             fontFamily="'Outfit', sans-serif"
-            transform={`rotate(-90, 12, ${H / 2})`}>Výška °</text>
+            transform={`rotate(-90, 12, ${H / 2})`}>{t('Výška °')}</text>
 
           {/* Sun arcs */}
           {daily_arcs.map((arc, i) => (
@@ -204,23 +206,23 @@ const SunpathView: React.FC<Props> = ({ data }) => {
               onMouseLeave={() => setHovered(null)}>
               <span style={{ width: 14, height: 3, borderRadius: 2,
                 background: COLORS[i], display: 'inline-block' }} />
-              {arc.name}
+              {t(arc.name)}
             </span>
           ))}
         </div>
       </div>
 
       {/* DÉLKA DNE – tabulka */}
-      <h3 className="tv-title"><FaSun /> Východ a západ slunce a délka dne (21. den v měsíci) </h3>
+      <h3 className="tv-title"><FaSun /> {t('Východ a západ slunce a délka dne (21. den v měsíci)')} </h3>
       <div className="tv-table-wrap">
         <table className="tv-table">
           <thead>
-            <tr><th>Měsíc</th><th>Východ</th><th>Západ</th><th>Délka dne</th><th>Max výška</th></tr>
+            <tr><th>{t('Měsíc')}</th><th>{t('Východ')}</th><th>{t('Západ')}</th><th>{t('Délka dne')}</th><th>{t('Max výška')}</th></tr>
           </thead>
           <tbody>
             {day_length.map(d => (
               <tr key={d.month}>
-                <td className="td-name">{d.name}</td>
+                <td className="td-name">{t(d.name)}</td>
                 <td>{d.sunrise}</td>
                 <td>{d.sunset}</td>
                 <td className="td-hl">{d.day_length_h.toFixed(1)} h</td>
@@ -232,11 +234,11 @@ const SunpathView: React.FC<Props> = ({ data }) => {
       </div>
 
       {/* DÉLKA DNE – bars */}
-      <h3 className="tv-title"><FaSun /> Délka 21. dne v průběhu roku</h3>
+      <h3 className="tv-title"><FaSun /> {t('Délka 21. dne v průběhu roku')}</h3>
       <div className="tv-bars">
         {day_length.map(d => (
           <div className="tv-bar-row" key={d.month}>
-            <span className="tv-bar-lbl">{d.name.slice(0, 3)}</span>
+            <span className="tv-bar-lbl">{t(d.name).slice(0, 3)}</span>
             <div className="tv-bar-track">
               <div className="tv-bar sun" style={{ width: `${(d.day_length_h / maxLen) * 100}%` }}>
                 {d.day_length_h > maxLen * 0.2 ? `${d.day_length_h.toFixed(1)} h` : ''}

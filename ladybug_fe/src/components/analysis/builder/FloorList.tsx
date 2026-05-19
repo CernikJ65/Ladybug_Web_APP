@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Floor } from './HbjsonBuilderTypes';
+import { useT } from '../../../i18n/useT';
 
 interface FloorListProps {
   buildingId: string;
@@ -19,19 +20,20 @@ const FloorList: React.FC<FloorListProps> = ({
   onRemoveFloor,
   onUpdateFloor
 }) => {
+  const t = useT();
   return (
     <div className="builder-section">
       <div className="builder-section-header">
-        <h3>Patra</h3>
+        <h3>{t('Patra')}</h3>
         <button onClick={onAddFloor} className="btn-add">
-          + Přidat patro
+          {t('+ Přidat patro')}
         </button>
       </div>
 
       <div className="builder-list">
         {floors.length === 0 ? (
           <div className="builder-empty">
-            Žádná patra. Klikněte na "+ Přidat patro" pro vytvoření.
+            {t('Žádná patra. Klikněte na "+ Přidat patro" pro vytvoření.')}
           </div>
         ) : (
           floors.map((floor) => (
@@ -48,7 +50,7 @@ const FloorList: React.FC<FloorListProps> = ({
                     onRemoveFloor(floor.id);
                   }}
                   className="btn-remove"
-                  title="Odstranit patro"
+                  title={t('Odstranit patro')}
                 >
                   ×
                 </button>
@@ -57,18 +59,18 @@ const FloorList: React.FC<FloorListProps> = ({
               {selectedFloor === floor.id && (
                 <div className="builder-item-details">
                   <div className="form-group">
-                    <label>Název patra</label>
+                    <label>{t('Název patra')}</label>
                     <input
                       type="text"
                       value={floor.name}
                       onChange={(e) => onUpdateFloor(floor.id, 'name', e.target.value)}
                       onClick={(e) => e.stopPropagation()}
-                      placeholder="Název patra"
+                      placeholder={t('Název patra')}
                     />
                   </div>
 
                   <div className="form-group">
-                    <label>Výška podlaží (m)</label>
+                    <label>{t('Výška podlaží (m)')}</label>
                     <input
                       type="number"
                       value={floor.elevation}
@@ -80,7 +82,7 @@ const FloorList: React.FC<FloorListProps> = ({
                   </div>
 
                   <div className="builder-info">
-                    Počet místností: {floor.rooms.length}
+                    {t('Počet místností')}: {floor.rooms.length}
                   </div>
                 </div>
               )}

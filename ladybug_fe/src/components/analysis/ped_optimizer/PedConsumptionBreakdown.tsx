@@ -12,6 +12,7 @@
  */
 import React from 'react';
 import type { ConsumptionBreakdown } from './pedTypes';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   data: ConsumptionBreakdown;
@@ -25,40 +26,37 @@ interface RowDef {
   value: number;
 }
 
-const buildRows = (
-  data: ConsumptionBreakdown,
-  hasHeatPump: boolean,
-): RowDef[] => {
-  if (hasHeatPump) {
-    const tcTotal =
-      data.heating + data.fans + data.pumps + data.heat_rejection;
-    return [
-      { label: 'Spotřeba TČ', value: tcTotal },
-      { label: 'HVAC chlazení', value: data.cooling },
-      { label: 'Osvětlení', value: data.lights },
-      { label: 'Spotřebiče', value: data.equipment },
-    ];
-  }
-  return [
-    { label: 'El. vytápění', value: data.heating },
-    { label: 'Osvětlení', value: data.lights },
-    { label: 'Spotřebiče', value: data.equipment },
-  ];
-};
-
 const PedConsumptionBreakdown: React.FC<Props> = ({
   data, hasHeatPump,
 }) => {
-  const rows = buildRows(data, hasHeatPump);
+  const t = useT();
+  const buildRows = (): RowDef[] => {
+    if (hasHeatPump) {
+      const tcTotal =
+        data.heating + data.fans + data.pumps + data.heat_rejection;
+      return [
+        { label: t('Spotřeba TČ'), value: tcTotal },
+        { label: t('HVAC chlazení'), value: data.cooling },
+        { label: t('Osvětlení'), value: data.lights },
+        { label: t('Spotřebiče'), value: data.equipment },
+      ];
+    }
+    return [
+      { label: t('El. vytápění'), value: data.heating },
+      { label: t('Osvětlení'), value: data.lights },
+      { label: t('Spotřebiče'), value: data.equipment },
+    ];
+  };
+  const rows = buildRows();
   const visibleRows = rows.filter((r) => r.value > 0);
   return (
     <div className="ped-table-card">
       <table className="ped-table">
         <thead>
           <tr>
-            <th>Složka spotřeby</th>
-            <th className="num">Spotřeba (kWh)</th>
-            <th className="num">Podíl</th>
+            <th>{t('Složka spotřeby')}</th>
+            <th className="num">{t('Spotřeba (kWh)')}</th>
+            <th className="num">{t('Podíl')}</th>
           </tr>
         </thead>
         <tbody>
@@ -78,7 +76,7 @@ const PedConsumptionBreakdown: React.FC<Props> = ({
             );
           })}
           <tr className="ped-table-total">
-            <td>Celkem</td>
+            <td>{t('Celkem')}</td>
             <td className="num">{fmt(data.total)}</td>
             <td className="num">100 %</td>
           </tr>

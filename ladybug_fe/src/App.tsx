@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, lazy, Suspense, type FC } from 'react
 import { ViewCacheProvider } from './context/ViewCacheContext';
 import { SharedFilesProvider } from './context/SharedFilesContext';
 import LandingPage from './components/LandingPage';
+import { useT } from './i18n/useT';
 
 type BackProps = { onBack: () => void };
 
@@ -87,6 +88,7 @@ function getHash(): string {
 }
 
 function App() {
+  const t = useT();
   const [currentView, setCurrentView] = useState<ViewType>(() =>
     hashToView[getHash()] ?? 'landing',
   );
@@ -194,7 +196,7 @@ function App() {
         setCurrentView('builder');
         break;
       default:
-        alert(`Funkce "${id}" bude brzy dostupná!`);
+        alert(t('Funkce "{{id}}" bude brzy dostupná!', { id }));
     }
   };
   const back = () => setCurrentView('landing');

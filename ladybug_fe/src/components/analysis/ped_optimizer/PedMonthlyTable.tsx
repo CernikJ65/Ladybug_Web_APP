@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import type { MonthRow, PedVariant } from './pedTypes';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   variant: PedVariant;
@@ -14,6 +15,7 @@ const fmt = (n: number) => Math.round(n).toLocaleString('cs-CZ');
 const fmtS = (n: number) => (n >= 0 ? '+' : '') + fmt(n);
 
 const PedMonthlyTable: React.FC<Props> = ({ variant }) => {
+  const t = useT();
   const total =
     variant.consumption_kwh?.total
     ?? sumField(variant.monthly, 'consumption_kwh');
@@ -25,16 +27,16 @@ const PedMonthlyTable: React.FC<Props> = ({ variant }) => {
       <table className="ped-table">
         <thead>
           <tr>
-            <th>Měsíc</th>
-            <th className="num">Spotřeba (kWh)</th>
-            <th className="num">Výroba FVE (kWh)</th>
-            <th className="num">Bilance (kWh)</th>
+            <th>{t('Měsíc')}</th>
+            <th className="num">{t('Spotřeba (kWh)')}</th>
+            <th className="num">{t('Výroba FVE (kWh)')}</th>
+            <th className="num">{t('Bilance (kWh)')}</th>
           </tr>
         </thead>
         <tbody>
           {variant.monthly.map((m) => (
             <tr key={m.month}>
-              <td>{m.month}</td>
+              <td>{t(m.month)}</td>
               <td className="num ped-val-cons">{fmt(m.consumption_kwh)}</td>
               <td className="num ped-val-pv">{fmt(m.pv_kwh)}</td>
               <td
@@ -47,7 +49,7 @@ const PedMonthlyTable: React.FC<Props> = ({ variant }) => {
             </tr>
           ))}
           <tr className="ped-table-total">
-            <td>Rok celkem</td>
+            <td>{t('Rok celkem')}</td>
             <td className="num ped-val-cons">{fmt(total)}</td>
             <td className="num ped-val-pv">{fmt(totalPv)}</td>
             <td

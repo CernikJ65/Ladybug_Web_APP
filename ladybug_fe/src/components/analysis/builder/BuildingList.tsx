@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Building } from './HbjsonBuilderTypes';
+import { useT } from '../../../i18n/useT';
 
 interface BuildingListProps {
   buildings: Building[];
@@ -18,19 +19,20 @@ const BuildingList: React.FC<BuildingListProps> = ({
   onRemoveBuilding,
   onUpdateBuilding
 }) => {
+  const t = useT();
   return (
     <div className="builder-section">
       <div className="builder-section-header">
-        <h3>Budovy</h3>
+        <h3>{t('Budovy')}</h3>
         <button onClick={onAddBuilding} className="btn-add">
-          + Přidat budovu
+          {t('+ Přidat budovu')}
         </button>
       </div>
 
       <div className="builder-list">
         {buildings.length === 0 ? (
           <div className="builder-empty">
-            Žádné budovy. Klikněte na "+ Přidat budovu" pro vytvoření.
+            {t('Žádné budovy. Klikněte na "+ Přidat budovu" pro vytvoření.')}
           </div>
         ) : (
           buildings.map((building) => (
@@ -47,26 +49,26 @@ const BuildingList: React.FC<BuildingListProps> = ({
                     onRemoveBuilding(building.id);
                   }}
                   className="btn-remove"
-                  title="Odstranit budovu"
+                  title={t('Odstranit budovu')}
                 >
                   ×
                 </button>
               </div>
 
               <div className="builder-item-info">
-                Pater: {building.floors.length}
+                {t('Pater')}: {building.floors.length}
               </div>
 
               {selectedBuilding === building.id && (
                 <div className="builder-item-details">
                   <div className="form-group">
-                    <label>Název budovy</label>
+                    <label>{t('Název budovy')}</label>
                     <input
                       type="text"
                       value={building.name}
                       onChange={(e) => onUpdateBuilding(building.id, 'name', e.target.value)}
                       onClick={(e) => e.stopPropagation()}
-                      placeholder="Název budovy"
+                      placeholder={t('Název budovy')}
                     />
                   </div>
                 </div>

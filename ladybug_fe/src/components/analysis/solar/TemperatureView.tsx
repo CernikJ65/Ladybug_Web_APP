@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaThermometerHalf, FaSnowflake, FaFire, FaChartBar, FaClock } from 'react-icons/fa';
+import { useT } from '../../../i18n/useT';
 
 /* ---------- exportované typy ---------- */
 export interface MonthlyProfile {
@@ -61,6 +62,7 @@ const diurnalPath = (temps: number[], tMin: number, tMax: number): string =>
 
 /* ---------- komponenta ---------- */
 const TemperatureView: React.FC<Props> = ({ data }) => {
+  const t = useT();
   const { monthly_profile, degree_days: dd, heatmap, diurnal_profiles, climate_zone, annual_summary: s } = data;
   const maxDD = Math.max(...dd.months.map(m => Math.max(m.hdd, m.cdd)), 1);
 
@@ -74,12 +76,12 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
     <div className="tv">
       <div className="tv-stats">
         {[
-          { v: `${s.annual_avg}°`, l: 'Průměrná teplota' },
-          { v: `${s.annual_min}°`, l: 'Minimum' },
-          { v: `${s.annual_max}°`, l: 'Maximum' },
-          { v: `${s.comfort_pct}%`, l: 'Komfort 18–26 °C', sub: `${fmt(s.comfort_hours)} h` },
-          { v: `${fmt(s.frost_hours)}`, l: 'Mrazivé hodiny pod nulu' },
-          { v: climate_zone, l: 'ASHRAE zóna' },
+          { v: `${s.annual_avg}°`, l: t('Průměrná teplota') },
+          { v: `${s.annual_min}°`, l: t('Minimum') },
+          { v: `${s.annual_max}°`, l: t('Maximum') },
+          { v: `${s.comfort_pct}%`, l: t('Komfort 18–26 °C'), sub: `${fmt(s.comfort_hours)} h` },
+          { v: `${fmt(s.frost_hours)}`, l: t('Mrazivé hodiny pod nulu') },
+          { v: climate_zone, l: t('ASHRAE zóna') },
         ].map((c, i) => (
           <div className="tv-stat" key={i}>
             <div className="tv-stat-val">{c.v}</div>
@@ -89,14 +91,14 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
         ))}
       </div>
 
-      <h3 className="tv-title"><FaThermometerHalf /> Měsíční teplotní profil</h3>
+      <h3 className="tv-title"><FaThermometerHalf /> {t('Měsíční teplotní profil')}</h3>
       <div className="tv-table-wrap">
         <table className="tv-table">
-          <thead><tr><th>Měsíc</th><th>Min (P5)</th><th>Průměr</th><th>Max (P95)</th><th>Rozpětí</th></tr></thead>
+          <thead><tr><th>{t('Měsíc')}</th><th>{t('Min (P5)')}</th><th>{t('Průměr')}</th><th>{t('Max (P95)')}</th><th>{t('Rozpětí')}</th></tr></thead>
           <tbody>
             {monthly_profile.map(m => (
               <tr key={m.month}>
-                <td className="td-name">{m.name}</td>
+                <td className="td-name">{t(m.name)}</td>
                 <td className="td-cool">{m.min_p05}°C</td>
                 <td className="td-hl">{m.avg}°C</td>
                 <td className="td-warm">{m.max_p95}°C</td>
@@ -107,7 +109,7 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
         </table>
       </div>
 
-      <h3 className="tv-title"><FaChartBar /> Topné a chladicí denostupně</h3>
+      <h3 className="tv-title"><FaChartBar /> {t('Topné a chladicí denostupně')}</h3>
       <div className="tv-dd-summary">
         <div className="tv-stat">
           <div className="tv-stat-val" style={{ color: '#38bdf8' }}>{fmt(dd.annual_hdd)}</div>
@@ -120,7 +122,7 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
       </div>
       <div className="tv-bars">
         {dd.months.map(m => {
-          const short = m.name === 'Červen' ? 'Čvn' : m.name === 'Červenec' ? 'Čvc' : m.name.slice(0, 3);
+          const short = m.name === 'Červen' ? t('Čvn') : m.name === 'Červenec' ? t('Čvc') : t(m.name).slice(0, 3);
           return (
             <div className="tv-bar-row" key={m.month}>
               <span className="tv-bar-lbl">{short}</span>
@@ -133,13 +135,13 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
             </div>
           );
         })}
-        <div className="tv-bar-legend"><span>← HDD (vytápění)</span><span>CDD (chlazení) →</span></div>
+        <div className="tv-bar-legend"><span>{t('← HDD (vytápění)')}</span><span>{t('CDD (chlazení) →')}</span></div>
       </div>
 
       {/* DIURNÁLNÍ PROFILY */}
       {jan && jul && (
         <>
-          <h3 className="tv-title"><FaClock /> Typický den — leden vs červenec</h3>
+          <h3 className="tv-title"><FaClock /> {t('Typický den — leden vs červenec')}</h3>
           <div className="sv-diagram-wrap">
             <svg viewBox={`0 0 ${DW} ${DH}`} className="sv-svg">
               {/* Grid */}
@@ -165,27 +167,27 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
                 fill="none" stroke="#f97316" strokeWidth={2.5} strokeLinecap="round" />
               {/* Legenda */}
               <rect x={DP.left + 10} y={DP.top + 2} width={10} height={3} rx={1} fill="#38bdf8" />
-              <text x={DP.left + 24} y={DP.top + 6} fontSize="8" fill="#38bdf8" fontWeight="600">{jan.name}</text>
+              <text x={DP.left + 24} y={DP.top + 6} fontSize="8" fill="#38bdf8" fontWeight="600">{t(jan.name)}</text>
               <rect x={DP.left + 70} y={DP.top + 2} width={10} height={3} rx={1} fill="#f97316" />
-              <text x={DP.left + 84} y={DP.top + 6} fontSize="8" fill="#f97316" fontWeight="600">{jul.name}</text>
+              <text x={DP.left + 84} y={DP.top + 6} fontSize="8" fill="#f97316" fontWeight="600">{t(jul.name)}</text>
             </svg>
           </div>
         </>
       )}
 
-      <h3 className="tv-title"><FaThermometerHalf /> Teplotní heatmapa</h3>
+      <h3 className="tv-title"><FaThermometerHalf /> {t('Teplotní heatmapa')}</h3>
       <div className="tv-heatmap-wrap">
         <table className="tv-heatmap">
           <thead><tr><th />{heatmap.hours.map(h => <th key={h}>{h}</th>)}</tr></thead>
           <tbody>
             {heatmap.matrix.map((row, mi) => (
               <tr key={mi}>
-                <td className="tv-hm-lbl">{heatmap.months[mi].slice(0, 3)}</td>
+                <td className="tv-hm-lbl">{t(heatmap.months[mi]).slice(0, 3)}</td>
                 {row.map((v, hi) => (
                   <td key={hi} style={{
                     background: tempColor(v, heatmap.min_value, heatmap.max_value),
                     color: v > (heatmap.max_value + heatmap.min_value) * 0.45 ? 'rgba(255,255,255,.9)' : 'rgba(200,220,240,.6)',
-                  }} title={`${heatmap.months[mi]} ${hi}:00 — ${v}°C`}>{Math.round(v)}</td>
+                  }} title={`${t(heatmap.months[mi])} ${hi}:00 · ${v}°C`}>{Math.round(v)}</td>
                 ))}
               </tr>
             ))}

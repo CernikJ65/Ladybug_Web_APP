@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FaWind, FaChartBar, FaCompass } from 'react-icons/fa';
+import { useT } from '../../../i18n/useT';
 
 /* ---------- exportované typy ---------- */
 export interface DirectionBin {
@@ -61,6 +62,7 @@ interface Tip {
 }
 
 const WindView: React.FC<Props> = ({ data }) => {
+  const t = useT();
   const {
     direction_frequency: df, monthly_speed,
     beaufort, summary,
@@ -81,7 +83,7 @@ const WindView: React.FC<Props> = ({ data }) => {
     setTip({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top - 50,
-      label: d.label, pct: d.frequency_pct,
+      label: t(d.label), pct: d.frequency_pct,
       avg: d.avg_speed, hours: d.total_hours,
     });
   };
@@ -90,11 +92,11 @@ const WindView: React.FC<Props> = ({ data }) => {
     <div className="sv">
       <div className="tv-stats" data-tour="wind-stats">
         {[
-          { v: `${summary.avg_speed}`, l: <>Průměrná rychlost větru <span className="unit">m/s</span></> },
-          { v: `${summary.max_speed}`, l: <>Maximální rychlost větru <span className="unit">m/s</span></> },
-          { v: summary.prevailing_dir, l: 'Převládající směr větru' },
+          { v: `${summary.avg_speed}`, l: <>{t('Průměrná rychlost větru')} <span className="unit">m/s</span></> },
+          { v: `${summary.max_speed}`, l: <>{t('Maximální rychlost větru')} <span className="unit">m/s</span></> },
+          { v: t(summary.prevailing_dir), l: t('Převládající směr větru') },
           {
-            v: `${summary.calm_pct}%`, l: 'Kolik % času tvořilo bezvětří',
+            v: `${summary.calm_pct}%`, l: t('Kolik % času tvořilo bezvětří'),
             sub: `${summary.calm_hours} h`,
           },
         ].map((c, i) => (
@@ -110,7 +112,7 @@ const WindView: React.FC<Props> = ({ data }) => {
 
       {/* SVG WIND ROSE */}
       <h3 className="tv-title">
-        <FaCompass /> Větrná růžice
+        <FaCompass /> {t('Větrná růžice')}
       </h3>
       <div className="sv-diagram-wrap" data-tour="wind-rose">
         <div style={{
@@ -126,10 +128,10 @@ const WindView: React.FC<Props> = ({ data }) => {
                 strokeWidth={0.6} />
             ))}
             {[
-              { a: 0, l: 'S' }, { a: 45, l: 'SV' },
-              { a: 90, l: 'V' }, { a: 135, l: 'JV' },
-              { a: 180, l: 'J' }, { a: 225, l: 'JZ' },
-              { a: 270, l: 'Z' }, { a: 315, l: 'SZ' },
+              { a: 0, l: t('S') }, { a: 45, l: t('SV') },
+              { a: 90, l: t('V') }, { a: 135, l: t('JV') },
+              { a: 180, l: t('J') }, { a: 225, l: t('JZ') },
+              { a: 270, l: t('Z') }, { a: 315, l: t('SZ') },
             ].map(({ a, l }) => {
               const [x2, y2] = toXY(a, R);
               const [lx, ly] = toXY(a, R + 14);
@@ -228,12 +230,12 @@ const WindView: React.FC<Props> = ({ data }) => {
 
       {/* MĚSÍČNÍ RYCHLOSTI */}
       <h3 className="tv-title">
-        <FaWind /> Průmerná rychlost větru pro jednotlivé měsíce
+        <FaWind /> {t('Průmerná rychlost větru pro jednotlivé měsíce')}
       </h3>
       <div className="tv-bars" data-tour="wind-monthly">
         {monthly_speed.map(m => (
           <div className="tv-bar-row" key={m.month}>
-            <span className="tv-bar-lbl">{m.name}</span>
+            <span className="tv-bar-lbl">{t(m.name)}</span>
             <div className="tv-bar-track">
               <div className="tv-bar sun" style={{
                 width: `${(m.avg_speed / maxBar) * 100}%`,
@@ -243,7 +245,7 @@ const WindView: React.FC<Props> = ({ data }) => {
               </div>
             </div>
             <span className="tv-bar-val">
-              {m.avg_speed} m/s (max {m.max_speed})
+              {m.avg_speed} m/s ({t('max')} {m.max_speed})
             </span>
           </div>
         ))}
@@ -251,13 +253,13 @@ const WindView: React.FC<Props> = ({ data }) => {
 
       {/* BEAUFORT */}
       <h3 className="tv-title">
-        <FaChartBar /> Beaufortova stupnice
+        <FaChartBar /> {t('Beaufortova stupnice')}
       </h3>
       <div className="tv-bars" data-tour="wind-beaufort">
         {beaufort.filter(b => b.hours > 0).map((b, i) => (
           <div className="tv-bar-row" key={i}>
             <span className="tv-bar-lbl" style={{ width: 90 }}>
-              {b.label}
+              {t(b.label)}
             </span>
             <div className="tv-bar-track">
               <div className="tv-bar sun" style={{

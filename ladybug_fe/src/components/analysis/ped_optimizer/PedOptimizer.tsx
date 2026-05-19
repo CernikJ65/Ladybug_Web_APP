@@ -23,6 +23,7 @@ import PedConsumptionBreakdown from './PedConsumptionBreakdown';
 import PedHpPerformance from './PedHpPerformance';
 import { runPedAnalysis } from './pedApi';
 import type { PedApiResult, MountingType } from './pedTypes';
+import { useT } from '../../../i18n/useT';
 import './PedOptimizer.css';
 
 interface Props { onBack: () => void; }
@@ -45,6 +46,7 @@ interface CachedState {
 const fmt = (n: number) => Math.round(n).toLocaleString('cs-CZ');
 
 const PedOptimizer: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
   const [hbjson, setHbjson] = useState<File | null>(null);
   const [epw, setEpw] = useState<File | null>(null);
   const [budget, setBudget] = useState(500_000);
@@ -97,7 +99,7 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
 
   const handleRun = async () => {
     if (!hbjson || !epw) {
-      setError('Nahrajte oba soubory — HBJSON i EPW');
+      setError(t('Nahrajte oba soubory — HBJSON i EPW'));
       return;
     }
     const newJobId =
@@ -115,7 +117,7 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
       setResult(data);
       setSelectedIdx(data.best_index);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Neznámá chyba');
+      setError(e instanceof Error ? e.message : t('Neznámá chyba'));
     } finally {
       setLoading(false);
     }
@@ -135,19 +137,18 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
       <SimulationProgressOverlay
         open={loading}
         progress={progress}
-        title="PED analýza"
+        title={t('PED analýza')}
       />
 
       {/* Hero */}
       <header className="ped-hero">
         <button className="ped-back" onClick={onBack}>
-          <FaArrowLeft /> Zpět na přehled
+          <FaArrowLeft /> {t('Zpět na přehled')}
         </button>
-       
-        <h1>Optimalizace Oblasti pomocí PV a TČ</h1>
+
+        <h1>{t('Optimalizace Oblasti pomocí PV a TČ')}</h1>
         <p>
-          Uživatel zadá investiční rozpočet a v rámci zadaného rozpočtu simulace osadí oblast energetickými agenty třemi způsoby.
-          Cílem je dosáhnout celoroční energetické bilance budovy.
+          {t('Uživatel zadá investiční rozpočet a v rámci zadaného rozpočtu simulace osadí oblast energetickými agenty třemi způsoby. Cílem je dosáhnout celoroční energetické bilance budovy.')}
         </p>
       </header>
 
@@ -178,28 +179,28 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
             {result.location && (
               <span className="ped-chip">
                 <FaMapMarkerAlt />
-                Lokalita <strong>{result.location}</strong>
+                {t('Lokalita')} <strong>{result.location}</strong>
               </span>
             )}
             <span className="ped-chip">
               <FaBuilding />
-              Místností <strong>{result.model_info.room_count}</strong>
+              {t('Místností')} <strong>{result.model_info.room_count}</strong>
             </span>
             <span className="ped-chip">
               <FaBuilding />
-              Plocha <strong>{fmt(result.model_info.total_floor_area_m2)}</strong> m²
+              {t('Plocha')} <strong>{fmt(result.model_info.total_floor_area_m2)}</strong> m²
             </span>
             <span className="ped-chip">
               <FaSolarPanel />
-              Max panelů <strong>{result.max_panels_available}</strong>
+              {t('Max panelů')} <strong>{result.max_panels_available}</strong>
             </span>
             <span className="ped-chip">
               <FaWallet />
-              Rozpočet <strong>{fmt(result.budget_czk)}</strong> Kč
+              {t('Rozpočet')} <strong>{fmt(result.budget_czk)}</strong> {t('Kč')}
             </span>
           </div>
 
-          <h2 className="ped-section-title">Varianty</h2>
+          <h2 className="ped-section-title">{t('Varianty')}</h2>
           <PedVariantCards
             variants={result.variants}
             bestIndex={result.best_index}
@@ -213,17 +214,17 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
               {selected.hp_performance && (
                 <>
                   <h2 className="ped-section-title">
-                    Výkon TČ {selected.system.hp_label}
+                    {t('Výkon TČ')} {t(selected.system.hp_label)}
                   </h2>
                   <PedHpPerformance data={selected.hp_performance} />
                 </>
               )}
-              <h2 className="ped-section-title">Roční spotřeba budovy</h2>
+              <h2 className="ped-section-title">{t('Roční spotřeba budovy')}</h2>
               <PedConsumptionBreakdown
                 data={selected.consumption_kwh}
                 hasHeatPump={selected.system.has_hp}
               />
-              <h2 className="ped-section-title">Měsíční bilance</h2>
+              <h2 className="ped-section-title">{t('Měsíční bilance')}</h2>
               <PedMonthlyTable variant={selected} />
             </>
           )}

@@ -10,6 +10,7 @@ import { FaArrowLeft } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import { useSimulationProgress } from './../../../hooks/useSimulationProgress';
 import { useSharedFiles } from './../../../context/SharedFilesContext';
+import { useT } from '../../../i18n/useT';
 import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
 import HelpButton from '../../help/HelpButton';
 import TourOverlay from '../../help/TourOverlay';
@@ -39,6 +40,7 @@ interface CachedState {
 }
 
 const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
   const [hbjson, setHbjson] = useState<File | null>(null);
   const [epw, setEpw] = useState<File | null>(null);
   const [buildingType, setBuildingType] = useState('Residential');
@@ -88,7 +90,7 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
 
   const handleRun = async () => {
     if (!hbjson || !epw) {
-      setError('Nahrajte oba soubory — HBJSON i EPW');
+      setError(t('Nahrajte oba soubory — HBJSON i EPW'));
       return;
     }
     const newJobId =
@@ -114,11 +116,11 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
       });
       if (!res.ok) {
         const e = await res.json();
-        throw new Error(e.detail || 'Chyba serveru');
+        throw new Error(e.detail || t('Chyba serveru'));
       }
       setResult(await res.json());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Neznámá chyba');
+      setError(e instanceof Error ? e.message : t('Neznámá chyba'));
     } finally {
       setLoading(false);
     }
@@ -136,17 +138,16 @@ const HeatPumpReal: React.FC<Props> = ({ onBack }) => {
       <SimulationProgressOverlay
         open={loading}
         progress={progress}
-        title="Simulace tepelných čerpadel"
+        title={t('Simulace tepelných čerpadel')}
       />
 
       <header className="hp-hero">
         <button className="hp-back" onClick={onBack}>
-          <FaArrowLeft /> Zpět na přehled
+          <FaArrowLeft /> {t('Zpět na přehled')}
         </button>
-        <h1>Potenciál tepelných čerpadel</h1>
+        <h1>{t('Potenciál tepelných čerpadel')}</h1>
         <p className="hp-hero-sub">
-    Tento scénář umisťuje do zón vyznačených v HBJSON datech tepelná čerpadla a počítá jejich potenciál. 
-Zároveň porovnává dva druhy čerpadel, vzduch-voda (ASHP) a země-voda (GSHP), proto se simulace interně spouští dvakrát.
+    {t('Tento scénář umisťuje do zón vyznačených v HBJSON datech tepelná čerpadla a počítá jejich potenciál. Zároveň porovnává dva druhy čerpadel, vzduch-voda (ASHP) a země-voda (GSHP), proto se simulace interně spouští dvakrát.')}
 </p>
       </header>
 

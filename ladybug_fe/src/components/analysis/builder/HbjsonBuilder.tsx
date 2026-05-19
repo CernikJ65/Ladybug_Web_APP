@@ -6,16 +6,18 @@ import RoomList from './RoomList';
 import WindowList from './WindowList';
 import { HBJSONGenerator } from './HbjsonGenerator';
 import type { Project, Building, Floor, Room, Window, Location } from './HbjsonBuilderTypes';
+import { useT } from '../../../i18n/useT';
 import './HbjsonBuilder.css';
 
 const HBJSONBuilder: React.FC = () => {
+  const t = useT();
   const [project, setProject] = useState<Project>({
-    name: 'Nový projekt',
+    name: t('Nový projekt'),
     location: {
       latitude: 50.0755,
       longitude: 14.4378,
       timezone: 'Europe/Prague',
-      city: 'Praha'
+      city: t('Praha')
     },
     buildings: []
   });
@@ -38,7 +40,7 @@ const HBJSONBuilder: React.FC = () => {
   const addBuilding = () => {
     const newBuilding: Building = {
       id: `building_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: `Budova ${project.buildings.length + 1}`,
+      name: t('Budova {{n}}', { n: project.buildings.length + 1 }),
       positionX: 0,
       positionY: 0,
       floors: []
@@ -79,7 +81,7 @@ const HBJSONBuilder: React.FC = () => {
 
     const newFloor: Floor = {
       id: `floor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: `Patro ${building.floors.length + 1}`,
+      name: t('Patro {{n}}', { n: building.floors.length + 1 }),
       elevation: building.floors.length * 3,
       rooms: []
     };
@@ -129,7 +131,7 @@ const HBJSONBuilder: React.FC = () => {
 
     const newRoom: Room = {
       id: `room_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      name: `Místnost ${floor.rooms.length + 1}`,
+      name: t('Místnost {{n}}', { n: floor.rooms.length + 1 }),
       positionX: 0,
       positionY: 0,
       width: 5,
@@ -263,7 +265,7 @@ const HBJSONBuilder: React.FC = () => {
       <div className="builder-header">
         <h2>{project.name}</h2>
         <button onClick={exportHBJSON} className="btn-export">
-          Exportovat HBJSON
+          {t('Exportovat HBJSON')}
         </button>
       </div>
 
@@ -307,14 +309,14 @@ const HBJSONBuilder: React.FC = () => {
         {selectedRoom && (
           <div className="builder-section">
             <div className="builder-section-header">
-              <h3>Detail místnosti</h3>
+              <h3>{t('Detail místnosti')}</h3>
             </div>
             <div className="builder-form">
               <div className="builder-info">
                 <strong>{selectedRoom.name}</strong><br />
-                Rozměry: {selectedRoom.width}×{selectedRoom.length}×{selectedRoom.height}m<br />
-                Plocha: {(selectedRoom.width * selectedRoom.length).toFixed(1)}m²<br />
-                Objem: {(selectedRoom.width * selectedRoom.length * selectedRoom.height).toFixed(1)}m³
+                {t('Rozměry')}: {selectedRoom.width}×{selectedRoom.length}×{selectedRoom.height}m<br />
+                {t('Plocha')}: {(selectedRoom.width * selectedRoom.length).toFixed(1)}m²<br />
+                {t('Objem')}: {(selectedRoom.width * selectedRoom.length * selectedRoom.height).toFixed(1)}m³
               </div>
 
               <WindowList

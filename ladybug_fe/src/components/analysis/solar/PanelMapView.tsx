@@ -10,6 +10,7 @@
  * Soubor: ladybug_fe/src/components/analysis/solar/PanelMapView.tsx
  */
 import React, { useMemo, useState } from 'react';
+import { useT } from '../../../i18n/useT';
 
 export interface WorldBounds {
   min_x: number; max_x: number; min_y: number; max_y: number;
@@ -86,6 +87,7 @@ interface RVP {
 }
 
 const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panelOrder }) => {
+  const t = useT();
   const [hov, setHov] = useState<number | null>(null);
 
   const L = useMemo(() => {
@@ -166,7 +168,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
               color: '#6b7280',
               letterSpacing: '-0.005em',
             }}>
-              {panels.length} {panels.length === 1 ? 'panel' : panels.length < 5 ? 'panely' : 'panelů'}
+              {panels.length} {panels.length === 1 ? t('panel') : panels.length < 5 ? t('panely') : t('panelů')}
             </span>
           </div>
           <span style={{
@@ -178,7 +180,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
             textAlign: 'right',
             paddingTop: 1,
           }}>
-            {tilt < 5 ? 'plochá střecha' : `sklon ${tilt.toFixed(0)}°, orientace na ${ori}`}
+            {tilt < 5 ? t('plochá střecha') : t('sklon {{tilt}}°, orientace na {{ori}}', { tilt: tilt.toFixed(0), ori: t(ori) })}
           </span>
         </div>
       </div>
@@ -377,7 +379,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 fontFamily="'Sora', sans-serif"
                 dominantBaseline="auto"
               >
-                S
+                {t('S')}
               </text>
               <text
                 x={cx} y={cy + r + 5}
@@ -387,7 +389,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 textAnchor="middle"
                 fontFamily="'Sora', sans-serif"
               >
-                J
+                {t('J')}
               </text>
               <text
                 x={cx + r + 4} y={cy + 2.5}
@@ -397,7 +399,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 textAnchor="middle"
                 fontFamily="'Sora', sans-serif"
               >
-                V
+                {t('V')}
               </text>
               <text
                 x={cx - r - 4} y={cy + 2.5}
@@ -407,7 +409,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 textAnchor="middle"
                 fontFamily="'Sora', sans-serif"
               >
-                Z
+                {t('Z')}
               </text>
 
               {/* Středový bod */}
@@ -447,7 +449,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                   fontWeight={700}
                   fontFamily="'JetBrains Mono', monospace"
                 >
-                  #{ord} panel
+                  #{ord} {t('panel')}
                 </text>
               )}
               <text
@@ -465,7 +467,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 fontSize={10}
                 fontFamily="'JetBrains Mono', monospace"
               >
-                výroba {p.annual_production_kwh.toFixed(0)} kWh/rok
+                {t('výroba')} {p.annual_production_kwh.toFixed(0)} kWh/{t('rok')}
               </text>
               <text
                 x={tx + 10} y={ty + yCoord}
@@ -495,7 +497,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
             letterSpacing: '0.05em',
             marginBottom: 2,
           }}>
-            Solární potenciál
+            {t('Solární potenciál')}
           </div>
           <div style={{
             fontSize: 13,
@@ -524,7 +526,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
             letterSpacing: '0.05em',
             marginBottom: 2,
           }}>
-            Roční výroba
+            {t('Roční výroba')}
           </div>
           <div style={{
             fontSize: 13,
@@ -552,6 +554,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
 const INITIAL_VISIBLE = 4;
 
 const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
+  const t = useT();
   const [showAll, setShowAll] = useState(false);
 
   const data = useMemo(() => {
@@ -599,7 +602,7 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             color: '#111827',
             letterSpacing: '-0.015em',
           }}>
-            Rozmístění panelů
+            {t('Rozmístění panelů')}
           </div>
           <div style={{
             fontSize: 11,
@@ -607,7 +610,7 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             marginTop: 2,
             fontWeight: 400,
           }}>
-            {panels.length} {panels.length === 1 ? 'panel' : panels.length < 5 ? 'panely' : 'panelů'} na {gr.length} {gr.length === 1 ? 'střeše' : gr.length < 5 ? 'střechách' : 'střechách'}
+            {panels.length} {panels.length === 1 ? t('panel') : panels.length < 5 ? t('panely') : t('panelů')} {t('na')} {gr.length} {gr.length === 1 ? t('střeše') : gr.length < 5 ? t('střechách') : t('střechách')}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -637,7 +640,7 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
           }}>
-            celková roční výroba
+            {t('celková roční výroba')}
           </div>
         </div>
       </div>
@@ -694,8 +697,8 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             }}
           >
             {showAll
-              ? `Skrýt ${hiddenCount} ${hiddenCount === 1 ? 'střechu' : hiddenCount < 5 ? 'střechy' : 'střech'}`
-              : `Zobrazit ${hiddenCount} ${hiddenCount === 1 ? 'další střechu' : hiddenCount < 5 ? 'další střechy' : 'dalších střech'}`}
+              ? `${t('Skrýt')} ${hiddenCount} ${hiddenCount === 1 ? t('střechu') : hiddenCount < 5 ? t('střechy') : t('střech')}`
+              : `${t('Zobrazit')} ${hiddenCount} ${hiddenCount === 1 ? t('další střechu') : hiddenCount < 5 ? t('další střechy') : t('dalších střech')}`}
           </button>
         </div>
       )}

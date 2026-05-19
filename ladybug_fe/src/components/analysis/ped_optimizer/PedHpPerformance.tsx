@@ -5,6 +5,7 @@
  */
 import React from 'react';
 import type { HpPerformance } from './pedTypes';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   data: HpPerformance;
@@ -12,20 +13,23 @@ interface Props {
 
 const fmt = (n: number) => Math.round(n).toLocaleString('cs-CZ');
 
-const PedHpPerformance: React.FC<Props> = ({ data }) => (
+const PedHpPerformance: React.FC<Props> = ({ data }) => {
+  const t = useT();
+  return (
   <div className="ped-hp-perf">
     <div className="ped-hp-grid">
       <Tile
-        label="Dodané teplo do zón"
+        label={t('Dodané teplo do zón')}
         value={`${fmt(data.heat_delivered_kwh)} kWh`}
       />
       <Tile
-        label="SCOP (sezónní)"
+        label={t('SCOP (sezónní)')}
         value={data.scop.toFixed(2)}
       />
     </div>
   </div>
-);
+  );
+};
 
 interface TileProps {
   label: string;

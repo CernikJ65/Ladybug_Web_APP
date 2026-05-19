@@ -6,10 +6,12 @@ import './HBJSONViewer.css';
 import type { HBJSONData, RoomInfo, BuildingInfo, ModelStats, ViewMode } from './types';
 import { useViewerEngine } from './useViewerEngine';
 import ViewerPanel from './ViewerPanel';
+import { useT } from '../../../i18n/useT';
 
 interface Props { onBack: () => void; }
 
 const HbjsonViewer: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
   const containerRef = useRef<HTMLDivElement>(null);
   const [stats, setStats] = useState<ModelStats | null>(null);
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
@@ -37,7 +39,7 @@ const HbjsonViewer: React.FC<Props> = ({ onBack }) => {
     reader.onload = (ev) => {
       requestAnimationFrame(() => {
         try { buildModelFn.current?.(JSON.parse(ev.target?.result as string) as HBJSONData); }
-        catch (err) { alert('Chyba při načítání: ' + (err as Error).message); }
+        catch (err) { alert(t('Chyba při načítání: ') + (err as Error).message); }
         finally { setIsLoading(false); }
       });
     };
@@ -79,8 +81,8 @@ const HbjsonViewer: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="hbjson-viewer">
-      <button className="hbjson-viewer__back" onClick={onBack} aria-label="Zpět"><FaArrowLeft /> Zpět</button>
-      <button className={`hbjson-viewer__toggle${panelOpen ? ' open' : ''}`} onClick={() => setPanelOpen(p => !p)} aria-label={panelOpen ? 'Skrýt panel' : 'Zobrazit panel'}>{panelOpen ? '×' : '☰'}</button>
+      <button className="hbjson-viewer__back" onClick={onBack} aria-label={t('Zpět')}><FaArrowLeft /> {t('Zpět')}</button>
+      <button className={`hbjson-viewer__toggle${panelOpen ? ' open' : ''}`} onClick={() => setPanelOpen(p => !p)} aria-label={panelOpen ? t('Skrýt panel') : t('Zobrazit panel')}>{panelOpen ? '×' : '☰'}</button>
       <div className={`hbjson-viewer__panel${panelOpen ? '' : ' collapsed'}`}>
         <ViewerPanel
           viewMode={viewMode} opacity={opacity} showGrid={showGrid} highlightHover={highlightHover}
@@ -97,7 +99,7 @@ const HbjsonViewer: React.FC<Props> = ({ onBack }) => {
       {isLoading && (
         <div className="hbjson-viewer__loading">
           <div className="hbjson-viewer__spinner" />
-          <span>Načítám model…</span>
+          <span>{t('Načítám model…')}</span>
         </div>
       )}
       <div ref={containerRef} className="hbjson-viewer__canvas" />

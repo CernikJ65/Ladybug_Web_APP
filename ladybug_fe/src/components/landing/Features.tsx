@@ -12,6 +12,7 @@ import {
   FaFileImport,
   FaThermometerQuarter,
 } from 'react-icons/fa';
+import { useT } from '../../i18n/useT';
 
 interface Feature {
   id: string;
@@ -27,6 +28,7 @@ interface Props {
 }
 
 const Features: React.FC<Props> = ({ onFeatureClick }) => {
+  const t = useT();
 
   /* Spotlight: sledování kurzoru */
   const handleMouseMove = useCallback(
@@ -42,27 +44,30 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
     {
       id: 'hbjson',
       icon: <FaCube />,
-      title: '3D Vizualizace HBJSON',
-      description:
+      title: t('3D Vizualizace HBJSON'),
+      description: t(
         'Vizualizujte HBJSON oblasti pomocí interaktivní 3D vizualizace.',
+      ),
       color: '#8e44ad',
       tags: ['Three.js', 'HBJSON'],
     },
     {
       id: 'solar',
       icon: <FaSun />,
-      title: 'Analýza EPW dat o počasí',
-      description:
+      title: t('Analýza EPW dat o počasí'),
+      description: t(
         'Analyzujte EPW data o počasí, směr větru, větrná růžice, teplota, sluneční dráha.',
+      ),
       color: '#f39c12',
       tags: ['EPW', 'Ladybug', 'Wind Rose'],
     },
     {
       id: 'solar-advanced',
       icon: <FaSolarPanel />,
-      title: 'Solární analýza',
-      description:
+      title: t('Solární analýza'),
+      description: t(
         'Vypočet potenciálu solární energie pro FVE, roční výroba, orientace, umístění panelů.',
+      ),
       color: '#e67e22',
       tags: ['Radiance', 'HBJSON'],
     },
@@ -79,18 +84,20 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
      {
        id: 'heatpump-real',
        icon: <FaThermometerQuarter />,
-     title: 'Potenciál tepelných čerpadel',
-       description:
+     title: t('Potenciál tepelných čerpadel'),
+       description: t(
          'Scénář simuluje potenciál výroby tepla, a chladu tepelných čerpadel a zároveň porovnává dva typy: vzduch-voda (ASHP) a země-voda (GSHP)',
+       ),
        color: '#0891b2',
        tags: ['VRF', 'WSHP', 'HVAC'],
      },
     {
       id: 'ped-optimizer',
       icon: <FaBalanceScale />,
-      title: 'Optimalizace Oblasti pomocí PV a TČ',
-      description:
+      title: t('Optimalizace Oblasti pomocí PV a TČ'),
+      description: t(
         'Uživatel zadá investiční rozpočet a v rámci zadaného rozpočtu simulace osadí oblast energetickými agenty třemi způsoby. ',
+      ),
       color: '#0d9488',
       tags: ['PED', 'Bilance', 'Rozpočet'],
     },
@@ -98,8 +105,9 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       id: 'converter',
       icon: <FaFileImport />,
       title: 'DWG / DXF → HBJSON',
-      description:
+      description: t(
         'Převeďte CAD soubory na Honeybee modely. Automatická extrakce budov a terénu.',
+      ),
       color: '#b45309',
       tags: ['DWG', 'DXF', 'Honeybee'],
     },
@@ -128,7 +136,7 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
 
       <div className="features-header">
         
-        <h2 className="section-title">Analytické scénáře</h2>
+        <h2 className="section-title">{t('Analytické scénáře')}</h2>
       </div>
 
       <div className="features-grid">

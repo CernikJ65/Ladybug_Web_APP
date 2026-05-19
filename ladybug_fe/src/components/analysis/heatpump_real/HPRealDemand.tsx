@@ -10,20 +10,21 @@ import React from 'react';
 import { FaFire, FaSnowflake, FaBuilding } from 'react-icons/fa';
 import type { BuildingDemand } from './hpRealUtils';
 import { fmt } from './hpRealUtils';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   demand: BuildingDemand;
   heatingOnly?: boolean;
 }
 
-const MO = [
-  'Led','Úno','Bře','Dub','Kvě','Čvn',
-  'Čvc','Srp','Zář','Říj','Lis','Pro',
-];
-
 const HPRealDemand: React.FC<Props> = ({
   demand, heatingOnly = false,
 }) => {
+  const t = useT();
+  const MO = [
+    t('Led'), t('Úno'), t('Bře'), t('Dub'), t('Kvě'), t('Čvn'),
+    t('Čvc'), t('Srp'), t('Zář'), t('Říj'), t('Lis'), t('Pro'),
+  ];
   const heatMonthly = demand.monthly_heating_kwh ?? [];
   const coolMonthly = demand.monthly_cooling_kwh ?? [];
   const maxBar = Math.max(
@@ -36,7 +37,7 @@ const HPRealDemand: React.FC<Props> = ({
       <div className="hp-card-head">
         <FaBuilding className="hp-card-icon" />
         <div>
-          <h2>Tepelná potřeba budovy</h2>
+          <h2>{t('Tepelná potřeba budovy')}</h2>
         </div>
       </div>
 
@@ -47,7 +48,7 @@ const HPRealDemand: React.FC<Props> = ({
             {fmt(demand.annual_heating_kwh)}
           </span>
           <span className="hp-kpi-lbl">
-            Potřeba vytápění <span className="hp-kpi-unit">kWh/rok</span>
+            {t('Potřeba vytápění')} <span className="hp-kpi-unit">kWh/rok</span>
           </span>
         </div>
         {!heatingOnly && (
@@ -57,13 +58,13 @@ const HPRealDemand: React.FC<Props> = ({
               {fmt(demand.annual_cooling_kwh)}
             </span>
             <span className="hp-kpi-lbl">
-              Chlazení <span className="hp-kpi-unit">kWh/rok</span>
+              {t('Chlazení')} <span className="hp-kpi-unit">kWh/rok</span>
             </span>
           </div>
         )}
       </div>
 
-      <h3 className="hp-sub-title">Měsíční potřeba</h3>
+      <h3 className="hp-sub-title">{t('Měsíční potřeba')}</h3>
       <div className="hpr-stacked-bars">
         {MO.map((mo, i) => {
           const h = heatMonthly[i] ?? 0;
@@ -73,11 +74,11 @@ const HPRealDemand: React.FC<Props> = ({
               <div className="hpr-bar-stack">
                 <div className="hpr-bar-heat"
                   style={{ height: `${(h / maxBar) * 100}%` }}
-                  title={`${mo}: ${fmt(h)} kWh teplo`} />
+                  title={t('{{mo}}: {{val}} kWh teplo', { mo, val: fmt(h) })} />
                 {!heatingOnly && (
                   <div className="hpr-bar-cool"
                     style={{ height: `${(c / maxBar) * 100}%` }}
-                    title={`${mo}: ${fmt(c)} kWh chlad`} />
+                    title={t('{{mo}}: {{val}} kWh chlad', { mo, val: fmt(c) })} />
                 )}
               </div>
               <span className="hp-bar-lbl">{mo}</span>
@@ -86,9 +87,9 @@ const HPRealDemand: React.FC<Props> = ({
         })}
       </div>
       <div className="hpr-legend">
-        <span className="hpr-leg-heat">Potřeba tepla</span>
+        <span className="hpr-leg-heat">{t('Potřeba tepla')}</span>
         {!heatingOnly && (
-          <span className="hpr-leg-cool">Potřeba chladu</span>
+          <span className="hpr-leg-cool">{t('Potřeba chladu')}</span>
         )}
       </div>
     </section>

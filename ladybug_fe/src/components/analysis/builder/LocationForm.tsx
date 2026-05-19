@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Location } from './HbjsonBuilderTypes';
+import { useT } from '../../../i18n/useT';
 
 interface LocationFormProps {
   location: Location;
@@ -7,25 +8,26 @@ interface LocationFormProps {
 }
 
 const LocationForm: React.FC<LocationFormProps> = ({ location, onUpdateLocation }) => {
+  const t = useT();
   return (
     <div className="builder-section">
       <div className="builder-section-header">
-        <h3>Lokalita projektu</h3>
+        <h3>{t('Lokalita projektu')}</h3>
       </div>
 
       <div className="builder-form">
         <div className="form-group">
-          <label>Město</label>
+          <label>{t('Město')}</label>
           <input
             type="text"
             value={location.city}
             onChange={(e) => onUpdateLocation('city', e.target.value)}
-            placeholder="Název města"
+            placeholder={t('Název města')}
           />
         </div>
 
         <div className="form-group">
-          <label>Zeměpisná šířka</label>
+          <label>{t('Zeměpisná šířka')}</label>
           <input
             type="number"
             value={location.latitude}
@@ -36,7 +38,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onUpdateLocation 
         </div>
 
         <div className="form-group">
-          <label>Zeměpisná délka</label>
+          <label>{t('Zeměpisná délka')}</label>
           <input
             type="number"
             value={location.longitude}
@@ -47,7 +49,7 @@ const LocationForm: React.FC<LocationFormProps> = ({ location, onUpdateLocation 
         </div>
 
         <div className="form-group">
-          <label>Časová zóna</label>
+          <label>{t('Časová zóna')}</label>
           <input
             type="text"
             value={location.timezone}

@@ -13,12 +13,14 @@ import {
   FaChevronLeft, FaChevronRight,
 } from 'react-icons/fa';
 import type { RealHPResult } from './hpRealUtils';
+import { useT } from '../../../i18n/useT';
 
 interface Props { result: RealHPResult; }
 
 const ROOMS_PER_PAGE = 6;
 
 const HPRealOverview: React.FC<Props> = ({ result: r }) => {
+  const t = useT();
   const m = r.model_info;
   const [page, setPage] = useState(0);
   const pageCount = Math.ceil(m.rooms.length / ROOMS_PER_PAGE);
@@ -40,9 +42,9 @@ const HPRealOverview: React.FC<Props> = ({ result: r }) => {
       <div className="hp-card-head">
         <FaBuilding className="hp-card-icon" />
         <div>
-          <h2>Místnosti (Zóny vytápění)</h2>
+          <h2>{t('Místnosti (Zóny vytápění)')}</h2>
           <p className="hp-card-sub">
-            Místnosti a celková podlahová plocha
+            {t('Místnosti a celková podlahová plocha')}
           </p>
         </div>
       </div>
@@ -51,7 +53,7 @@ const HPRealOverview: React.FC<Props> = ({ result: r }) => {
         <div className="hp-overview-stat">
           <FaDoorOpen className="hp-overview-icon" />
           <span className="hp-overview-val">{m.room_count}</span>
-          <span className="hp-overview-lbl">místností</span>
+          <span className="hp-overview-lbl">{t('místností')}</span>
         </div>
         <div className="hp-overview-stat">
           <FaRulerCombined className="hp-overview-icon" />
@@ -59,7 +61,7 @@ const HPRealOverview: React.FC<Props> = ({ result: r }) => {
             {m.total_floor_area_m2.toFixed(0)}
           </span>
           <span className="hp-overview-lbl">
-            m² podlahové plochy
+            {t('m² podlahové plochy')}
           </span>
         </div>
       </div>
@@ -94,7 +96,7 @@ const HPRealOverview: React.FC<Props> = ({ result: r }) => {
             className="hp-room-page-btn"
             onClick={goPrev}
             disabled={page === 0}
-            aria-label="Předchozí místnosti"
+            aria-label={t('Předchozí místnosti')}
           >
             <FaChevronLeft />
           </button>
@@ -106,7 +108,7 @@ const HPRealOverview: React.FC<Props> = ({ result: r }) => {
             className="hp-room-page-btn"
             onClick={goNext}
             disabled={page === pageCount - 1}
-            aria-label="Další místnosti"
+            aria-label={t('Další místnosti')}
           >
             <FaChevronRight />
           </button>

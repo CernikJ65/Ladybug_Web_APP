@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaSpinner } from 'react-icons/fa';
 import type { SimulationProgress } from '../../hooks/useSimulationProgress';
+import { useT } from '../../i18n/useT';
 import './SimulationProgressOverlay.css';
 
 interface Props {
@@ -17,18 +18,20 @@ interface Props {
 const SimulationProgressOverlay: React.FC<Props> = ({
   open,
   progress,
-  title = 'Simulace probíhá',
+  title,
 }) => {
+  const t = useT();
   if (!open) return null;
 
   const percent = progress?.percent ?? 0;
+  const displayTitle = title ?? t('Simulace probíhá');
 
   return (
     <div className="sim-progress-overlay" role="status" aria-live="polite">
       <div className="sim-progress-card">
         <div className="sim-progress-head">
           <FaSpinner className="sim-progress-spin" />
-          <h3>{title}</h3>
+          <h3>{displayTitle}</h3>
           <span className="sim-progress-percent">{Math.round(percent)}%</span>
         </div>
 

@@ -12,6 +12,7 @@
 import React, { useState } from 'react';
 import { FaArrowLeft } from 'react-icons/fa';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
+import { useT } from '../../../i18n/useT';
 import HPForm from './HPForm';
 import HPOverview from './HPOverview';
 import HPSection from './HPSection';
@@ -38,6 +39,7 @@ interface CachedState {
 }
 
 const HeatPumpAnalysis: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
   const [hbjson, setHbjson] = useState<File | null>(null);
   const [epw, setEpw] = useState<File | null>(null);
   const [supplyTemp, setSupplyTemp] = useState(35);
@@ -76,7 +78,7 @@ const HeatPumpAnalysis: React.FC<Props> = ({ onBack }) => {
 
   const handleRun = async () => {
     if (!hbjson || !epw) {
-      setError('Nahrajte oba soubory — HBJSON i EPW');
+      setError(t('Nahrajte oba soubory — HBJSON i EPW'));
       return;
     }
     setLoading(true);
@@ -99,11 +101,11 @@ const HeatPumpAnalysis: React.FC<Props> = ({ onBack }) => {
       });
       if (!res.ok) {
         const e = await res.json();
-        throw new Error(e.detail || 'Chyba serveru');
+        throw new Error(e.detail || t('Chyba serveru'));
       }
       setResult(await res.json());
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Neznámá chyba');
+      setError(e instanceof Error ? e.message : t('Neznámá chyba'));
     } finally {
       setLoading(false);
     }
@@ -113,13 +115,12 @@ const HeatPumpAnalysis: React.FC<Props> = ({ onBack }) => {
     <div className="hp-page">
       <header className="hp-hero">
         <button className="hp-back" onClick={onBack}>
-          <FaArrowLeft /> Zpět na přehled
+          <FaArrowLeft /> {t('Zpět na přehled')}
         </button>
         <span className="hp-hero-badge">EnergyPlus + Ladybug</span>
-        <h1>Potenciál tepelných čerpadel</h1>
+        <h1>{t('Potenciál tepelných čerpadel')}</h1>
         <p>
-          Simulace tepelných zátěží, COP analýza a ekonomické
-          porovnání ASHP vs GSHP pro váš projekt
+          {t('Simulace tepelných zátěží, COP analýza a ekonomické porovnání ASHP vs GSHP pro váš projekt')}
         </p>
       </header>
 

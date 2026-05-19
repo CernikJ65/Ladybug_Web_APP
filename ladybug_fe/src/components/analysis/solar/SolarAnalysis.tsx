@@ -11,6 +11,7 @@ import SunpathView, { type SunpathData } from './SunpathView';
 import HelpButton from '../../help/HelpButton';
 import TourOverlay from '../../help/TourOverlay';
 import { getEpwSteps } from '../../help/content/epwSteps';
+import { useT } from '../../../i18n/useT';
 import './SolarAnalysis.css';
 
 /* ---------- typy ---------- */
@@ -36,6 +37,7 @@ const API = 'http://127.0.0.1:8000/api/analysis';
 
 /* ---------- komponenta ---------- */
 const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
+  const t = useT();
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -105,20 +107,20 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
   };
 
   const handleUpload = async () => {
-    if (!file) { setError('Vyberte EPW soubor'); return; }
+    if (!file) { setError(t('Vyberte EPW soubor')); return; }
     setLoading(true); setError(null);
     setWindData(null); setTempData(null); setSunpathData(null); setLocation(null);
 
     const fd = new FormData(); fd.append('file', file);
     try {
       const res = await fetch(`${API}/wind-advanced`, { method: 'POST', body: fd });
-      if (!res.ok) throw new Error((await res.json()).detail || 'Chyba');
+      if (!res.ok) throw new Error((await res.json()).detail || t('Chyba'));
       const json = await res.json() as { location: LocationInfo; wind: WindData };
       setLocation(json.location);
       setWindData(json.wind);
       setActiveTab('wind');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Neznámá chyba');
+      setError(e instanceof Error ? e.message : t('Neznámá chyba'));
     } finally { setLoading(false); }
   };
 
@@ -131,10 +133,10 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
       const fd = new FormData(); fd.append('file', file);
       try {
         const res = await fetch(`${API}/temperature`, { method: 'POST', body: fd });
-        if (!res.ok) throw new Error((await res.json()).detail || 'Chyba');
+        if (!res.ok) throw new Error((await res.json()).detail || t('Chyba'));
         const json = await res.json() as { temperature: TemperatureData };
         setTempData(json.temperature);
-      } catch (e) { setError(e instanceof Error ? e.message : 'Chyba'); }
+      } catch (e) { setError(e instanceof Error ? e.message : t('Chyba')); }
       finally { setTabLoading(false); }
     }
 
@@ -143,13 +145,13 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
       const fd = new FormData(); fd.append('file', file);
       try {
         const res = await fetch(`${API}/sunpath`, { method: 'POST', body: fd });
-        if (!res.ok) throw new Error((await res.json()).detail || 'Chyba');
+        if (!res.ok) throw new Error((await res.json()).detail || t('Chyba'));
         const json = await res.json() as { sunpath: SunpathData };
         setSunpathData(json.sunpath);
-      } catch (e) { setError(e instanceof Error ? e.message : 'Chyba'); }
+      } catch (e) { setError(e instanceof Error ? e.message : t('Chyba')); }
       finally { setTabLoading(false); }
     }
-  }, [file, tempData, sunpathData]);
+  }, [file, tempData, sunpathData, t]);
 
   return (
     <div className="sa-page">
@@ -160,12 +162,12 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
         steps={tourSteps}
       />
 
-      <button onClick={onBack} className="back-button"><FaArrowLeft /> Zpět na přehled</button>
+      <button onClick={onBack} className="back-button"><FaArrowLeft /> {t('Zpět na přehled')}</button>
 
       <div className="analysis-header">
         <FaCloudSun size={48} color="#f0a500" />
-        <h1>Analýza EPW dat o počasí</h1>
-        <p>Nahrajte EPW soubor, pro provedení analýzy větru, teploty a sluneční dráhy</p>
+        <h1>{t('Analýza EPW dat o počasí')}</h1>
+        <p>{t('Nahrajte EPW soubor, pro provedení analýzy větru, teploty a sluneční dráhy')}</p>
       </div>
 
       <div className="upload-area">
@@ -179,14 +181,14 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
           }} />
         <label htmlFor="epw-upload" className="upload-label">
           <FaUpload size={32} color="#f0a500" />
-          <p>{fileName || 'Klikněte pro výběr EPW souboru'}</p>
+          <p>{fileName || t('Klikněte pro výběr EPW souboru')}</p>
           {file && (
             <button
               type="button"
               className="upload-clear"
               onClick={e => { e.preventDefault(); e.stopPropagation(); handleRemoveFile(); }}
-              aria-label="Odstranit soubor"
-              title="Odstranit soubor"
+              aria-label={t('Odstranit soubor')}
+              title={t('Odstranit soubor')}
             >
               <FaTimes />
             </button>
@@ -194,7 +196,7 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
         </label>
         {file && (
           <button onClick={handleUpload} disabled={loading} className="upload-button">
-            {loading ? <><FaSpinner className="spinner" /> Analyzuji…</> : 'Spustit analýzu'}
+            {loading ? <><FaSpinner className="spinner" /> {t('Analyzuji…')}</> : t('Spustit analýzu')}
           </button>
         )}
       </div>
@@ -209,21 +211,21 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
 
           <div className="sa-tabs">
             {([
-              { key: 'wind' as TabKey, label: 'Vítr', icon: <FaWind /> },
-              { key: 'temperature' as TabKey, label: 'Teplota', icon: <FaThermometerHalf /> },
-              { key: 'sunpath' as TabKey, label: 'Sluneční dráha', icon: <FaCompass /> },
-            ]).map(t => (
-              <button key={t.key}
-                className={`sa-tab ${activeTab === t.key ? 'active' : ''}`}
-                onClick={() => t.key === 'wind' ? setActiveTab('wind') : loadTab(t.key)}>
-                {t.icon} {t.label}
+              { key: 'wind' as TabKey, label: t('Vítr'), icon: <FaWind /> },
+              { key: 'temperature' as TabKey, label: t('Teplota'), icon: <FaThermometerHalf /> },
+              { key: 'sunpath' as TabKey, label: t('Sluneční dráha'), icon: <FaCompass /> },
+            ]).map(tab => (
+              <button key={tab.key}
+                className={`sa-tab ${activeTab === tab.key ? 'active' : ''}`}
+                onClick={() => tab.key === 'wind' ? setActiveTab('wind') : loadTab(tab.key)}>
+                {tab.icon} {tab.label}
               </button>
             ))}
           </div>
 
           <div className="sa-tab-body">
             {tabLoading && (
-              <div className="sa-tab-loading"><FaSpinner className="spinner" /> Načítám data…</div>
+              <div className="sa-tab-loading"><FaSpinner className="spinner" /> {t('Načítám data…')}</div>
             )}
 
             {activeTab === 'wind' && !tabLoading && windData && (

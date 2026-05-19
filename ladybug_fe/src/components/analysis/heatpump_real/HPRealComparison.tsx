@@ -15,6 +15,7 @@ import {
 import HPRealSection from './HPRealSection';
 import type { HPSystemResult, RoomDemand } from './hpRealUtils';
 import { fmt } from './hpRealUtils';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   ashp: HPSystemResult;
@@ -28,6 +29,7 @@ type Tab = 'compare' | 'ashp' | 'gshp';
 const HPRealComparison: React.FC<Props> = ({
   ashp, gshp, rooms, heatingOnly = false,
 }) => {
+  const t = useT();
   const [tab, setTab] = useState<Tab>('compare');
 
   return (
@@ -36,17 +38,17 @@ const HPRealComparison: React.FC<Props> = ({
         <button type="button"
           className={`hp-compare-tab ${tab === 'compare' ? 'active' : ''}`}
           onClick={() => setTab('compare')}>
-          <FaBalanceScale /> Porovnání
+          <FaBalanceScale /> {t('Porovnání')}
         </button>
         <button type="button"
           className={`hp-compare-tab ${tab === 'ashp' ? 'active' : ''}`}
           onClick={() => setTab('ashp')}>
-          <FaWind /> ASHP Vzduch-voda
+          <FaWind /> {t('ASHP Vzduch-voda')}
         </button>
         <button type="button"
           className={`hp-compare-tab ${tab === 'gshp' ? 'active' : ''}`}
           onClick={() => setTab('gshp')}>
-          <FaMountain /> GSHP Země-voda
+          <FaMountain /> {t('GSHP Země-voda')}
         </button>
       </div>
 
@@ -75,24 +77,25 @@ interface CompareProps {
 const CompareView: React.FC<CompareProps> = ({
   ashp, gshp, heatingOnly,
 }) => {
+  const t = useT();
   const rows: Array<{
     icon: React.ReactNode; label: string; unit: string;
     a: number; g: number; betterIsLower?: boolean;
   }> = [
     {
-      icon: <FaFire />, label: 'COP topení', unit: '',
+      icon: <FaFire />, label: t('COP topení'), unit: '',
       a: ashp.cop_heating, g: gshp.cop_heating,
     },
     ...(heatingOnly ? [] : [{
-      icon: <FaSnowflake />, label: 'COP chlazení', unit: '',
+      icon: <FaSnowflake />, label: t('COP chlazení'), unit: '',
       a: ashp.cop_cooling, g: gshp.cop_cooling,
     }]),
     {
-      icon: <FaBalanceScale />, label: 'COP celoroční', unit: '',
+      icon: <FaBalanceScale />, label: t('COP celoroční'), unit: '',
       a: ashp.cop_annual, g: gshp.cop_annual,
     },
     {
-      icon: <FaBolt />, label: 'Spotřeba elektřiny',
+      icon: <FaBolt />, label: t('Spotřeba elektřiny'),
       unit: 'kWh',
       a: ashp.annual_electricity_kwh,
       g: gshp.annual_electricity_kwh,
@@ -103,9 +106,9 @@ const CompareView: React.FC<CompareProps> = ({
   return (
     <>
       <div className="hp-compare-heroes">
-        <CompareHero label="ASHP Vzduch-voda" icon={<FaWind />}
+        <CompareHero label={t('ASHP Vzduch-voda')} icon={<FaWind />}
           color="ashp" cop={ashp.cop_annual} />
-        <CompareHero label="GSHP Země-voda" icon={<FaMountain />}
+        <CompareHero label={t('GSHP Země-voda')} icon={<FaMountain />}
           color="gshp" cop={gshp.cop_annual} />
       </div>
 
@@ -145,13 +148,16 @@ const CompareView: React.FC<CompareProps> = ({
 const CompareHero: React.FC<{
   label: string; icon: React.ReactNode;
   color: 'ashp' | 'gshp'; cop: number;
-}> = ({ label, icon, color, cop }) => (
+}> = ({ label, icon, color, cop }) => {
+  const t = useT();
+  return (
   <div className={`hp-compare-hero hp-compare-hero--${color}`}>
     <span className="hp-compare-hero-icon">{icon}</span>
     <span className="hp-compare-hero-name">{label}</span>
     <span className="hp-compare-hero-cop">{cop.toFixed(2)}</span>
-    <span className="hp-compare-hero-lbl">COP celoroční</span>
+    <span className="hp-compare-hero-lbl">{t('COP celoroční')}</span>
   </div>
-);
+  );
+};
 
 export default HPRealComparison;

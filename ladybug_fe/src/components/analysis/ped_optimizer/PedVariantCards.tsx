@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import type { PedVariant } from './pedTypes';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   variants: PedVariant[];
@@ -19,7 +20,9 @@ const fmtS = (n: number) => (n >= 0 ? '+' : '') + fmt(n);
 
 const PedVariantCards: React.FC<Props> = ({
   variants, selectedIndex, onSelect,
-}) => (
+}) => {
+  const t = useT();
+  return (
   <div className="ped-variants">
     {variants.map((v, i) => {
       const isSelected = i === selectedIndex;
@@ -34,10 +37,10 @@ const PedVariantCards: React.FC<Props> = ({
           className={cls}
           onClick={() => v.system.available && onSelect(i)}
         >
-          <div className="ped-variant-name">{v.system.label}</div>
+          <div className="ped-variant-name">{t(v.system.label)}</div>
           {v.system.num_panels > 0 && (
             <div className="ped-variant-name-sub">
-              {v.system.num_panels} panelů
+              {t('{{n}} panelů', { n: v.system.num_panels })}
             </div>
           )}
 
@@ -48,33 +51,39 @@ const PedVariantCards: React.FC<Props> = ({
       );
     })}
   </div>
-);
+  );
+};
 
-const UnavailableBody: React.FC<{ reason: string }> = ({ reason }) => (
+const UnavailableBody: React.FC<{ reason: string }> = ({ reason }) => {
+  const t = useT();
+  return (
   <div className="ped-variant-unavail">
-    <strong>Variantu nelze realizovat</strong>
-    <small>{reason}</small>
+    <strong>{t('Variantu nelze realizovat')}</strong>
+    <small>{t(reason)}</small>
   </div>
-);
+  );
+};
 
-const AvailableBody: React.FC<{ v: PedVariant }> = ({ v }) => (
+const AvailableBody: React.FC<{ v: PedVariant }> = ({ v }) => {
+  const t = useT();
+  return (
   <>
     <div className={'ped-variant-balance ' + (v.is_ped ? 'pos' : 'neg')}>
       <span className="ped-variant-balance-num">
         {fmtS(v.balance_kwh ?? 0)}
       </span>
-      <span className="ped-variant-balance-unit">kWh / rok</span>
+      <span className="ped-variant-balance-unit">{t('kWh / rok')}</span>
     </div>
 
     <div className="ped-variant-rows">
       <Row
-        label="Výroba FVE"
+        label={t('Výroba FVE')}
         tone="pv"
         num={fmt(v.pv_production_kwh ?? 0)}
         unit="kWh"
       />
       <Row
-        label="Spotřeba budovy"
+        label={t('Spotřeba budovy')}
         tone="cons"
         num={fmt(v.consumption_kwh?.total ?? 0)}
         unit="kWh"
@@ -83,17 +92,18 @@ const AvailableBody: React.FC<{ v: PedVariant }> = ({ v }) => (
 
     <div className="ped-variant-cost">
       <div className="ped-variant-cost-row">
-        <span className="ped-variant-cost-row-label">Cena celkem</span>
+        <span className="ped-variant-cost-row-label">{t('Cena celkem')}</span>
         <span className="ped-variant-cost-row-value">
           <span className="ped-variant-cost-row-num">
             {fmt(v.system.total_cost_czk)}
           </span>
-          <span className="ped-variant-cost-row-unit">Kč</span>
+          <span className="ped-variant-cost-row-unit">{t('Kč')}</span>
         </span>
       </div>
     </div>
   </>
-);
+  );
+};
 
 interface RowProps {
   label: string;

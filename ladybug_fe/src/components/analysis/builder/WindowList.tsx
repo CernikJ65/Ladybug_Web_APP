@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Window } from './HbjsonBuilderTypes';
+import { useT } from '../../../i18n/useT';
 
 interface WindowListProps {
   roomId: string;
@@ -15,19 +16,20 @@ const WindowList: React.FC<WindowListProps> = ({
   onRemoveWindow,
   onUpdateWindow
 }) => {
+  const t = useT();
   return (
     <div className="builder-subsection">
       <div className="builder-subsection-header">
-        <h4>Okna</h4>
+        <h4>{t('Okna')}</h4>
         <button onClick={onAddWindow} className="btn-add-small">
-          + Přidat okno
+          {t('+ Přidat okno')}
         </button>
       </div>
 
       <div className="builder-list">
         {windows.length === 0 ? (
           <div className="builder-empty-small">
-            Žádná okna. Klikněte na "+ Přidat okno".
+            {t('Žádná okna. Klikněte na "+ Přidat okno".')}
           </div>
         ) : (
           windows.map((window, index) => {
@@ -37,12 +39,12 @@ const WindowList: React.FC<WindowListProps> = ({
               <div key={window.id} className="builder-subitem">
                 <div className="builder-subitem-header">
                   <span className="builder-subitem-title">
-                    Okno {index + 1} ({window.wall})
+                    {t('Okno {{n}} ({{wall}})', { n: index + 1, wall: window.wall })}
                   </span>
                   <button
                     onClick={() => onRemoveWindow(window.id)}
                     className="btn-remove-small"
-                    title="Odstranit okno"
+                    title={t('Odstranit okno')}
                   >
                     ×
                   </button>
@@ -53,21 +55,21 @@ const WindowList: React.FC<WindowListProps> = ({
                 </div>
 
                 <div className="form-group">
-                  <label>Stěna</label>
+                  <label>{t('Stěna')}</label>
                   <select
                     value={window.wall}
                     onChange={(e) => onUpdateWindow(window.id, 'wall', e.target.value as 'north' | 'south' | 'east' | 'west')}
                   >
-                    <option value="north">Sever</option>
-                    <option value="south">Jih</option>
-                    <option value="east">Východ</option>
-                    <option value="west">Západ</option>
+                    <option value="north">{t('Sever')}</option>
+                    <option value="south">{t('Jih')}</option>
+                    <option value="east">{t('Východ')}</option>
+                    <option value="west">{t('Západ')}</option>
                   </select>
                 </div>
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Šířka (m)</label>
+                    <label>{t('Šířka (m)')}</label>
                     <input
                       type="number"
                       value={window.width}
@@ -78,7 +80,7 @@ const WindowList: React.FC<WindowListProps> = ({
                   </div>
 
                   <div className="form-group">
-                    <label>Výška (m)</label>
+                    <label>{t('Výška (m)')}</label>
                     <input
                       type="number"
                       value={window.height}
@@ -91,7 +93,7 @@ const WindowList: React.FC<WindowListProps> = ({
 
                 <div className="form-row">
                   <div className="form-group">
-                    <label>Pozice od kraje (m)</label>
+                    <label>{t('Pozice od kraje (m)')}</label>
                     <input
                       type="number"
                       value={window.positionX}
@@ -102,7 +104,7 @@ const WindowList: React.FC<WindowListProps> = ({
                   </div>
 
                   <div className="form-group">
-                    <label>Výška od podlahy (m)</label>
+                    <label>{t('Výška od podlahy (m)')}</label>
                     <input
                       type="number"
                       value={window.positionZ}

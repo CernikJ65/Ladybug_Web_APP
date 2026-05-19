@@ -13,6 +13,7 @@ import {
 import HPRealRoomList from './HPRealRoomList';
 import type { HPSystemResult, RoomDemand } from './hpRealUtils';
 import { fmt } from './hpRealUtils';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   data: HPSystemResult;
@@ -20,14 +21,14 @@ interface Props {
   heatingOnly?: boolean;
 }
 
-const MO = [
-  'Led','Úno','Bře','Dub','Kvě','Čvn',
-  'Čvc','Srp','Zář','Říj','Lis','Pro',
-];
-
 const HPRealSection: React.FC<Props> = ({
   data, rooms, heatingOnly = false,
 }) => {
+  const t = useT();
+  const MO = [
+    t('Led'), t('Úno'), t('Bře'), t('Dub'), t('Kvě'), t('Čvn'),
+    t('Čvc'), t('Srp'), t('Zář'), t('Říj'), t('Lis'), t('Pro'),
+  ];
   const monthH = data.monthly_heating_kwh ?? [];
   const monthC = data.monthly_cooling_kwh ?? [];
   const monthCopHeat = data.monthly_cop_heating ?? [];
@@ -44,7 +45,7 @@ const HPRealSection: React.FC<Props> = ({
         <span className="hp-cop-hero-val">
           {data.cop_annual.toFixed(2)}
         </span>
-        <span className="hp-cop-hero-lbl">COP celoroční</span>
+        <span className="hp-cop-hero-lbl">{t('COP celoroční')}</span>
       </div>
 
       <div className="hp-pump-stats">
@@ -55,7 +56,7 @@ const HPRealSection: React.FC<Props> = ({
               {fmt(data.annual_heating_kwh)}
             </span>
             <span className="hp-pump-stat-unit">
-              Vyrobí kWh tepla / rok
+              {t('Vyrobí kWh tepla / rok')}
             </span>
           </div>
           <span className="hp-pump-stat-side">
@@ -71,7 +72,7 @@ const HPRealSection: React.FC<Props> = ({
                 {fmt(data.annual_cooling_kwh)}
               </span>
               <span className="hp-pump-stat-unit">
-                Vyrobí kWh chladu / rok
+                {t('Vyrobí kWh chladu / rok')}
               </span>
             </div>
             <span className="hp-pump-stat-side">
@@ -87,7 +88,7 @@ const HPRealSection: React.FC<Props> = ({
               {fmt(data.annual_electricity_kwh)}
             </span>
             <span className="hp-pump-stat-unit">
-              kWh el. spotřeba / rok
+              {t('kWh el. spotřeba / rok')}
             </span>
           </div>
         </div>
@@ -95,7 +96,7 @@ const HPRealSection: React.FC<Props> = ({
 
       {monthH.length === 12 && (
         <>
-          <h3 className="hp-sub-title">Měsíční produkce</h3>
+          <h3 className="hp-sub-title">{t('Měsíční produkce')}</h3>
           <div className="hpr-stacked-bars">
             {MO.map((mo, i) => {
               const h = monthH[i] ?? 0;
@@ -109,11 +110,11 @@ const HPRealSection: React.FC<Props> = ({
                   <div className="hpr-bar-stack">
                     <div className="hpr-bar-heat"
                       style={{ height: `${hVis}%` }}
-                      title={`${mo}: teplo ${fmt(h)} kWh`} />
+                      title={t('{{mo}}: teplo {{val}} kWh', { mo, val: fmt(h) })} />
                     {!heatingOnly && (
                       <div className="hpr-bar-cool"
                         style={{ height: `${cVis}%` }}
-                        title={`${mo}: chlad ${fmt(c)} kWh`} />
+                        title={t('{{mo}}: chlad {{val}} kWh', { mo, val: fmt(c) })} />
                     )}
                   </div>
                   <span className="hp-bar-lbl">{mo}</span>
@@ -122,9 +123,9 @@ const HPRealSection: React.FC<Props> = ({
             })}
           </div>
           <div className="hpr-legend">
-            <span className="hpr-leg-heat">Vyrobené teplo</span>
+            <span className="hpr-leg-heat">{t('Vyrobené teplo')}</span>
             {!heatingOnly && (
-              <span className="hpr-leg-cool">Vyrobený chlad</span>
+              <span className="hpr-leg-cool">{t('Vyrobený chlad')}</span>
             )}
           </div>
         </>
@@ -132,7 +133,7 @@ const HPRealSection: React.FC<Props> = ({
 
       {monthCopHeat.length === 12 && (
         <>
-          <h3 className="hp-sub-title">Měsíční COP topení</h3>
+          <h3 className="hp-sub-title">{t('Měsíční COP topení')}</h3>
           <div className="hp-cop-strip">
             {monthCopHeat.map((c, i) => (
               <div key={i} className="hp-cop-chip">
@@ -146,7 +147,7 @@ const HPRealSection: React.FC<Props> = ({
 
       {!heatingOnly && monthCopCool.length === 12 && (
         <>
-          <h3 className="hp-sub-title">Měsíční COP chlazení</h3>
+          <h3 className="hp-sub-title">{t('Měsíční COP chlazení')}</h3>
           <div className="hp-cop-strip">
             {monthCopCool.map((c, i) => (
               <div key={i} className="hp-cop-chip">

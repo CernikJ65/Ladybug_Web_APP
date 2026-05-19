@@ -11,6 +11,7 @@ import {
   FaSpinner, FaArrowRight, FaPlay,
 } from 'react-icons/fa';
 import type { MountingType } from './pedTypes';
+import { useT } from '../../../i18n/useT';
 
 interface Props {
   hbjson: File | null; epw: File | null;
@@ -62,6 +63,7 @@ interface FileBoxProps {
 const FileBox: React.FC<FileBoxProps> = ({
   id, file, accept, label, sub, icon, onChange,
 }) => {
+  const t = useT();
   const handleClear = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -92,8 +94,8 @@ const FileBox: React.FC<FileBoxProps> = ({
               type="button"
               className="ped-file-clear"
               onClick={handleClear}
-              aria-label="Odstranit soubor"
-              title="Odstranit soubor"
+              aria-label={t('Odstranit soubor')}
+              title={t('Odstranit soubor')}
             >
               <FaTimes />
             </button>
@@ -160,6 +162,7 @@ interface PriceFieldProps {
 const PriceField: React.FC<PriceFieldProps> = ({
   label, value, onChange, min, max, step, unit,
 }) => {
+  const t = useT();
   const { raw, handleChange, handleBlur } = useNumberField(value, onChange);
   const stepUp = () => {
     const next = value + step;
@@ -189,14 +192,14 @@ const PriceField: React.FC<PriceFieldProps> = ({
             type="button"
             className="ped-pricefield-step ped-pricefield-step--up"
             onClick={stepUp}
-            aria-label={`Zvýšit o ${step}`}
+            aria-label={t('Zvýšit o {{step}}', { step })}
             tabIndex={-1}
           />
           <button
             type="button"
             className="ped-pricefield-step ped-pricefield-step--down"
             onClick={stepDown}
-            aria-label={`Snížit o ${step}`}
+            aria-label={t('Snížit o {{step}}', { step })}
             tabIndex={-1}
           />
         </div>
@@ -213,6 +216,7 @@ const BUDGET_MIN = 10_000;
 const BudgetField: React.FC<{
   value: number; onChange: (v: number) => void;
 }> = ({ value, onChange }) => {
+  const t = useT();
   const { raw, handleChange, handleBlur } = useNumberField(value, onChange);
   const stepDown = () => onChange(Math.max(BUDGET_MIN, value - BUDGET_STEP));
   const stepUp = () => onChange(value + BUDGET_STEP);
@@ -230,21 +234,21 @@ const BudgetField: React.FC<{
             onChange={handleChange}
             onBlur={handleBlur}
           />
-          <span className="ped-budget-currency">Kč</span>
+          <span className="ped-budget-currency">{t('Kč')}</span>
         </div>
         <div className="ped-budget-steps">
           <button
             type="button"
             className="ped-budget-arrow ped-budget-arrow--up"
             onClick={stepUp}
-            aria-label="Zvýšit o 10 000 Kč"
+            aria-label={t('Zvýšit o 10 000 Kč')}
             tabIndex={-1}
           />
           <button
             type="button"
             className="ped-budget-arrow ped-budget-arrow--down"
             onClick={stepDown}
-            aria-label="Snížit o 10 000 Kč"
+            aria-label={t('Snížit o 10 000 Kč')}
             tabIndex={-1}
           />
         </div>
@@ -255,21 +259,23 @@ const BudgetField: React.FC<{
 
 /* ── PedForm ── */
 
-const PedForm: React.FC<Props> = (p) => (
+const PedForm: React.FC<Props> = (p) => {
+  const t = useT();
+  return (
   <div className="ped-form">
 
     {/* ── 1. Vstupní soubory ── */}
     <div className="ped-form-step">
       <span className="ped-step-num">1</span>
-      <span className="ped-step-title">Vstupní soubory</span>
+      <span className="ped-step-title">{t('Vstupní soubory')}</span>
     </div>
     <div className="ped-files">
       <FileBox
         id="hbjson"
         file={p.hbjson}
         accept=".hbjson,.json"
-        label="HBJSON model"
-        sub="Geometrie budovy (.hbjson)"
+        label={t('HBJSON model')}
+        sub={t('Geometrie budovy (.hbjson)')}
         icon={<FaFile />}
         onChange={p.onHbjson}
       />
@@ -277,8 +283,8 @@ const PedForm: React.FC<Props> = (p) => (
         id="epw"
         file={p.epw}
         accept=".epw"
-        label="EPW soubor"
-        sub="Klimatická data (.epw)"
+        label={t('EPW soubor')}
+        sub={t('Klimatická data (.epw)')}
         icon={<FaCloudUploadAlt />}
         onChange={p.onEpw}
       />
@@ -287,38 +293,38 @@ const PedForm: React.FC<Props> = (p) => (
     {/* ── 2. Investiční rozpočet ── */}
     <div className="ped-form-step">
       <span className="ped-step-num">2</span>
-      <span className="ped-step-title">Investiční rozpočet</span>
+      <span className="ped-step-title">{t('Investiční rozpočet')}</span>
     </div>
     <p className="ped-form-note">
-      Maximální částka, kterou je možné na osazení oblasti vynaložit.
+      {t('Maximální částka, kterou je možné na osazení oblasti vynaložit.')}
     </p>
     <BudgetField value={p.budget} onChange={p.onBudget} />
 
     {/* ── 3. Parametry simulace ── */}
     <div className="ped-form-step">
       <span className="ped-step-num">3</span>
-      <span className="ped-step-title">Parametry simulace</span>
+      <span className="ped-step-title">{t('Parametry simulace')}</span>
     </div>
     <p className="ped-form-note">
-      Setpoint vytápění, účinnost panelů a typ montáže.
+      {t('Setpoint vytápění, účinnost panelů a typ montáže.')}
     </p>
     <div className="ped-params-grid">
       <Slider
-        label="Teplota vytápění"
+        label={t('Teplota vytápění')}
         value={p.heatingSetpoint}
         onChange={p.onHeatingSetpoint}
         min={16} max={26} step={1}
         display={`${p.heatingSetpoint} °C`}
       />
       <Slider
-        label="Účinnost FVE"
+        label={t('Účinnost FVE')}
         value={p.pvEfficiency}
         onChange={p.onPvEfficiency}
         min={19} max={24} step={1}
         display={`${p.pvEfficiency} %`}
       />
       <div className="ped-field">
-        <label>Typ montáže</label>
+        <label>{t('Typ montáže')}</label>
         <select
           className="ped-select"
           value={p.mountingType}
@@ -326,8 +332,8 @@ const PedForm: React.FC<Props> = (p) => (
             p.onMountingType(e.target.value as MountingType)
           }
         >
-          <option value="FixedOpenRack">Otevřená konstrukce</option>
-          <option value="FixedRoofMounted">Přilehlá ke střeše</option>
+          <option value="FixedOpenRack">{t('Otevřená konstrukce')}</option>
+          <option value="FixedRoofMounted">{t('Přilehlá ke střeše')}</option>
         </select>
       </div>
     </div>
@@ -335,32 +341,32 @@ const PedForm: React.FC<Props> = (p) => (
     {/* ── 4. Ceny komponent ── */}
     <div className="ped-form-step">
       <span className="ped-step-num">4</span>
-      <span className="ped-step-title">Ceny komponent</span>
+      <span className="ped-step-title">{t('Ceny komponent')}</span>
     </div>
     <p className="ped-form-note">
-      Investiční náklady jednotlivých prvků v Kč.
+      {t('Investiční náklady jednotlivých prvků v Kč.')}
     </p>
     <div className="ped-params-grid">
       <PriceField
-        label="Čerpadlo ASHP vzduch/voda"
+        label={t('Čerpadlo ASHP vzduch/voda')}
         value={p.ashpCost}
         onChange={p.onAshpCost}
         min={50000} step={10000}
-        unit="Kč"
+        unit={t('Kč')}
       />
       <PriceField
-        label="Čerpadlo GSHP země/voda"
+        label={t('Čerpadlo GSHP země/voda')}
         value={p.gshpCost}
         onChange={p.onGshpCost}
         min={50000} step={10000}
-        unit="Kč"
+        unit={t('Kč')}
       />
       <PriceField
-        label="Cena za panel"
+        label={t('Cena za panel')}
         value={p.pvCostPerPanel}
         onChange={p.onPvCostPerPanel}
         min={5000} step={1000}
-        unit="Kč"
+        unit={t('Kč')}
       />
     </div>
 
@@ -374,11 +380,12 @@ const PedForm: React.FC<Props> = (p) => (
         {p.loading ? <FaSpinner className="ped-spinner" /> : <FaPlay />}
       </span>
       <span>
-        {p.loading ? 'Probíhá simulace…' : 'Spustit PED analýzu'}
+        {p.loading ? t('Probíhá simulace…') : t('Spustit PED analýzu')}
       </span>
       {!p.loading && <FaArrowRight className="ped-run-arrow" />}
     </button>
   </div>
-);
+  );
+};
 
 export default PedForm;
