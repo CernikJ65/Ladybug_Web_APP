@@ -3,9 +3,9 @@ import { FaSun } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
 const sectionTitles: Record<string, { cs: string; en: string }> = {
-  '': { cs: 'Ladybug Web', en: 'Ladybug Web' },
-  features: { cs: 'Funkce – Ladybug Web', en: 'Features – Ladybug Web' },
-  about: { cs: 'O projektu – Ladybug Web', en: 'About – Ladybug Web' },
+  '': { cs: 'PED Ladybug Web Tools', en: 'PED Ladybug Web Tools' },
+  features: { cs: 'Funkce – PED Ladybug Web Tools', en: 'Features – PED Ladybug Web Tools' },
+  about: { cs: 'O projektu – PED Ladybug Web Tools', en: 'About – PED Ladybug Web Tools' },
 };
 
 const Navbar: React.FC = () => {

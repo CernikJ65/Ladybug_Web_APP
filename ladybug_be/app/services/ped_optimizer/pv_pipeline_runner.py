@@ -19,11 +19,11 @@ from __future__ import annotations
 
 from typing import Dict, Any, List
 
-from ..roof_detector import RoofDetector
-from ..panel_placer import PanelPlacer
-from ..solar_calculator import SolarRadiationCalculator
-from ..tilt_optimizer import TiltOptimizer
-from ..panel_optimizer import PanelOptimizer
+from ..solar.roof_detector import RoofDetector
+from ..solar.panel_placer import PanelPlacer
+from ..solar.solar_calculator import SolarRadiationCalculator
+from ..solar.tilt_optimizer import TiltOptimizer
+from ..solar.panel_optimizer import PanelOptimizer
 from .pv_lib_monthly_simulator import PVLibMonthlySimulator
 
 

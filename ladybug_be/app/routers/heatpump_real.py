@@ -16,7 +16,7 @@ from typing import Optional
 import tempfile
 import os
 
-from ..services.progress import progress_scope, registry
+from ..services.shared.progress import progress_scope, registry
 
 router = APIRouter()
 

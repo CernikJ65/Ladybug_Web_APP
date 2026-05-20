@@ -37,8 +37,8 @@ const en_overrides: Record<string, string> = {
   'Spustit aplikaci': 'Launch app',
 
   // ── Landing / Footer ──────────────────────────────────────────────
-  '© 2025 Ladybug Web Platform - Diplomová práce':
-    '© 2025 Ladybug Web Platform · Master\'s thesis',
+  '© 2026 PED Ladybug Web Tools - Diplomová práce':
+    '© 2026 PED Ladybug Web Tools · Master\'s thesis',
   'Postaveno na FastAPI & React': 'Built on FastAPI & React',
 
   // ── App.tsx ───────────────────────────────────────────────────────
@@ -509,12 +509,216 @@ const en_overrides: Record<string, string> = {
   'HBJSON modely budov': 'HBJSON Building Models',
   'Honeybee modely popisující geometrii budov a jejich tepelné zóny.':
     'Honeybee models describing building geometry and thermal zones.',
-  'EPW klimatická data': 'EPW Climate Data',
+  
   'Hodinová klimatická data pro konkrétní lokality, převzatá z volně dostupných meteorologických souborů.':
     'Hourly climate data for specific locations, taken from freely available weather files.',
   'Zatím zde nejsou žádné soubory ke stažení.':
     'No files available for download yet.',
   'Stáhnout': 'Download',
+
+  // ── Help / TourOverlay UI ─────────────────────────────────────────
+  'Pro průvodce nejprve nahraj EPW soubor.': 'To start the guide, please upload an EPW file first.',
+  'Rozumím': 'Got it',
+  'Zavřít průvodce': 'Close guide',
+  'Dokončit': 'Finish',
+  'Další': 'Next',
+  'Průvodce': 'Guide',
+
+  // ── Help / EPW steps ──────────────────────────────────────────────
+  'Scénář umožňuje analyzovat klimatická EPW data o počasí pro danou lokalitu. Po dokončení analýzy aplikace poskytne 3 různé pohledy na data pomocí tří záložek: vítr, teplota a sluneční dráha.':
+    'The scenario lets you analyze climate EPW weather data for a chosen location. Once the analysis completes, the app provides three views of the data via three tabs: wind, temperature, and sun path.',
+  'Nahrání EPW souboru': 'EPW file upload',
+  'Vstupní pole, prostřednictvím něhož uživatel může nahrát EPW soubor. Stačí na něj kliknout a v následně otevřeném dialogovém okně vybrat patřičný soubor z lokálního úložiště.':
+    'An input field for uploading an EPW file. Just click it and pick the appropriate file from local storage in the dialog that opens.',
+  'Informace o lokalitě': 'Location information',
+  'Pruh uvádí název města, zeměpisné souřadnice a nadmořskou výšku načtené z hlavičky EPW souboru.':
+    'The bar shows the city name, geographic coordinates, and elevation read from the EPW file header.',
+  'Lišta záložek': 'Tab bar',
+  'Lišta zpřístupňuje tři pohledy na stejná klimatická data. Mezi záložkami Vítr, Teplota a Sluneční dráha lze libovolně přepínat.':
+    'The bar provides three views of the same climate data. You can freely switch between the Wind, Temperature, and Sun path tabs.',
+  'Souhrnné statistiky větrných charakteristik': 'Wind summary statistics',
+  'Čtveřice karet shrnuje větrné podmínky lokality pomocí 4 charakteristik: průměrá roční rychlost, maximalní rychlsot , převládající směr a podíl bezvětří. Rychlosti jsou uváděny v metrech za sekundu.':
+    'Four cards summarize the wind conditions at the location using four characteristics: average annual speed, maximum speed, prevailing direction, and calm share. Speeds are in meters per second.',
+  'Polární graf zobrazuje, odkud a jak často vítr v lokalitě vane.':
+    'The polar chart shows where the wind blows from and how often.',
+  'Průměrné měsíční rychlosti': 'Average monthly speeds',
+  'Sloupcový graf ukazuje průměrnou rychlost větru pro každý měsíc v roce. U každého sloupce je vedle průměru uvedeno také měsíční maximum.':
+    'The bar chart shows average wind speed for each month of the year. Each bar shows the monthly maximum next to the average.',
+  'Rozložení rychlostí větru klasifikované podle Beaufortovy stupnice, od bezvětří po vichřici. U každé třídy je uveden počet hodin v roce, kdy panuje určitý stav':
+    'Wind speed distribution classified by the Beaufort scale, from calm to gale. Each class shows the number of hours per year with the corresponding conditions.',
+  'Souhrnné teplotní statistiky': 'Temperature summary statistics',
+  'Šestice karet shrnuje teplotní poměry lokality. Patří sem roční průměr, Teplotní extrémy, podíl komfortních hodin v rozmezí 18 až 26 °C, počet mrazivých hodin a klasifikace klimatické zóny podle normy ASHRAE 169.':
+    'Six cards summarize the temperature conditions at the location: annual average, temperature extremes, share of comfortable hours within 18 to 26 °C, sub-zero hour count, and climate zone classification per ASHRAE 169.',
+  'Tabulka popisující měsíční teplotní profil dané lokality. Každý řádek odpovídá jednomu kalendářnímu měsíci a uvádí jeho minimální, průměrnou a maximální teplotu, doplněnou o celkové teplotní rozpětí. Minimální a maximální hodnoty navíc jsou uváděny ve formě percentilů P5 a P95, čímž se omezuje vliv ojedinělých extrémů.':
+    'A table describing the monthly temperature profile of the location. Each row corresponds to one calendar month and shows its minimum, mean and maximum temperature with the overall range. Minimum and maximum are reported as P5 and P95 percentiles to dampen the influence of rare extremes.',
+  'Ukazatele HDD a CDD vyjadřují, jak výrazně a jak dlouho se venkovní teplota odchyluje od prahu pro vytápění (18 °C) a chlazení (21 °C). Roční součet poskytuje představu o potřebě vytápění a chlazení v lokalitě.':
+    'The HDD and CDD indicators express how strongly and how long the outdoor temperature deviates from the heating (18 °C) and cooling (21 °C) thresholds. The annual sum gives a sense of the heating and cooling needs at the location.',
+  'Rozložení denostupňů v roce': 'Degree-day distribution over the year',
+  'Sloupcový graf rozkládá roční hodnoty HDD a CDD do jednotlivých měsíců. Modré sloupce odpovídají topným denostupňům, červené chladicím.':
+    'The bar chart breaks down the annual HDD and CDD values into individual months. Blue bars correspond to heating degree-days, red bars to cooling.',
+  'Heatmapa zachycuje průměrnou teplotu pro každou kombinaci měsíce a hodiny dne. Modrá značí chladnější hodnoty, červená teplejší.':
+    'The heatmap captures the average temperature for each month and hour-of-day combination. Blue marks cooler values, red marks warmer ones.',
+  'Pozice slunce nad obzorem': 'Sun position above the horizon',
+  'Graf zachycuje výšku slunce nad obzorem pro 21. den každého měsíce. Volba 21. dne není náhodná, jelikož se blíží slunovratům a rovnodennostem. Hodnota 0° na svislé ose odpovídá horizontu, 90° poloze v nadhlavníku. Ve střední Evropě slunce dosahuje maximální výšky okolo 64°.':
+    'The chart captures the sun altitude above the horizon for the 21st of each month. The 21st is chosen because it is near solstices and equinoxes. 0° on the vertical axis is the horizon, 90° the zenith. In Central Europe the sun reaches a maximum altitude of about 64°.',
+  'Východ, západ a délka dne': 'Sunrise, sunset and day length',
+  'Pro 21. den každého měsíce tabulka uvádí čas východu a západu slunce, výslednou délku dne a maximální výšku slunce nad obzorem.':
+    'For the 21st of each month the table lists the time of sunrise and sunset, the resulting day length, and the maximum sun altitude above the horizon.',
+  'Délka dne v průběhu roku': 'Day length throughout the year',
+  'Horizontální sloupcový graf porovnává délku 21. dne v jednotlivých měsících.':
+    'The horizontal bar chart compares the length of the 21st across the months.',
+
+  // ── Help / Heatpump steps ─────────────────────────────────────────
+  'Optimalizační scénář, který umisťuje do zón vyznačených v HBJSON datech tepelná čerpadla a počítá jejich potenciál. Zároveň porovnává dva druhy čerpadel, vzduch-voda (ASHP) a země-voda (GSHP), proto se simulace interně spouští dvakrát.':
+    'An optimization scenario that places heat pumps into the zones marked in the HBJSON data and computes their potential. It also compares two pump types: air-to-water (ASHP) and ground-to-water (GSHP), so the simulation internally runs twice.',
+  'Formulář pro nahrání vstupních dat. Scénář vyžaduje oba klíčové formáty: HBJSON (geometrie budovy) a EPW (klimatická data lokality).':
+    'A form for uploading input data. The scenario requires both key formats: HBJSON (building geometry) and EPW (location climate data).',
+  'Sekce umožňuje budovám z HBJSON dat přiřadit jeden ze šesti dostupných typů. Volba typu určuje, která šablona energetického chování převzatá z Ladybug Tools bude budově přiřazena. Šablona reprezentuje typická vnitřní zatížení daného druhu budovy.':
+    'This section assigns one of six available types to the buildings from the HBJSON data. The chosen type determines which Ladybug Tools energy-behavior template is assigned. The template represents typical internal loads of that building type.',
+  'Přepínač rozhoduje, zda bude simulace zahrnovat pouze vytápění místností, nebo také jejich chlazení.':
+    'The switch decides whether the simulation covers only room heating or also cooling.',
+  'Posuvník Setpoint vytápění určuje cílovou teplotu, kterou má tepelné čerpadlo v zónách budovy během simulace udržovat. ':
+    'The Heating setpoint slider sets the target temperature that the heat pump should maintain in the building zones during the simulation. ',
+  'Spuštění simulace': 'Run simulation',
+  'Tlačítko pro spuštění simulace.': 'Button to start the simulation.',
+  'Místnosti budovy': 'Building rooms',
+  'Karta uvádí seznam všech místností rozpoznaných v HBJSON datech společně s jejich rozměry. Tyto místnosti v simulaci vystupují jako zóny vytápění, jejichž teplotu se tepelná čerpadla snaží po celý rok udržet na zadaných hodnotách.':
+    'The card lists every room detected in the HBJSON data along with its dimensions. These rooms act as heating zones whose temperature the heat pumps try to maintain at the set values year-round.',
+  'Sekce shrnuje, kolik tepla bylo potřeba do budovy dodat během jednoho simulovaného roku. Souhrnnou roční hodnotu v kWh doplňuje sloupcový graf, který tuto potřebu rozkládá na jednotlivé měsíce.':
+    'This section summarizes how much heat had to be delivered to the building over one simulated year. The total annual value in kWh is complemented by a bar chart that breaks this demand down by month.',
+  'Porovnání tepelných čerpadel': 'Heat-pump comparison',
+  'Závěrečná část scénáře nabízí tři pohledy na simulaci uspořádané do samostatných záložek, mezi nimiž lze libovolně přepínat. Úvodní záložka Porovnání poskytuje agregovaný přehled klíčových metrik obou čerpadel, jako jsou hodnota COP nebo celková roční spotřeba elektřiny. Zbylé dvě záložky nabízejí detailnější pohled na každé čerpadlo zvlášť, doplněný například o měsíční graf dodaného tepla či rozpis výroby podle potřeb jednotlivých místností.':
+    'The closing part of the scenario offers three views of the simulation, organized into separate tabs that you can switch between freely. The opening Comparison tab provides an aggregated overview of key metrics of both pumps, such as COP or total annual electricity consumption. The other two tabs offer a more detailed view of each pump separately, supplemented for example with a monthly chart of delivered heat or a breakdown of production by per-room demand.',
+
+  // ── Help / PED Optimizer steps ────────────────────────────────────
+  'Optimalizace oblasti pomocí PV a TČ': 'Area optimization with PV and HP',
+  'Optimalizační scénář, který na základě zadaného rozpočtu osadí oblast fotovoltaickými panely a tepelnými čerpadly ve třech porovnávaných variantách. První pokrývá oblast pouze fotovoltaickými panely, zbylé dvě k nim navíc doplní tepelné čerpadlo vzduch-voda, případně země-voda. Z roční bilance výroby a spotřeby se pro každou variantu vypočte, zda oblast dosahuje energetické pozitivity.':
+    'An optimization scenario that, based on the given budget, populates the area with PV panels and heat pumps in three compared variants. The first covers the area only with PV panels; the other two add an air-to-water or ground-to-water heat pump. From the annual production and consumption balance the energy positivity of each variant is computed.',
+  'Formulář pro nahrání vstupních dat. Scénář vyžaduje oba klíčové formáty: HBJSON (geometrie oblasti) a EPW (klimatická data lokality).':
+    'A form for uploading input data. The scenario requires both key formats: HBJSON (area geometry) and EPW (location climate data).',
+  'Pole stanovuje horní finanční hranici v Kč, do které je možné oblast osadit energetickými agenty. Hodnotu lze upravit šipkami nebo přímým zápisem.':
+    'The field sets the upper financial limit (in CZK) up to which the area can be populated with energy agents. The value can be adjusted with arrows or by typing.',
+  'Parametry simulace převzaté z předchozích optimalizačních scénářů. Setpoint vytápění, účinnost fotovoltaických panelů a typ jejich montáže.':
+    'Simulation parameters taken from the previous optimization scenarios. Heating setpoint, PV efficiency, and mount type.',
+  'Sekce umožňuje specifikovat pořizovací cenu jednotlivých energetických agentů.':
+    'This section lets you specify the purchase price of each energy agent.',
+  'Informační pruh': 'Info strip',
+  'Pruh uvádí název lokality načtené z hlavičky EPW souboru, počet místností a celkovou podlahovou plochu rozpoznané budovy, maximální počet panelů, jež by se vešly na její střechy, a zadaný investiční rozpočet.':
+    'The bar shows the location read from the EPW header, the number of rooms and total floor area of the detected building, the maximum number of panels that would fit on its roofs, and the entered investment budget.',
+  'Přehledové karty variant': 'Variant overview cards',
+  'Přehledové karty poskytují stručný pohled na všechny tři varianty.':
+    'The overview cards provide a brief view of all three variants.',
+  'Tabulka rozkládá celkovou roční spotřebu vybrané varianty na její dílčí složky.':
+    'The table breaks down the total annual consumption of the selected variant into its components.',
+  'Tabulka uvádí pro každý měsíc kalendářního roku spotřebu budovy, výrobu fotovoltaických panelů a jejich výslednou bilanci. Tento pohled umožňuje odhalit období, ve kterých některý z energetických agentů ztrácí na účinnosti, a otevírá tak prostor pro hledání alternativních řešení pro tato období.':
+    'For each calendar month the table shows the building consumption, the PV production, and the resulting balance. This view helps reveal periods in which an energy agent loses efficiency and opens space for alternative solutions in those periods.',
+
+  // ── Help / Solar Advanced steps ───────────────────────────────────
+  'Optimalizační scénář, který rozmístí solární panely na střechy identifikované ve vstupních HBJSON datech, a to v nejvyšším počtu, jaký geometrie střech, jejich sklon a orientace dovolují. Pro panely se následně vypočítá solární potenciál a odhadne potenciální roční výroby elektrické energie a vrátí se ty nejlepší.':
+    'An optimization scenario that arranges solar panels on the roofs identified in the input HBJSON data, in the largest count that roof geometry, tilt and orientation allow. The solar potential is then computed for each panel and the potential annual electricity production is estimated; the best ones are returned.',
+  'Formulář pro nahrání vstupních dat. Scénář vyžaduje oba klíčové formáty: HBJSON (geometrie obalsti) a EPW  (klimatické data lokality.':
+    'A form for uploading input data. The scenario requires both key formats: HBJSON (area geometry) and EPW (location climate data).',
+  'Pole určuje, kolik panelů s největším potenciálem výroby se uživateli zobrazí ve výsledcích. Hodnotu lze upravit šipkami nebo přímým zápisem.':
+    'The field sets how many panels with the largest production potential will be shown in the results. The value can be adjusted with arrows or by typing.',
+  'Rozbalovací sekce s dalšími parametry simulace. Účinnost panelu udává, jaký podíl dopadajícího slunečního záření se převede na elektrickou energii. Maximální sklon střechy slouží jako filtr ploch, které se mají do simulace zahrnout. Typ montáže rozlišuje mezi otevřenou konstrukci od střešní montáže.':
+    'A collapsible section with additional simulation parameters. Panel efficiency states what share of the incident solar radiation is converted to electricity. Maximum roof tilt serves as a filter of surfaces to include. Mount type distinguishes open-rack from roof-mounted.',
+  'Pruh s identifikací lokality načtené z hlavičky EPW souboru, počtem rozpoznaných střech, jejich celkovou plochou a maximálním počtem panelů, jež by se na ně vešly.':
+    'A bar with the location read from the EPW header, the number of detected roofs, their total area, and the maximum number of panels that would fit on them.',
+  'Souhrnné statistiky': 'Summary statistics',
+  'Charakteristiky vybrané skupiny solárních panelů. Roční výroba udává odhadovanou produkci elektrické energie, instalovaný výkon, celkovou rozlohu panelů na střechách a průměrný solární potenciál na jeden metr čtvereční vybraných panelů.':
+    'Characteristics of the selected group of solar panels. Annual production states the estimated electricity yield, the installed capacity, the total area of panels on the roofs, and the average solar potential per square meter of the selected panels.',
+  'Karta shrnuje parametry solárních panelů použitých v simulaci. Obsahuje například rozměry panelu,účinnost, typ montáže nebo celkové ztráty systému. Rozkliknutím Celkových ztrát se zobrazí jejich podrobný rozpis.':
+    'The card summarizes the parameters of the solar panels used in the simulation. It contains for example the panel dimensions, efficiency, mount type, and total system losses. Clicking on Total losses reveals a detailed breakdown.',
+  'Rozmístění solárních panelů': 'Solar panel layout',
+  '2D vizualizace střešních ploch z HBJSON dat společně s rozmístěním panelů, jež ze simulace vzešly jako ty s nejvyšším potenciálem výroby. Pro každou střechu vzniká samostatná karta. Při najetí kurzorem na konkrétní panel se zobrazí jeho atributy, například potenciál roční výroby nebo jeho souřadnice  na střeše.':
+    'A 2D visualization of the roof surfaces from the HBJSON data together with the placement of the panels selected by the simulation as having the highest production potential. A separate card is created for each roof. Hovering over a specific panel reveals its attributes, e.g. annual production potential or its coordinates on the roof.',
+  'Detail jednotlivých panelů': 'Individual panel details',
+  'Tabulka s informacemi o všech vybraných panelech, seřazená podle potenciálu roční výroby. U každého panelu je uvedena plocha, optimální sklon určený simulací a směr orientace. Závěr tvoří energetické parametry: roční solární potenciál, odhadovaná výroba a instalovaný výkon.':
+    'A table with information about every selected panel, sorted by annual production potential. For each panel the area, the optimal tilt determined by the simulation, and the azimuth direction are listed. Energy parameters round it out: annual solar potential, estimated production, and installed capacity.',
+
+  // ── Solar / PanelMapView extras ───────────────────────────────────
+  'Předchozí stránka': 'Previous page',
+  'Další stránka': 'Next page',
+  'plochá': 'flat',
+  'plurals.panel.one': 'panel',
+  'plurals.panel.few': 'panels',
+  'plurals.panel.many': 'panels',
+  'plurals.roof.one': 'roof',
+  'plurals.roof.few': 'roofs',
+  'plurals.roof.many': 'roofs',
+
+  // ── HBJSON Viewer extras ──────────────────────────────────────────
+  'Budovy': 'Buildings',
+
+  // ── Heatpump renamed bar tooltip keys ─────────────────────────────
+  '{{mo}}: teplo {{val}} kWh': '{{mo}}: heat {{val}} kWh',
+  '{{mo}}: chlad {{val}} kWh': '{{mo}}: cooling {{val}} kWh',
+  'kWh/rok': 'kWh/year',
+
+  // ── Sample data extras ────────────────────────────────────────────
+  'DWG CAD podklady': 'DWG CAD source files',
+  'Geometrické podklady reálné zástavby, ze kterých lze vygenerovat HBJSON model.':
+    'Geometric source data of real-world development from which an HBJSON model can be generated.',
+  'Soubor není k dispozici': 'File not available',
+
+  // ── AboutProject (shortened paragraphs) ───────────────────────────
+  'Tento projekt vznikl jako součást <strong>diplomové práce</strong> na <strong>Ostravské univerzitě</strong>.':
+    'This project was created as part of a <strong>master\'s thesis</strong> at the <strong>University of Ostrava</strong>.',
+  'Aplikace zpřístupňuje analytické funkce platformy <strong>Ladybug Tools</strong> uplatňované při analýze <strong>pozitivních energetických oblastí (PED)</strong>. Uživateli umožňuje spouštět vybrané Ladybug funkce <strong>bez nutnosti psaní kódu</strong> a bez vazby na placené prostředí <strong>Rhinoceros</strong>, čímž odstraňuje hlavní překážky širšího osvojení této platformy.':
+    'The application opens up the analytical features of the <strong>Ladybug Tools</strong> platform, which are used in the analysis of <strong>Positive Energy Districts (PED)</strong>. It lets users run selected Ladybug functions <strong>without writing any code</strong> and without being tied to the paid <strong>Rhinoceros</strong> environment, removing the main barriers to broader adoption of the platform.',
+  'Aplikace je postavena na architektuře <strong>klient–server</strong>. Klientská část je realizována pomocí knihovny <strong>React</strong> a jazyka <strong>TypeScript</strong>, serverová část v jazyce <strong>Python</strong> za využití frameworku <strong>FastAPI</strong>, který v rámci jednotlivých scénářů volá funkce knihovny <strong>Ladybug Tools</strong> doplněné o vlastní aplikační logiku.':
+    'The application is built on a <strong>client–server</strong> architecture. The client side is implemented with the <strong>React</strong> library and <strong>TypeScript</strong>; the server side is written in <strong>Python</strong> using the <strong>FastAPI</strong> framework, which, in the individual scenarios, calls the <strong>Ladybug Tools</strong> library functions augmented with custom application logic.',
+
+  // ── SampleData (shortened) ────────────────────────────────────────
+  'Stažitelné soubory pro vyzkoušení analytických scénářů bez nutnosti připravovat vlastní data.':
+    'Downloadable files for trying out the analysis scenarios without preparing your own data.',
+
+  // ── PED Optimizer ASCII month names (from backend variant_evaluator.py) ──
+  'Unor': 'February',
+  'Brezen': 'March',
+  'Kveten': 'May',
+  'Cerven': 'June',
+  'Cervenec': 'July',
+  'Zari': 'September',
+  'Rijen': 'October',
+
+  // ── Sample data file names ────────────────────────────────────────
+  'Nezateplená cihla': 'Uninsulated brick house',
+  'Lehce zateplený dům': 'Lightly insulated house',
+  'Dvoupatrový dům podle ČSN': 'Two-story house per ČSN standard',
+  'Zateplený dvoupatrový dům': 'Insulated two-story house',
+  'Zateplený dvoupatrový dům s terénem': 'Insulated two-story house with terrain',
+  'Pasivní dům': 'Passive house',
+  'Dvě nezateplené budovy': 'Two uninsulated buildings',
+  'Model oblasti Ostrava': 'Ostrava area model',
+  'Zateplený dům se sedlovou střechou': 'Insulated house with a gabled roof',
+  'Oblast Ostrava': 'Ostrava area',
+  'Ostrava-Mošnov (TMYx 2011–2025)': 'Ostrava-Mošnov (TMYx 2011–2025)',
+  'Ostrava-Mošnov (TMYx)': 'Ostrava-Mošnov (TMYx)',
+  'Ostrava (IWEC)': 'Ostrava (IWEC)',
+  'Praha (IWEC)': 'Prague (IWEC)',
+
+  // ── Sample data file descriptions ─────────────────────────────────
+  'Jednopatrový dům 8×9 m z plnopálené cihly 450 mm bez izolace (U ≈ 1.4), s 8 jednoduchými okny U = 5.0 a netěsným pláštěm.':
+    'Single-story house 8×9 m of solid 450 mm brick without insulation (U ≈ 1.4), with 8 single-glazed windows U = 5.0 and a leaky envelope.',
+  'Jednopatrový dům 12×8 m ze železobetonu s 50 mm EPS (U ≈ 0.55), s 8 dvojskelnými okny U = 2.4 a průměrnou těsností pláště.':
+    'Single-story reinforced-concrete house 12×8 m with 50 mm EPS (U ≈ 0.55), 8 double-glazed windows U = 2.4, and average envelope tightness.',
+  'Dvoupatrový dům 10×10 m podle aktuální normy ČSN 73 0540-2. Zateplený 120 mm EPS (U = 0.28), s 12 dvojskelnými okny low-e U = 1.1 a těsným pláštěm.':
+    'Two-story house 10×10 m per the current ČSN 73 0540-2 standard. Insulated with 120 mm EPS (U = 0.28), 12 double-glazed low-e windows U = 1.1, and a tight envelope.',
+  'Dvoupatrový dům 10×10 m se zateplenou obálkou (U = 0.28), s 12 dvojskelnými okny low-e a 4 tepelnými zónami. Základní model bez kontextu okolí.':
+    'Two-story house 10×10 m with an insulated envelope (U = 0.28), 12 double-glazed low-e windows, and 4 thermal zones. A basic model without surrounding context.',
+  'Stejný dvoupatrový zateplený dům doplněný o plochu terénu v okolí budovy pro realističtější vizualizaci modelu ve 3D náhledu.':
+    'The same insulated two-story house supplemented with a terrain area around the building for a more realistic visualization in the 3D view.',
+  'Jednopatrový dům 12×9 m s masivní izolací 300 mm EPS (U ≈ 0.10), s 8 trojskelnými okny U = 0.7 a velmi těsným pláštěm. Splňuje pasivní standard.':
+    'Single-story house 12×9 m with massive 300 mm EPS insulation (U ≈ 0.10), 8 triple-glazed windows U = 0.7, and a very tight envelope. It meets the passive standard.',
+  'Model dvou nezateplených budov s netěsným pláštěm a vysokou potřebou tepla.':
+    'A model of two uninsulated buildings with a leaky envelope and high heat demand.',
+  'HBJSON model části Ostravy vygenerovaný z CAD podkladu. Slouží jako příklad reálné zástavby pro PED analýzy.':
+    'An HBJSON model of part of Ostrava generated from CAD source data. It serves as an example of real-world development for PED analyses.',
+  'Dvoupatrový obdélníkový dům se sedlovou střechou tvořenou dvěma nakloněnými plochami. Zateplená obálka.':
+    'A two-story rectangular house with a gabled roof made of two inclined surfaces. Insulated envelope.',
+  'CAD podklad části Ostravy. Slouží jako vstup pro generování HBJSON modelu z reálné zástavby.':
+    'CAD source data for part of Ostrava. Used as input for generating an HBJSON model from real-world development.',
 };
 
 export default en_overrides;

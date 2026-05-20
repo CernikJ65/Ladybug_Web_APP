@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaInfoCircle, FaGraduationCap, FaUniversity, FaLightbulb } from 'react-icons/fa';
+import { FaInfoCircle, FaGraduationCap, FaLightbulb, FaLaptopCode } from 'react-icons/fa';
 import { useT } from '../../i18n/useT';
 
 const AboutProject: React.FC = () => {
@@ -17,7 +17,7 @@ const AboutProject: React.FC = () => {
             <p
               dangerouslySetInnerHTML={{
                 __html: t(
-                  'Tento projekt vznikl jako součást <strong>diplomové práce</strong> na <strong>Ostravské univerzitě</strong> v rámci programu <strong>STENEO</strong>, který se zaměřuje na výzkum a vývoj pozitivně energetických čtvrtí (Positive Energy Districts).',
+                  'Tento projekt vznikl jako součást <strong>diplomové práce</strong> na <strong>Ostravské univerzitě</strong>.',
                 ),
               }}
             />
@@ -28,18 +28,18 @@ const AboutProject: React.FC = () => {
             <p
               dangerouslySetInnerHTML={{
                 __html: t(
-                  'Cílem je <strong>zpřístupnit pokročilé nástroje Ladybug Tools</strong> širší veřejnosti bez nutnosti instalace, programování nebo složitého nastavení. Pomocí této webové platformy můžete provádět energetické analýzy budov, simulace slunečního záření, větrání a mnoho dalšího přímo ve vašem prohlížeči.',
+                  'Aplikace zpřístupňuje analytické funkce platformy <strong>Ladybug Tools</strong> uplatňované při analýze <strong>pozitivních energetických oblastí (PED)</strong>. Uživateli umožňuje spouštět vybrané Ladybug funkce <strong>bez nutnosti psaní kódu</strong> a bez vazby na placené prostředí <strong>Rhinoceros</strong>, čímž odstraňuje hlavní překážky širšího osvojení této platformy.',
                 ),
               }}
             />
           </div>
 
           <div>
-            <FaUniversity size={32} />
+            <FaLaptopCode size={32} />
             <p
               dangerouslySetInnerHTML={{
                 __html: t(
-                  'Platforma spojuje <strong>React frontend</strong> s výkonným <strong>FastAPI backendem</strong> a využívá Ladybug Tools knihovny pro přesné výpočty a vizualizace. Vše je navrženo s důrazem na uživatelskou přívětivost a dostupnost pro architekty, inženýry i studenty.',
+                  'Aplikace je postavena na architektuře <strong>klient–server</strong>. Klientská část je realizována pomocí knihovny <strong>React</strong> a jazyka <strong>TypeScript</strong>, serverová část v jazyce <strong>Python</strong> za využití frameworku <strong>FastAPI</strong>, který v rámci jednotlivých scénářů volá funkce knihovny <strong>Ladybug Tools</strong> doplněné o vlastní aplikační logiku.',
                 ),
               }}
             />

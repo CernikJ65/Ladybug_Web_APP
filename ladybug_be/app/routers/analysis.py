@@ -36,7 +36,7 @@ async def analyze_temperature(file: UploadFile = File(...)):
 
     try:
         from ladybug.epw import EPW
-        from ..services.temperature_analyzer import TemperatureAnalyzer
+        from ..services.epw.temperature_analyzer import TemperatureAnalyzer
 
         epw = EPW(tmp_path)
         loc = epw.location
@@ -73,7 +73,7 @@ async def analyze_sunpath(file: UploadFile = File(...)):
 
     try:
         from ladybug.epw import EPW
-        from ..services.sunpath_calculator import SunpathCalculator
+        from ..services.epw.sunpath_calculator import SunpathCalculator
 
         epw = EPW(tmp_path)
         loc = epw.location
@@ -110,7 +110,7 @@ async def analyze_wind_advanced(file: UploadFile = File(...)):
 
     try:
         from ladybug.epw import EPW
-        from ..services.wind_analyzer import WindAnalyzerAdvanced
+        from ..services.epw.wind_analyzer import WindAnalyzerAdvanced
 
         epw = EPW(tmp_path)
         loc = epw.location

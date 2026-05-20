@@ -7,7 +7,7 @@
  */
 import React, { useCallback, type ReactNode } from 'react';
 import {
-  FaSun, FaWind, FaChartLine,
+  FaSun,
   FaCube, FaSolarPanel, FaBalanceScale,
   FaFileImport,
   FaThermometerQuarter,
@@ -79,7 +79,7 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
          'Scénář simuluje potenciál výroby tepla, a chladu tepelných čerpadel a zároveň porovnává dva typy: vzduch-voda (ASHP) a země-voda (GSHP)',
        ),
        color: '#0891b2',
-       tags: ['VRF', 'WSHP', 'HVAC'],
+       tags: ['EnergyPlus', 'WSHP', 'HVAC'],
      },
     {
       id: 'ped-optimizer',

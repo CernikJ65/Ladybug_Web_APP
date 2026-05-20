@@ -2,6 +2,7 @@ import React, {
   useState, useEffect, useLayoutEffect, useRef,
 } from 'react';
 import { FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { useT } from '../../i18n/useT';
 import './HelpPanel.css';
 
 export interface TourStep {
@@ -100,6 +101,7 @@ const choosePlacement = (
 };
 
 const TourOverlay: React.FC<Props> = ({ isActive, onClose, steps }) => {
+  const t = useT();
   const [idx, setIdx] = useState(0);
   const [spot, setSpot] = useState<Rect | null>(null);
   const [tip, setTip] = useState<TipPos | null>(null);
@@ -278,9 +280,9 @@ const TourOverlay: React.FC<Props> = ({ isActive, onClose, steps }) => {
     return (
       <div className="tour-empty-wrap">
         <div className="tour-empty">
-          <p>Pro průvodce nejprve nahraj EPW soubor.</p>
+          <p>{t('Pro průvodce nejprve nahraj EPW soubor.')}</p>
           <button className="tour-btn primary" onClick={onClose} type="button">
-            Rozumím
+            {t('Rozumím')}
           </button>
         </div>
       </div>
@@ -328,26 +330,26 @@ const TourOverlay: React.FC<Props> = ({ isActive, onClose, steps }) => {
               {idx + 1}<span>/ {total}</span>
             </span>
             <button className="tour-close" onClick={onClose}
-              aria-label="Zavřít průvodce" type="button">
+              aria-label={t('Zavřít průvodce')} type="button">
               <FaTimes />
             </button>
           </div>
-          <h3 className="tour-title">{cur.title}</h3>
-          <p className="tour-body">{cur.body}</p>
+          <h3 className="tour-title">{t(cur.title)}</h3>
+          <p className="tour-body">{t(cur.body)}</p>
           <div className="tour-nav">
             <button className="tour-btn secondary" type="button"
               onClick={() => setIdx(i => Math.max(i - 1, 0))}
               disabled={idx === 0}>
-              <FaChevronLeft /> Zpět
+              <FaChevronLeft /> {t('Zpět')}
             </button>
             {idx === total - 1 ? (
               <button className="tour-btn primary" onClick={onClose} type="button">
-                Dokončit
+                {t('Dokončit')}
               </button>
             ) : (
               <button className="tour-btn primary" type="button"
                 onClick={() => setIdx(i => i + 1)}>
-                Další <FaChevronRight />
+                {t('Další')} <FaChevronRight />
               </button>
             )}
           </div>

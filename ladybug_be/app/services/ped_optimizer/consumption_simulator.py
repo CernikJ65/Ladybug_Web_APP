@@ -31,7 +31,7 @@ from ladybug.epw import EPW
 from .consumption_results_reader import (
     ConsumptionResultsReader, ALL_METERS, HEAT_OUT,
 )
-from ..pv_ep_runner import run_ep_with_progress
+from ..solar.pv_ep_runner import run_ep_with_progress
 
 logger = logging.getLogger(__name__)
 

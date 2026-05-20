@@ -1,11 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import {
-  FaSun, FaSpinner, FaArrowLeft, FaArrowRight, FaBolt,
-  FaBuilding, FaMapMarkerAlt, FaCog,
-  FaFile, FaCloudUploadAlt, FaCheckCircle, FaSolarPanel,
-  FaThList, FaRulerCombined, FaTimes,
-} from 'react-icons/fa';
-import PanelMapView, { type RoofMeta } from './PanelMapView';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FaArrowLeft } from 'react-icons/fa';
 import SimulationProgressOverlay from '../../common/SimulationProgressOverlay';
 import HelpButton from '../../help/HelpButton';
 import TourOverlay from '../../help/TourOverlay';
@@ -14,116 +8,19 @@ import { useSimulationProgress } from '../../../hooks/useSimulationProgress';
 import { useViewStateCache } from './../../../hooks/useViewStateCache';
 import { useSharedFiles } from './../../../context/SharedFilesContext';
 import { useT } from '../../../i18n/useT';
-import type { TFn } from '../../../i18n/useT';
+import SolarUploadCard from './SolarUploadCard';
+import SolarConfigCard from './SolarConfigCard';
+import SolarResultsView from './SolarResultsView';
+import { PV_EFF_DEFAULT } from './solarConstants';
+import type { AnalysisResult, CachedState } from './solarTypes';
 import './SolarAnalysisAdvanced.css';
-
-/* ───── Typy ───── */
-
-interface PanelResult {
-  id: number;
-  roof_id: string;
-  center: number[];
-  area_m2: number;
-  tilt: number;
-  azimuth: number;
-  radiation_kwh_m2: number;
-  annual_production_kwh: number;
-  capacity_kwp: number;
-}
-
-interface OptimizationResult {
-  num_panels: number;
-  total_production_kwh: number;
-  total_capacity_kwp: number;
-  total_area_m2: number;
-  avg_radiation_kwh_m2: number;
-  panels: PanelResult[];
-}
-
-interface SystemLosses {
-  age: number;
-  light_induced_degradation: number;
-  soiling: number;
-  snow: number;
-  manufacturer_nameplate_tolerance: number;
-  cell_characteristic_mismatch: number;
-  wiring: number;
-  electrical_connection: number;
-  grid_availability: number;
-  total: number;
-}
-
-interface AnalysisResult {
-  model_info: {
-    model_name: string;
-    total_roof_area_m2: number;
-    roof_count: number;
-    roof_surface_count?: number;
-  };
-  location: {
-    city: string;
-    latitude: number;
-    longitude: number;
-  };
-  optimal_orientation: {
-    tilt_degrees: number;
-    azimuth_degrees: number;
-    cardinal_direction?: string;
-  };
-  panel_config: {
-    pv_efficiency: number;
-    module_type: string;
-    mounting_type: string;
-    panel_width_m?: number;
-    panel_height_m?: number;
-    panel_area_m2?: number;
-    spacing_m?: number;
-    active_area_fraction?: number;
-    panel_age_years?: number;
-    system_losses?: SystemLosses;
-  };
-  simulation_engine: string;
-  roofs: RoofMeta[];
-  optimization: {
-    max_panels_available: number;
-    requested_count: number;
-    result: OptimizationResult;
-  };
-}
-
-interface CachedState {
-  hbjsonFile: File | null;
-  epwFile: File | null;
-  result: AnalysisResult | null;
-  error: string | null;
-  numPanels: number;
-  pvEff: number;
-  maxTilt: number;
-  mountType: string;
-}
 
 interface Props {
   onBack: () => void;
 }
 
-/* ───── Konfigurace účinnosti ───── */
-
-const PV_EFF_MIN = 19;
-const PV_EFF_MAX = 24;
-const PV_EFF_DEFAULT = 20;
-
-/* Inverter (DC→AC). EnergyPlus aplikuje samostatne mimo system_loss_fraction.
-   Defaultni honeybee/PVWatts hodnota = 0.96 → 4 % ztrata. */
-const INVERTER_LOSS = 0.04;
-
-/* ───── Komponenta ───── */
-
 const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const t = useT();
-  const MOUNT_TYPE_OPTIONS = [
-    { value: 'FixedOpenRack',    label: t('Otevřená konstrukce') },
-    { value: 'FixedRoofMounted', label: t('Střešní montáž') },
-  ];
   const [hbjsonFile, setHbjsonFile] = useState<File | null>(null);
   const [epwFile, setEpwFile]       = useState<File | null>(null);
   const [loading, setLoading]       = useState(false);
@@ -134,7 +31,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
   const [maxTilt, setMaxTilt]       = useState(60);
   const [mountType, setMountType]   = useState('FixedOpenRack');
   const [jobId, setJobId]           = useState<string | null>(null);
-  const [lossesOpen, setLossesOpen] = useState(false);
   const [tourOpen, setTourOpen]     = useState(false);
 
   const progress = useSimulationProgress(loading ? jobId : null);
@@ -214,43 +110,7 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
     }
   };
 
-  const fmt = (n: number) =>
-    n.toLocaleString('cs-CZ', { maximumFractionDigits: 0 });
-
-  const pct = (v: number | undefined) =>
-    v === undefined || v === null ? '—' : `${(v * 100).toFixed(1)} %`;
-
-  /* Kombinovana ztrata (system + inverter) — multiplikativne. */
-  const combinedLossValue = (systemTotal: number | undefined): number | undefined => {
-    if (systemTotal === undefined || systemTotal === null) return undefined;
-    return 1 - (1 - systemTotal) * (1 - INVERTER_LOSS);
-  };
-
   const sel = result ? result.optimization.result : null;
-
-  const mountLabel = (v: string) => {
-    switch (v) {
-      case 'FixedOpenRack': return t('Otevřená konstrukce');
-      case 'FixedRoofMounted': return t('Střešní montáž');
-      default: return v;
-    }
-  };
-
-  const cardinalLabel = (v: string | undefined): string => {
-    if (!v) return '';
-    const map: Record<string, string> = {
-      North: t('sever'),
-      'North-East': t('severovýchod'),
-      East: t('východ'),
-      'South-East': t('jihovýchod'),
-      South: t('jih'),
-      'South-West': t('jihozápad'),
-      West: t('západ'),
-      'North-West': t('severozápad'),
-      Horizontal: t('vodorovně'),
-    };
-    return map[v] ?? v;
-  };
 
   return (
     <div className="saa-page">
@@ -278,562 +138,42 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
         </p>
       </header>
 
-      {/* Formulář */}
       <div className="saa-form-wrap">
-        <div className="saa-card">
-          <div className="saa-card-head">
-            <span className="saa-card-icon"><FaCloudUploadAlt /></span>
-            <div>
-              <h2>{t('Vstupní soubory')}</h2>
-              <p className="saa-card-sub">{t('Nahrajte model budovy a klimatická data')}</p>
-            </div>
-          </div>
-          <div className="saa-upload-grid">
-            <FileBox
-              id="hbjson"
-              label={t('HBJSON model')}
-              sub={t('Geometrie budovy (.hbjson)')}
-              file={hbjsonFile}
-              accept=".hbjson,.json"
-              onChange={handleFileChange(setHbjsonFile, sharedFiles.setHbjson)}
-              icon={<FaFile />}
-              t={t}
-            />
-            <FileBox
-              id="epw"
-              label={t('EPW soubor')}
-              sub={t('Klimatická data (.epw)')}
-              file={epwFile}
-              accept=".epw"
-              onChange={handleFileChange(setEpwFile, sharedFiles.setEpw)}
-              icon={<FaCloudUploadAlt />}
-              t={t}
-            />
-          </div>
-        </div>
+        <SolarUploadCard
+          hbjsonFile={hbjsonFile}
+          epwFile={epwFile}
+          onHbjsonChange={handleFileChange(setHbjsonFile, sharedFiles.setHbjson)}
+          onEpwChange={handleFileChange(setEpwFile, sharedFiles.setEpw)}
+          t={t}
+        />
 
-        <div className="saa-card saa-config-card">
-          <div className="saa-card-head">
-            <span className="saa-card-icon"><FaSolarPanel /></span>
-            <div>
-              <h2>{t('Konfigurace simulace')}</h2>
-              <p className="saa-card-sub">{t('Počet panelů a parametry simulace')}</p>
-            </div>
-          </div>
-
-          <div className="saa-stepper">
-            <span className="saa-stepper-label"><FaSolarPanel /> {t('Počet panelů')}</span>
-            <div className="saa-stepper-control">
-              <button
-                type="button"
-                className="saa-stepper-btn"
-                onClick={() => setNumPanels(p => Math.max(1, p - 1))}
-              >−</button>
-              <input
-                type="number"
-                className="saa-stepper-val"
-                min={1}
-                max={500}
-                value={numPanels}
-                onChange={e => setNumPanels(Math.max(1, +e.target.value))}
-              />
-              <button
-                type="button"
-                className="saa-stepper-btn"
-                onClick={() => setNumPanels(p => Math.min(500, p + 1))}
-              >+</button>
-            </div>
-          </div>
-
-          <details className="saa-params">
-            <summary><FaCog /> {t('Pokročilé parametry')}</summary>
-            <div className="saa-params-body">
-              <Slider
-                label={t('Účinnost panelu')}
-                value={pvEff}
-                min={PV_EFF_MIN}
-                max={PV_EFF_MAX}
-                unit="%"
-                hint=""
-                onChange={setPvEff}
-              />
-              <Slider
-                label={t('Maximální sklon střechy')}
-                value={maxTilt}
-                min={30}
-                max={90}
-                unit="°"
-                hint={t('Plochy nad tímto sklonem se přeskočí')}
-                onChange={setMaxTilt}
-              />
-              <div className="saa-select-row">
-                <label>{t('Typ montáže')}</label>
-                <AppleSelect
-                  value={mountType}
-                  options={MOUNT_TYPE_OPTIONS}
-                  onChange={setMountType}
-                  ariaLabel={t('Typ montáže')}
-                />
-              </div>
-            </div>
-          </details>
-
-          <button
-            onClick={run}
-            disabled={loading || !hbjsonFile || !epwFile}
-            className="saa-run"
-          >
-            <span className="saa-run-mark">
-              {loading ? <FaSpinner className="saa-spin" /> : <FaSun />}
-            </span>
-            <span className="saa-run-copy">
-              {loading ? t('Počítám pvlib + Radiance…') : t('Spustit optimalizaci')}
-            </span>
-            {!loading && <FaArrowRight className="saa-run-arrow" />}
-          </button>
-        </div>
+        <SolarConfigCard
+          numPanels={numPanels}
+          pvEff={pvEff}
+          maxTilt={maxTilt}
+          mountType={mountType}
+          loading={loading}
+          disabled={loading || !hbjsonFile || !epwFile}
+          onNumPanelsChange={setNumPanels}
+          onPvEffChange={setPvEff}
+          onMaxTiltChange={setMaxTilt}
+          onMountTypeChange={setMountType}
+          onRun={run}
+          t={t}
+        />
       </div>
 
-      {/* Chyba */}
       {error && (
         <div className="saa-error">
           <strong>{t('Chyba:')}</strong> {error}
         </div>
       )}
 
-      {/* Výsledky */}
       {result && sel && (
-        <div className="saa-results">
-
-          <div className="saa-info-strip">
-            <div className="saa-info-chip">
-              <FaMapMarkerAlt />
-              <span>{result.location.city} ({result.location.latitude.toFixed(1)}° N)</span>
-            </div>
-            <div className="saa-info-chip">
-              <FaBuilding />
-              <span>
-                {result.model_info.roof_count} {result.model_info.roof_count === 1 ? t('střecha') : t('střech')}
-                {result.model_info.roof_surface_count && result.model_info.roof_surface_count !== result.model_info.roof_count
-                  ? ` (${result.model_info.roof_surface_count} ${t('ploch')})`
-                  : ''}
-                {' · '}{result.model_info.total_roof_area_m2.toFixed(0)} m²
-              </span>
-            </div>
-            <div className="saa-info-chip">
-              <FaSolarPanel />
-              <span>{t('Max')} {result.optimization.max_panels_available} {t('panelů')}</span>
-            </div>
-            
-             
-          
-          </div>
-
-          {/* KPI metriky */}
-          <div className="saa-kpi-row">
-            <KPI icon={<FaBolt />} value={`${fmt(sel.total_production_kwh)} kWh`} label={t('Roční výroba')} accent />
-            <KPI icon={<FaSolarPanel />} value={`${sel.total_capacity_kwp.toFixed(2)} kWp`} label={t('Instalovaný výkon')} />
-            <KPI icon={<FaRulerCombined />} value={`${sel.total_area_m2.toFixed(1)} m²`} label={t('Plocha panelů')} />
-            <KPI icon={<FaSun />} value={`${sel.avg_radiation_kwh_m2.toFixed(0)} kWh/m²`} label={t('Solární potenciál')} />
-          </div>
-
-          {/* Detail karty + mapa */}
-          <div className="saa-detail-grid">
-            <div className="saa-card">
-              <div className="saa-card-head">
-                <span className="saa-card-icon"><FaCog /></span>
-                <div>
-                  <h2>{t('Parametry panelů')}</h2>
-                  <p className="saa-card-sub">{t('Konfigurace FV instalace')}</p>
-                </div>
-              </div>
-              <div className="saa-detail-rows">
-                {/* Modul a montáž */}
-                <DetailRow label={t('Typ montáže')} value={mountLabel(result.panel_config.mounting_type)} />
-                <DetailRow label={t('Účinnost FV')} value={`${(result.panel_config.pv_efficiency * 100).toFixed(0)} %`} />
-
-                {/* Geometrie */}
-                {result.panel_config.panel_width_m !== undefined && result.panel_config.panel_height_m !== undefined && (
-                  <DetailRow
-                    label={t('Rozměry panelu')}
-                    value={`${result.panel_config.panel_width_m} × ${result.panel_config.panel_height_m} m`}
-                  />
-                )}
-                {result.panel_config.panel_area_m2 !== undefined && (
-                  <DetailRow label={t('Plocha panelu')} value={`${result.panel_config.panel_area_m2} m²`} />
-                )}
-                {result.panel_config.active_area_fraction !== undefined && (
-                  <DetailRow
-                    label={t('Aktivní plocha')}
-                    value={`${(result.panel_config.active_area_fraction * 100).toFixed(0)} %`}
-                  />
-                )}
-                {result.panel_config.spacing_m !== undefined && (
-                  <DetailRow label={t('Mezera mezi panely')} value={`${result.panel_config.spacing_m} m`} />
-                )}
-
-                {/* Stáří */}
-                {result.panel_config.panel_age_years !== undefined && (
-                  <DetailRow label={t('Stáří systému')} value={`${result.panel_config.panel_age_years} ${t('let')}`} />
-                )}
-
-                {/* Orientace */}
-                <DetailRow label={t('Optimální sklon')} value={`${result.optimal_orientation.tilt_degrees.toFixed(1)}°`} />
-                <DetailRow
-                  label={t('Optimální směr natočení')}
-                  value={
-                    result.optimal_orientation.cardinal_direction
-                      ? `${result.optimal_orientation.azimuth_degrees.toFixed(0)}° (${cardinalLabel(result.optimal_orientation.cardinal_direction)})`
-                      : `${result.optimal_orientation.azimuth_degrees.toFixed(0)}°`
-                  }
-                />
-
-                {/* Celkové ztráty — rozbalovací sekce */}
-                {result.panel_config.system_losses && (
-                  <div className={`saa-losses ${lossesOpen ? 'open' : ''}`}>
-                    <button
-                      type="button"
-                      className="saa-losses-header"
-                      onClick={() => setLossesOpen(o => !o)}
-                      aria-expanded={lossesOpen}
-                    >
-                      <span className="saa-losses-label">{t('Celkové ztráty')}</span>
-                      <span className="saa-losses-meta">
-                        <strong>{pct(combinedLossValue(result.panel_config.system_losses.total))}</strong>
-                        <span className="saa-losses-chev" aria-hidden="true" />
-                      </span>
-                    </button>
-
-                    <div className="saa-losses-body">
-                      <div className="saa-losses-section">
-                        <div className="saa-losses-section-title">{t('Komponenty systému')}</div>
-                        <SubRow label={t('Degradace stárnutím')} value={pct(result.panel_config.system_losses.age)} />
-                        <SubRow label={t('Počáteční pokles výkonu (do stabilizace)')} value={pct(result.panel_config.system_losses.light_induced_degradation)} />
-                        <SubRow label={t('Znečištění panelu')} value={pct(result.panel_config.system_losses.soiling)} />
-                        <SubRow label={t('Sníh')} value={pct(result.panel_config.system_losses.snow)} />
-                        <SubRow label={t('Odchylka výrobce')} value={pct(result.panel_config.system_losses.manufacturer_nameplate_tolerance)} />
-                        <SubRow label={t('Nesoulad mezi moduly')} value={pct(result.panel_config.system_losses.cell_characteristic_mismatch)} />
-                        <SubRow label={t('Ztráty ve vedení (například kabely)')} value={pct(result.panel_config.system_losses.wiring)} />
-                        <SubRow label={t('Elektrické konektory (například odpor)')} value={pct(result.panel_config.system_losses.electrical_connection)} />
-                        <SubRow label={t('Dostupnost sítě (výpadky)')} value={pct(result.panel_config.system_losses.grid_availability)} />
-                        <SubRow label={t('Systémové ztráty (dílčí součet)')} value={pct(result.panel_config.system_losses.total)} emphasized />
-                      </div>
-
-                      <div className="saa-losses-section">
-                        <div className="saa-losses-section-title">{t('Panel vyrábí stejnosměrný proud (DC), ale domácnost a síť používají hlavně střídavý proud')}</div>
-                        <SubRow label={t('Ztráta při převodu DC/AC')} value={pct(INVERTER_LOSS)} emphasized />
-                      </div>
-
-                      <p className="saa-losses-note">
-                        {t('Celkové ztráty se kombinují multiplikativně, nikoliv prostým součtem.')}
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <PanelMapView
-              panels={sel.panels}
-              roofs={result.roofs}
-              panelOrder={new Map(sel.panels.map((p, i) => [p.id, i + 1]))}
-            />
-          </div>
-
-          {/* Tabulka panelů */}
-          <div className="saa-card">
-            <div className="saa-card-head">
-              <span className="saa-card-icon"><FaThList /></span>
-              <div>
-                <h2>{t('Detail panelů ({{n}} ks)', { n: sel.num_panels })}</h2>
-                <p className="saa-card-sub">{t('Seřazeno dle roční výroby od nejlepšího')}</p>
-              </div>
-            </div>
-            <div className="saa-table-wrap">
-              <table className="saa-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>{t('Střecha')}</th>
-                    <th>{t('Plocha')}</th>
-                    <th>{t('Sklon')}</th>
-                    <th>{t('Směr')}</th>
-                    <th title={t('Stíněná POA z Radiance (SkyMatrix ray tracing, stínění od budovy)')}>{t('Sol. pot. (Radiance)')}</th>
-                    <th>{t('Výroba')}</th>
-                    <th>{t('Instalovaný výkon')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sel.panels.map((p, i) => (
-                    <tr key={p.id}>
-                      <td>{i + 1}</td>
-                      <td className="td-left">{p.roof_id}</td>
-                      <td>{p.area_m2} m²</td>
-                      <td>{p.tilt.toFixed(1)}°</td>
-                      <td>{p.azimuth.toFixed(0)}°</td>
-                      <td className="val-hl">{p.radiation_kwh_m2.toFixed(0)} kWh/m²</td>
-                      <td className="val-hl">{p.annual_production_kwh.toFixed(0)} kWh</td>
-                      <td>{p.capacity_kwp.toFixed(3)} kWp</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <SolarResultsView result={result} sel={sel} t={t} />
       )}
     </div>
   );
 };
-
-/* ───── Subkomponenty ───── */
-
-function FileBox({
-  id, label, sub, file, accept, onChange, icon, t,
-}: {
-  id: string;
-  label: string;
-  sub: string;
-  file: File | null;
-  accept: string;
-  onChange: (f: File | null) => void;
-  icon: React.ReactNode;
-  t: TFn;
-}) {
-  const handleClear = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onChange(null);
-    const input = document.getElementById(`saa-${id}`) as HTMLInputElement | null;
-    if (input) input.value = '';
-  };
-
-  return (
-    <div className={`saa-file-box ${file ? 'has-file' : ''}`}>
-      <label htmlFor={`saa-${id}`}>
-        <div className="saa-file-inner">
-          <div className="saa-file-icon">{icon}</div>
-          <div>
-            <h4>{label}</h4>
-            <p>{sub}</p>
-          </div>
-        </div>
-        <input
-          id={`saa-${id}`}
-          type="file"
-          accept={accept}
-          style={{ display: 'none' }}
-          onChange={e => e.target.files?.[0] && onChange(e.target.files[0])}
-        />
-        {file && (
-          <div className="saa-file-ok">
-            <FaCheckCircle /> {file.name}
-            <button
-              type="button"
-              className="saa-file-clear"
-              onClick={handleClear}
-              aria-label={t('Odstranit soubor')}
-              title={t('Odstranit soubor')}
-            >
-              <FaTimes />
-            </button>
-          </div>
-        )}
-      </label>
-    </div>
-  );
-}
-
-function Slider({
-  label, value, min, max, unit, hint, onChange,
-}: {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  unit: string;
-  hint: string;
-  onChange: (v: number) => void;
-}) {
-  const pct = ((value - min) / (max - min)) * 100;
-
-  return (
-    <div className="saa-slider">
-      <label>
-        <span>{label}</span>
-        <span className="saa-slider-val">{value}{unit}</span>
-      </label>
-      <div className="saa-slider-wrap">
-        <div className="saa-slider-track">
-          <div className="saa-slider-fill" style={{ width: `${pct}%` }} />
-          <input
-            type="range"
-            min={min}
-            max={max}
-            value={value}
-            onChange={e => onChange(+e.target.value)}
-          />
-        </div>
-      </div>
-      <p className="saa-slider-hint">{hint}</p>
-    </div>
-  );
-}
-
-function KPI({
-  icon, value, label, accent,
-}: {
-  icon: React.ReactNode;
-  value: string;
-  label: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className={`saa-kpi ${accent ? 'saa-kpi-accent' : ''}`}>
-      <span className="saa-kpi-icon">{icon}</span>
-      <span className="saa-kpi-val">{value}</span>
-      <span className="saa-kpi-lbl">{label}</span>
-    </div>
-  );
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="saa-detail-row">
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-function SubRow({ label, value, emphasized }: { label: string; value: string; emphasized?: boolean }) {
-  return (
-    <div className={`saa-sub-row ${emphasized ? 'emphasized' : ''}`}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-/* ───── AppleSelect — custom dropdown (iOS/macOS inspirovaný) ───── */
-
-interface AppleSelectOption {
-  value: string;
-  label: string;
-}
-
-function AppleSelect({
-  value,
-  options,
-  onChange,
-  ariaLabel,
-}: {
-  value: string;
-  options: AppleSelectOption[];
-  onChange: (v: string) => void;
-  ariaLabel?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLUListElement>(null);
-
-  const current = options.find(o => o.value === value) ?? options[0];
-  const currentIdx = options.findIndex(o => o.value === value);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        setOpen(false);
-      } else if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        setActiveIdx(i => Math.min(options.length - 1, i + 1));
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        setActiveIdx(i => Math.max(0, i - 1));
-      } else if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const opt = options[activeIdx];
-        if (opt) {
-          onChange(opt.value);
-          setOpen(false);
-        }
-      }
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [open, activeIdx, options, onChange]);
-
-  useEffect(() => {
-    if (!open || !menuRef.current) return;
-    const active = menuRef.current.querySelector<HTMLLIElement>('.saa-asel-opt.active');
-    if (active) {
-      active.scrollIntoView({ block: 'nearest' });
-    }
-  }, [open, activeIdx]);
-
-  const toggleOpen = () => {
-    if (!open) setActiveIdx(currentIdx >= 0 ? currentIdx : 0);
-    setOpen(o => !o);
-  };
-
-  return (
-    <div ref={wrapRef} className={`saa-asel ${open ? 'open' : ''}`}>
-      <button
-        type="button"
-        className="saa-asel-trigger"
-        onClick={toggleOpen}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={ariaLabel}
-      >
-        <span className="saa-asel-val">{current.label}</span>
-        <span className="saa-asel-chev" aria-hidden="true" />
-      </button>
-
-      {open && (
-        <ul ref={menuRef} className="saa-asel-menu" role="listbox">
-          {options.map((opt, idx) => {
-            const isSel = opt.value === value;
-            const isActive = idx === activeIdx;
-            return (
-              <li
-                key={opt.value}
-                role="option"
-                aria-selected={isSel}
-                className={
-                  `saa-asel-opt` +
-                  (isSel ? ' sel' : '') +
-                  (isActive ? ' active' : '')
-                }
-                onMouseEnter={() => setActiveIdx(idx)}
-                onClick={() => {
-                  onChange(opt.value);
-                  setOpen(false);
-                }}
-              >
-                <span className="saa-asel-opt-label">{opt.label}</span>
-                {isSel && <span className="saa-asel-check" aria-hidden="true" />}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
-  );
-}
 
 export default SolarAnalysisAdvanced;

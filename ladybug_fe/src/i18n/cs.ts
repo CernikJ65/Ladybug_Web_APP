@@ -1,13 +1,13 @@
 export default {
   navbar: {
-    logo: 'Ladybug Web',
+    logo: 'PED Ladybug Web Tools',
     features: 'Analytické scénáře',
     samples: 'Ukázková data',
     about: 'O projektu',
     login: 'Přihlásit se',
   },
   hero: {
-    badge: 'Ladybug Tools Web Platform',
+    badge: 'PED Ladybug Web Tools',
     title: 'PED analýzy nad Ladybug Tools',
     titleHighlight: 've webovém prostředí',
     description:

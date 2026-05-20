@@ -29,9 +29,9 @@ import pvlib
 
 from honeybee_energy.generator.pv import PVProperties
 
-from ..panel_placer import PanelPosition
-from ..pvlib_calculator import infer_module_type
-from ..pvlib_weather import load_epw_weather, poa_hourly_shape
+from ..solar.panel_placer import PanelPosition
+from ..solar.pvlib_calculator import infer_module_type
+from ..solar.pvlib_weather import load_epw_weather, poa_hourly_shape
 
 # Stejne tabulky jako PVLibCalculator — vyhybame se duplicite chovani.
 _PVWATTS_GAMMA_BY_MODULE = {

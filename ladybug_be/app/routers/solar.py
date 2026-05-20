@@ -10,7 +10,7 @@ from typing import Optional
 import tempfile
 import os
 
-from ..services.progress import registry
+from ..services.shared.progress import registry
 from .solar_pipeline import run_solar_pipeline
 
 router = APIRouter()

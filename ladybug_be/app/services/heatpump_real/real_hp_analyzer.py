@@ -20,8 +20,8 @@ from typing import Dict, Any, Optional, List
 
 from .real_hp_model_preparer import RealHPModelPreparer
 from .real_hp_simulator import RealHPSimulator
-from ..epw_climate_extractor import EPWClimateExtractor
-from ..progress import report_progress
+from ..epw.epw_climate_extractor import EPWClimateExtractor
+from ..shared.progress import report_progress
 
 
 class RealHPAnalyzer:

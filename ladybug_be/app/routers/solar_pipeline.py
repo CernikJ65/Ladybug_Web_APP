@@ -19,7 +19,7 @@ from typing import Optional
 
 from fastapi import HTTPException
 
-from ..services.progress import progress_scope, report_progress
+from ..services.shared.progress import progress_scope, report_progress
 from .solar_response import build_response
 
 
@@ -37,12 +37,12 @@ def run_solar_pipeline(
     job_id: Optional[str],
 ) -> dict:
     """Hlavní orchestrace — běží synchronně v threadpoolu."""
-    from ..services.roof_detector import RoofDetector
-    from ..services.panel_placer import PanelPlacer
-    from ..services.solar_calculator import SolarRadiationCalculator
-    from ..services.panel_optimizer import PanelOptimizer
-    from ..services.tilt_optimizer import TiltOptimizer
-    from ..services.pvlib_calculator import PVLibCalculator
+    from ..services.solar.roof_detector import RoofDetector
+    from ..services.solar.panel_placer import PanelPlacer
+    from ..services.solar.solar_calculator import SolarRadiationCalculator
+    from ..services.solar.panel_optimizer import PanelOptimizer
+    from ..services.solar.tilt_optimizer import TiltOptimizer
+    from ..services.solar.pvlib_calculator import PVLibCalculator
 
     with progress_scope(job_id):
         report_progress("init", 2)

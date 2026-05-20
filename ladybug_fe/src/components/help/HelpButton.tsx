@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaRegCompass } from 'react-icons/fa';
+import { useT } from '../../i18n/useT';
 import './HelpPanel.css';
 
 interface Props {
@@ -11,17 +12,19 @@ interface Props {
  * Spouštěcí pilulka nápovědy.
  * Plovoucí v pravém horním rohu. Amber ring se zapne při hoveru.
  */
-const HelpButton: React.FC<Props> = ({ onClick, label = 'Průvodce' }) => {
+const HelpButton: React.FC<Props> = ({ onClick, label }) => {
+  const t = useT();
+  const displayLabel = label ?? t('Průvodce');
   return (
     <button
       type="button"
       className="help-trigger"
       onClick={onClick}
-      aria-label={label}
-      title={label}
+      aria-label={displayLabel}
+      title={displayLabel}
     >
       <FaRegCompass />
-      <span>{label}</span>
+      <span>{displayLabel}</span>
     </button>
   );
 };

@@ -3,7 +3,7 @@ import time
 
 from fastapi import APIRouter
 
-from ..services.progress import registry
+from ..services.shared.progress import registry
 
 router = APIRouter()
 

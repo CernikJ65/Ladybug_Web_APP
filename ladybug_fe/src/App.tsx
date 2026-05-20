@@ -71,14 +71,14 @@ const viewToHash: Record<ViewType, string> = {
   samples: 'samples',
 };
 const viewTitles: Record<ViewType, { cs: string; en: string }> = {
-  landing:          { cs: 'Ladybug Web',                                en: 'Ladybug Web' },
-  solar:            { cs: 'Analýza EPW – Ladybug Web',                  en: 'EPW Analysis – Ladybug Web' },
-  'solar-advanced': { cs: 'Pokročilá solární analýza – Ladybug Web',    en: 'Advanced Solar Analysis – Ladybug Web' },
-  hbjson:           { cs: '3D Vizualizace – Ladybug Web',               en: '3D Visualization – Ladybug Web' },
-  'heatpump-real':  { cs: 'Celoroční simulace TČ – Ladybug Web',       en: 'Year-Round HP Simulation – Ladybug Web' },
-  'ped-optimizer':  { cs: 'PED optimalizátor – Ladybug Web',            en: 'PED Optimizer – Ladybug Web' },
-  converter:        { cs: 'CAD Konvertor – Ladybug Web',                en: 'CAD Converter – Ladybug Web' },
-  samples:          { cs: 'Ukázková data – Ladybug Web',                en: 'Sample Data – Ladybug Web' },
+  landing:          { cs: 'PED Ladybug Web Tools',                                en: 'PED Ladybug Web Tools' },
+  solar:            { cs: 'Analýza EPW – PED Ladybug Web Tools',                  en: 'EPW Analysis – PED Ladybug Web Tools' },
+  'solar-advanced': { cs: 'Pokročilá solární analýza – PED Ladybug Web Tools',    en: 'Advanced Solar Analysis – PED Ladybug Web Tools' },
+  hbjson:           { cs: '3D Vizualizace – PED Ladybug Web Tools',               en: '3D Visualization – PED Ladybug Web Tools' },
+  'heatpump-real':  { cs: 'Celoroční simulace TČ – PED Ladybug Web Tools',       en: 'Year-Round HP Simulation – PED Ladybug Web Tools' },
+  'ped-optimizer':  { cs: 'PED optimalizátor – PED Ladybug Web Tools',            en: 'PED Optimizer – PED Ladybug Web Tools' },
+  converter:        { cs: 'CAD Konvertor – PED Ladybug Web Tools',                en: 'CAD Converter – PED Ladybug Web Tools' },
+  samples:          { cs: 'Ukázková data – PED Ladybug Web Tools',                en: 'Sample Data – PED Ladybug Web Tools' },
 };
 
 function getHash(): string {

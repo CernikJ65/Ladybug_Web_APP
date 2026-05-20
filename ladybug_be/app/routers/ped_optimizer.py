@@ -23,7 +23,7 @@ from typing import Optional
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.concurrency import run_in_threadpool
 
-from ..services.progress import progress_scope, registry
+from ..services.shared.progress import progress_scope, registry
 
 router = APIRouter()
 

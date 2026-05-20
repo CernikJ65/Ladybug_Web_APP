@@ -20,7 +20,7 @@ from __future__ import annotations
 from typing import Dict, Any, List, Optional, Tuple, Callable
 
 from ..heatpump_real.real_hp_model_preparer import RealHPModelPreparer
-from ..progress import report_progress
+from ..shared.progress import report_progress
 
 from .variant_planner import Variant, ASHP_PANELS, GSHP_PANELS
 from .consumption_simulator import ConsumptionSimulator

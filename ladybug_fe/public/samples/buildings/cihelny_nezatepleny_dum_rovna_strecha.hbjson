@@ -1,0 +1,1712 @@
+{
+  "type": "Model",
+  "identifier": "CR_Cihelny_1970",
+  "display_name": "Stary cihelny RD 8x9m, 1 patro, nezatepleny",
+  "units": "Meters",
+  "properties": {
+    "type": "ModelProperties",
+    "energy": {
+      "type": "ModelEnergyProperties",
+      "construction_sets": [
+        {
+          "type": "ConstructionSetAbridged",
+          "identifier": "Set70",
+          "wall_set": {
+            "type": "WallConstructionSetAbridged",
+            "exterior_construction": "C70_Wall",
+            "interior_construction": "C70_IntWall",
+            "ground_construction": "C70_Wall"
+          },
+          "floor_set": {
+            "type": "FloorConstructionSetAbridged",
+            "ground_construction": "C70_Floor",
+            "interior_construction": "C70_IntFloor",
+            "exterior_construction": "C70_Floor"
+          },
+          "roof_ceiling_set": {
+            "type": "RoofCeilingConstructionSetAbridged",
+            "exterior_construction": "C70_Roof",
+            "interior_construction": "C70_IntFloor",
+            "ground_construction": "C70_Roof"
+          },
+          "aperture_set": {
+            "type": "ApertureConstructionSetAbridged",
+            "window_construction": "C70_Win",
+            "interior_construction": "C70_Win",
+            "skylight_construction": "C70_Win",
+            "operable_construction": "C70_Win"
+          }
+        }
+      ],
+      "constructions": [
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "C70_Wall",
+          "display_name": "Stena plnopalena cihla 450 (U~1.40)",
+          "materials": [
+            "M70_Cihla_450"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "C70_Roof",
+          "display_name": "Strecha drevena bez izolace (U~0.90)",
+          "materials": [
+            "M70_Strop_Drevo"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "C70_Floor",
+          "display_name": "Beton na zemine (U~1.20)",
+          "materials": [
+            "M70_Beton_120"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "C70_IntWall",
+          "display_name": "Vnitrni cihelna pricka",
+          "materials": [
+            "M70_IntCihla"
+          ]
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "identifier": "C70_IntFloor",
+          "display_name": "Vnitrni drevena podlaha",
+          "materials": [
+            "M70_Strop_Drevo"
+          ]
+        },
+        {
+          "type": "WindowConstructionAbridged",
+          "identifier": "C70_Win",
+          "display_name": "Jednoduche sklo U=5.0 g=0.85",
+          "materials": [
+            "M70_Jednosklo"
+          ]
+        }
+      ],
+      "materials": [
+        {
+          "type": "EnergyMaterial",
+          "identifier": "M70_Cihla_450",
+          "roughness": "MediumRough",
+          "thickness": 0.45,
+          "conductivity": 0.78,
+          "density": 1700,
+          "specific_heat": 900,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "M70_Strop_Drevo",
+          "roughness": "MediumRough",
+          "thickness": 0.2,
+          "conductivity": 0.18,
+          "density": 600,
+          "specific_heat": 1600,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.6,
+          "visible_absorptance": 0.6
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "M70_Beton_120",
+          "roughness": "MediumRough",
+          "thickness": 0.12,
+          "conductivity": 1.3,
+          "density": 2200,
+          "specific_heat": 880,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.6,
+          "visible_absorptance": 0.6
+        },
+        {
+          "type": "EnergyMaterial",
+          "identifier": "M70_IntCihla",
+          "roughness": "MediumRough",
+          "thickness": 0.12,
+          "conductivity": 0.36,
+          "density": 900,
+          "specific_heat": 900,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7
+        },
+        {
+          "type": "EnergyWindowMaterialSimpleGlazSys",
+          "identifier": "M70_Jednosklo",
+          "u_factor": 5.0,
+          "shgc": 0.85,
+          "vt": 0.85
+        }
+      ],
+      "hvacs": [],
+      "shws": [],
+      "program_types": [],
+      "schedules": [],
+      "schedule_type_limits": []
+    }
+  },
+  "rooms": [
+    {
+      "type": "Room",
+      "identifier": "D70_SW",
+      "display_name": "Kuchyne (jih, zapad)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "Set70",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "D70_SW_Infil",
+            "flow_per_exterior_area": 0.001,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "D70_SW_Vent",
+            "flow_per_person": 0,
+            "flow_per_area": 0.0003,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "D70_SW_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                4.5,
+                0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SW_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                4.5,
+                2.6
+              ],
+              [
+                0,
+                0,
+                2.6
+              ],
+              [
+                4.0,
+                0,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SW_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                4.0,
+                0,
+                0
+              ],
+              [
+                4.0,
+                0,
+                2.6
+              ],
+              [
+                0,
+                0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_SW_Window_S",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    1.25,
+                    0,
+                    0.9
+                  ],
+                  [
+                    2.75,
+                    0,
+                    0.9
+                  ],
+                  [
+                    2.75,
+                    0,
+                    2.1
+                  ],
+                  [
+                    1.25,
+                    0,
+                    2.1
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SW_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_NW_Wall_S",
+              "D70_NW"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                0,
+                4.5,
+                0
+              ],
+              [
+                0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SW_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_SE_Wall_W",
+              "D70_SE"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                0,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SW_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                4.5,
+                0
+              ],
+              [
+                0,
+                0,
+                0
+              ],
+              [
+                0,
+                0,
+                2.6
+              ],
+              [
+                0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_SW_Window_W",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0,
+                    2.85,
+                    1.0
+                  ],
+                  [
+                    0,
+                    1.65,
+                    1.0
+                  ],
+                  [
+                    0,
+                    1.65,
+                    2.0
+                  ],
+                  [
+                    0,
+                    2.85,
+                    2.0
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "D70_SE",
+      "display_name": "Obyvak (jih, vychod)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "Set70",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "D70_SE_Infil",
+            "flow_per_exterior_area": 0.001,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "D70_SE_Vent",
+            "flow_per_person": 0,
+            "flow_per_area": 0.0003,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "D70_SE_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                8.0,
+                4.5,
+                0
+              ],
+              [
+                8.0,
+                0,
+                0
+              ],
+              [
+                4.0,
+                0,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SE_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                0,
+                2.6
+              ],
+              [
+                8.0,
+                0,
+                2.6
+              ],
+              [
+                8.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SE_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                0,
+                0
+              ],
+              [
+                8.0,
+                0,
+                0
+              ],
+              [
+                8.0,
+                0,
+                2.6
+              ],
+              [
+                4.0,
+                0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_SE_Window_S",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    5.25,
+                    0,
+                    0.9
+                  ],
+                  [
+                    6.75,
+                    0,
+                    0.9
+                  ],
+                  [
+                    6.75,
+                    0,
+                    2.1
+                  ],
+                  [
+                    5.25,
+                    0,
+                    2.1
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SE_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_NE_Wall_S",
+              "D70_NE"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                8.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                8.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SE_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                8.0,
+                0,
+                0
+              ],
+              [
+                8.0,
+                4.5,
+                0
+              ],
+              [
+                8.0,
+                4.5,
+                2.6
+              ],
+              [
+                8.0,
+                0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_SE_Window_E",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    8.0,
+                    1.65,
+                    1.0
+                  ],
+                  [
+                    8.0,
+                    2.85,
+                    1.0
+                  ],
+                  [
+                    8.0,
+                    2.85,
+                    2.0
+                  ],
+                  [
+                    8.0,
+                    1.65,
+                    2.0
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_SE_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_SW_Wall_E",
+              "D70_SW"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                0,
+                0
+              ],
+              [
+                4.0,
+                0,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "D70_NW",
+      "display_name": "Loznice (sever, zapad)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "Set70",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "D70_NW_Infil",
+            "flow_per_exterior_area": 0.001,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "D70_NW_Vent",
+            "flow_per_person": 0,
+            "flow_per_area": 0.0003,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "D70_NW_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                9.0,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                0,
+                4.5,
+                0
+              ],
+              [
+                0,
+                9.0,
+                0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NW_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                9.0,
+                2.6
+              ],
+              [
+                0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                9.0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NW_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_SW_Wall_N",
+              "D70_SW"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NW_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                9.0,
+                0
+              ],
+              [
+                0,
+                9.0,
+                0
+              ],
+              [
+                0,
+                9.0,
+                2.6
+              ],
+              [
+                4.0,
+                9.0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_NW_Window_N",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    2.6,
+                    9.0,
+                    1.0
+                  ],
+                  [
+                    1.4,
+                    9.0,
+                    1.0
+                  ],
+                  [
+                    1.4,
+                    9.0,
+                    2.0
+                  ],
+                  [
+                    2.6,
+                    9.0,
+                    2.0
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NW_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_NE_Wall_W",
+              "D70_NE"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                9.0,
+                0
+              ],
+              [
+                4.0,
+                9.0,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NW_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                0,
+                9.0,
+                0
+              ],
+              [
+                0,
+                4.5,
+                0
+              ],
+              [
+                0,
+                4.5,
+                2.6
+              ],
+              [
+                0,
+                9.0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_NW_Window_W",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    0,
+                    7.35,
+                    1.0
+                  ],
+                  [
+                    0,
+                    6.15,
+                    1.0
+                  ],
+                  [
+                    0,
+                    6.15,
+                    2.0
+                  ],
+                  [
+                    0,
+                    7.35,
+                    2.0
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Room",
+      "identifier": "D70_NE",
+      "display_name": "Detsky pokoj (sever, vychod)",
+      "properties": {
+        "type": "RoomPropertiesAbridged",
+        "energy": {
+          "type": "RoomEnergyPropertiesAbridged",
+          "construction_set": "Set70",
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "identifier": "D70_NE_Infil",
+            "flow_per_exterior_area": 0.001,
+            "constant_coefficient": 1,
+            "temperature_coefficient": 0,
+            "velocity_coefficient": 0
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "identifier": "D70_NE_Vent",
+            "flow_per_person": 0,
+            "flow_per_area": 0.0003,
+            "flow_per_zone": 0,
+            "air_changes_per_hour": 0
+          }
+        }
+      },
+      "faces": [
+        {
+          "type": "Face",
+          "identifier": "D70_NE_Floor",
+          "face_type": "Floor",
+          "boundary_condition": {
+            "type": "Ground"
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                8.0,
+                9.0,
+                0
+              ],
+              [
+                8.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                9.0,
+                0
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NE_Roof",
+          "face_type": "RoofCeiling",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                9.0,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                8.0,
+                4.5,
+                2.6
+              ],
+              [
+                8.0,
+                9.0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NE_Wall_S",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_SE_Wall_N",
+              "D70_SE"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                8.0,
+                4.5,
+                0
+              ],
+              [
+                8.0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NE_Wall_N",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                8.0,
+                9.0,
+                0
+              ],
+              [
+                4.0,
+                9.0,
+                0
+              ],
+              [
+                4.0,
+                9.0,
+                2.6
+              ],
+              [
+                8.0,
+                9.0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_NE_Window_N",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    6.6,
+                    9.0,
+                    1.0
+                  ],
+                  [
+                    5.4,
+                    9.0,
+                    1.0
+                  ],
+                  [
+                    5.4,
+                    9.0,
+                    2.0
+                  ],
+                  [
+                    6.6,
+                    9.0,
+                    2.0
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NE_Wall_E",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Outdoors",
+            "sun_exposure": true,
+            "wind_exposure": true,
+            "view_factor": {
+              "type": "Autocalculate"
+            }
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                8.0,
+                4.5,
+                0
+              ],
+              [
+                8.0,
+                9.0,
+                0
+              ],
+              [
+                8.0,
+                9.0,
+                2.6
+              ],
+              [
+                8.0,
+                4.5,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          },
+          "apertures": [
+            {
+              "type": "Aperture",
+              "identifier": "D70_NE_Window_E",
+              "is_operable": false,
+              "boundary_condition": {
+                "type": "Outdoors",
+                "sun_exposure": true,
+                "wind_exposure": true,
+                "view_factor": {
+                  "type": "Autocalculate"
+                }
+              },
+              "geometry": {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    8.0,
+                    6.15,
+                    1.0
+                  ],
+                  [
+                    8.0,
+                    7.35,
+                    1.0
+                  ],
+                  [
+                    8.0,
+                    7.35,
+                    2.0
+                  ],
+                  [
+                    8.0,
+                    6.15,
+                    2.0
+                  ]
+                ]
+              },
+              "properties": {
+                "type": "AperturePropertiesAbridged",
+                "energy": {
+                  "type": "ApertureEnergyPropertiesAbridged"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "Face",
+          "identifier": "D70_NE_Wall_W",
+          "face_type": "Wall",
+          "boundary_condition": {
+            "type": "Surface",
+            "boundary_condition_objects": [
+              "D70_NW_Wall_E",
+              "D70_NW"
+            ]
+          },
+          "geometry": {
+            "type": "Face3D",
+            "boundary": [
+              [
+                4.0,
+                9.0,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                0
+              ],
+              [
+                4.0,
+                4.5,
+                2.6
+              ],
+              [
+                4.0,
+                9.0,
+                2.6
+              ]
+            ]
+          },
+          "properties": {
+            "type": "FacePropertiesAbridged",
+            "energy": {
+              "type": "FaceEnergyPropertiesAbridged"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "orphaned_shades": [
+    {
+      "type": "Shade",
+      "identifier": "Teren",
+      "display_name": "Teren okoli budovy",
+      "is_detached": true,
+      "geometry": {
+        "type": "Face3D",
+        "boundary": [
+          [
+            -4.5,
+            13.5,
+            -0.02
+          ],
+          [
+            -4.5,
+            -4.5,
+            -0.02
+          ],
+          [
+            12.5,
+            -4.5,
+            -0.02
+          ],
+          [
+            12.5,
+            13.5,
+            -0.02
+          ]
+        ]
+      },
+      "properties": {
+        "type": "ShadePropertiesAbridged",
+        "energy": {
+          "type": "ShadeEnergyPropertiesAbridged"
+        }
+      }
+    }
+  ]
+}

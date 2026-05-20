@@ -36,7 +36,7 @@ from ladybug.epw import EPW
 from .real_hp_results_reader import (
     RealHPResultsReader, HEAT_OUT, COOL_OUT, ALL_METERS,
 )
-from ..pv_ep_runner import run_ep_with_progress
+from ..solar.pv_ep_runner import run_ep_with_progress
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,7 @@ from __future__ import annotations
 from typing import Dict, Any, List, Optional
 
 from ..heatpump_real.real_hp_model_preparer import RealHPModelPreparer
-from ..epw_climate_extractor import EPWClimateExtractor
+from ..epw.epw_climate_extractor import EPWClimateExtractor
 
 from .cost_config import CostConfig
 from .variant_planner import (
@@ -28,7 +28,7 @@ from .consumption_simulator import ConsumptionSimulator
 from .consumption_runner import run_consumption_simulations
 from .pv_pipeline_runner import PVPipelineRunner
 from .variant_evaluator import VariantEvaluator
-from ..progress import report_progress
+from ..shared.progress import report_progress
 
 
 class PEDOptimizer:

@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p>{t('© 2025 Ladybug Web Platform - Diplomová práce')}</p>
+        <p>{t('© 2026 PED Ladybug Web Tools - Diplomová práce')}</p>
         <p className="footer-note">{t('Postaveno na FastAPI & React')}</p>
       </div>
     </footer>
