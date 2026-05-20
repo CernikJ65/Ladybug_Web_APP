@@ -1,14 +1,14 @@
 """
 Serializace výsledků solar pipeline do finálního API response.
 
-Obsahuje i roof_world_bounds helper, protože ten je čistě prezentační
-(pro správné měřítko vizualizace ve frontendu).
+Obsahuje i roof_world_bounds + roof_world_polygon helpery, protože jsou
+čistě prezentační (pro správné měřítko a OBB vizualizaci ve frontendu).
 """
 from __future__ import annotations
 
 
 def roof_world_bounds(geometry) -> dict:
-    """Světový bounding box střechy v XY rovině (pro FE vizualizaci)."""
+    """Světový bounding box střechy v XY rovině (pro FE scaling)."""
     try:
         mn, mx = geometry.min, geometry.max
         return {
@@ -24,6 +24,19 @@ def roof_world_bounds(geometry) -> dict:
             "min_x": 0, "max_x": 0, "min_y": 0, "max_y": 0,
             "width_m": 0, "depth_m": 0,
         }
+
+
+def roof_world_polygon(geometry) -> list:
+    """Vrcholy polygonu hrany střechy v XY (world).
+
+    Slouží frontendu pro výpočet přesného oriented bounding boxu (OBB)
+    a vykreslení skutečného tvaru střechy. world_bounds je jen axis-aligned
+    AABB a u rotované střechy ztrácí informaci o orientaci.
+    """
+    try:
+        return [[round(v.x, 3), round(v.y, 3)] for v in geometry.boundary]
+    except Exception:
+        return []
 
 
 def build_response(
@@ -52,6 +65,7 @@ def build_response(
             "center": list(r.center),
             "source": r.source,
             "world_bounds": roof_world_bounds(r.geometry),
+            "world_polygon": roof_world_polygon(r.geometry),
         }
         for r in roofs
     ]

@@ -1,16 +1,5 @@
-/**
- * PanelMapView v12 — Apple-clean s detailním vizuálem panelů.
- * - Sjednocená velikost karet (1 střecha = omezená šířka 520px, 2+ = grid)
- * - Větší plocha střechy (PAD 24), menší kompas (r 13) — lepší poměr
- * - Zachovaný 3D vizuál panelů (gradient, vnitřní linky, stín)
- * - Klasický kompas se S/J/V/Z pro jasnou orientaci
- * - Plná česká lokalizace včetně mapování názvů střech z HBJSON
- * - Rozměry střechy (šířka × hloubka) zobrazeny přímo nad/vedle plochy
- *
- * Soubor: ladybug_fe/src/components/analysis/solar/PanelMapView.tsx
- */
 import React, { useMemo, useState } from 'react';
-import { useT } from '../../../i18n/useT';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
 export interface WorldBounds {
   min_x: number; max_x: number; min_y: number; max_y: number;
@@ -19,6 +8,8 @@ export interface WorldBounds {
 export interface RoofMeta {
   identifier: string; area_m2: number; tilt: number; azimuth: number;
   orientation: string; center: number[]; world_bounds?: WorldBounds;
+  /** Vrcholy polygonu hrany střechy v XY (world). Z backendu — viz solar_response.roof_world_polygon. */
+  world_polygon?: number[][];
 }
 interface Panel {
   id: number; roof_id: string; center: number[];
@@ -27,14 +18,135 @@ interface Panel {
 }
 interface Props { panels: Panel[]; roofs?: RoofMeta[]; panelOrder?: Map<number, number>; }
 
-/* ───── Heat colors ───── */
+/* ──────────────────────────────────────────────────────────────────────
+ * Oriented bounding box přes Andrew's monotone chain + rotating calipers
+ * (stejný algoritmus jako HbjsonViewer/geometry.ts:orientedFootprintSize,
+ *  rozšířený o rohy, střed a úhel rotace).
+ *
+ * Používá se POUZE pro:
+ *   - rotaci světa tak, aby delší osa OBB byla vodorovně v SVG
+ *   - dimensions labels (length × width "footprint")
+ *   - fallback geometrie, když chybí world_polygon
+ * Strecha samotná se vykresluje z world_polygon (může být L-tvar, T-tvar atd.).
+ * ────────────────────────────────────────────────────────────────────── */
+
+interface OrientedBox {
+  cornersWorld: Array<[number, number]>;
+  center: [number, number];
+  length: number;     // delší strana
+  width: number;      // kratší strana
+  angleRad: number;   // úhel delší strany vůči world +X
+}
+
+function computeOrientedBoundingBox(rawPoints: Array<[number, number]>): OrientedBox | null {
+  if (rawPoints.length === 0) return null;
+
+  const seen = new Set<string>();
+  const pts: Array<[number, number]> = [];
+  for (const [x, y] of rawPoints) {
+    const key = `${x.toFixed(3)},${y.toFixed(3)}`;
+    if (!seen.has(key)) { seen.add(key); pts.push([x, y]); }
+  }
+
+  if (pts.length < 3) {
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const w = maxX - minX, h = maxY - minY;
+    return {
+      cornersWorld: [[minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY]],
+      center: [(minX + maxX) / 2, (minY + maxY) / 2],
+      length: Math.max(w, h),
+      width: Math.min(w, h),
+      angleRad: w >= h ? 0 : Math.PI / 2,
+    };
+  }
+
+  pts.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+  const cross = (O: [number, number], A: [number, number], B: [number, number]) =>
+    (A[0] - O[0]) * (B[1] - O[1]) - (A[1] - O[1]) * (B[0] - O[0]);
+
+  const lower: Array<[number, number]> = [];
+  for (const p of pts) {
+    while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], p) <= 0) lower.pop();
+    lower.push(p);
+  }
+  const upper: Array<[number, number]> = [];
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const p = pts[i];
+    while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], p) <= 0) upper.pop();
+    upper.push(p);
+  }
+  const hull = lower.slice(0, -1).concat(upper.slice(0, -1));
+
+  if (hull.length < 3) {
+    const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    return {
+      cornersWorld: [[minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY]],
+      center: [(minX + maxX) / 2, (minY + maxY) / 2],
+      length: Math.max(maxX - minX, maxY - minY),
+      width: Math.min(maxX - minX, maxY - minY),
+      angleRad: 0,
+    };
+  }
+
+  let best: OrientedBox | null = null;
+  let bestArea = Infinity;
+
+  for (let i = 0; i < hull.length; i++) {
+    const p1 = hull[i], p2 = hull[(i + 1) % hull.length];
+    const dx = p2[0] - p1[0], dy = p2[1] - p1[1];
+    const len = Math.hypot(dx, dy);
+    if (len < 1e-6) continue;
+    const ux = dx / len, uy = dy / len;
+    const vx = -uy, vy = ux;
+
+    let minU = Infinity, maxU = -Infinity, minV = Infinity, maxV = -Infinity;
+    for (const p of hull) {
+      const u = ux * p[0] + uy * p[1];
+      const v = vx * p[0] + vy * p[1];
+      if (u < minU) minU = u; if (u > maxU) maxU = u;
+      if (v < minV) minV = v; if (v > maxV) maxV = v;
+    }
+    const along = maxU - minU, across = maxV - minV;
+    const area = along * across;
+
+    if (area < bestArea) {
+      bestArea = area;
+      const toWorld = (u: number, v: number): [number, number] =>
+        [u * ux + v * vx, u * uy + v * vy];
+      const cornersWorld: Array<[number, number]> = [
+        toWorld(minU, minV),
+        toWorld(maxU, minV),
+        toWorld(maxU, maxV),
+        toWorld(minU, maxV),
+      ];
+      const cw = toWorld((minU + maxU) / 2, (minV + maxV) / 2);
+
+      let length: number, width: number, angleRad: number;
+      if (along >= across) {
+        length = along; width = across;
+        angleRad = Math.atan2(uy, ux);
+      } else {
+        length = across; width = along;
+        angleRad = Math.atan2(vy, vx);
+      }
+      best = { cornersWorld, center: cw, length, width, angleRad };
+    }
+  }
+  return best;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
 
 function heatColor(t: number): string {
   const S: [number, number, number][] = [
-    [99, 102, 241],   // indigo
-    [16, 185, 129],   // emerald
-    [234, 179, 8],    // yellow
-    [249, 115, 22],   // orange
+    [99, 102, 241],
+    [16, 185, 129],
+    [234, 179, 8],
+    [249, 115, 22],
   ];
   const c = Math.max(0, Math.min(1, t)), s = c * (S.length - 1);
   const i = Math.min(Math.floor(s), S.length - 2), f = s - i, a = S[i], b = S[i + 1];
@@ -52,8 +164,6 @@ function heatColorLight(t: number): string {
   const i = Math.min(Math.floor(s), S.length - 2), f = s - i, a = S[i], b = S[i + 1];
   return `rgb(${Math.round(a[0] + (b[0] - a[0]) * f)},${Math.round(a[1] + (b[1] - a[1]) * f)},${Math.round(a[2] + (b[2] - a[2]) * f)})`;
 }
-
-/* ───── Lokalizace ───── */
 
 const CD = ['sever', 'severovýchod', 'východ', 'jihovýchod', 'jih', 'jihozápad', 'západ', 'severozápad'];
 function azL(az: number) {
@@ -73,12 +183,24 @@ function orientationLabel(meta: RoofMeta | undefined, fallbackAz: number, tilt: 
   return azL(meta?.azimuth ?? fallbackAz);
 }
 
-/* ───── Konstanty ───── */
-
 const PW = 1.0, PH = 1.7;
 const SVG_W = 420;
-const SVG_H = 240;
-const PAD = 24;
+const PAD = 30;
+const ROOFS_PER_PAGE = 2;
+
+// Clamp aspect ratio pro adaptivni vysku SVG.
+// Ctvercova strecha (aspect ≈ 1) by mela ploche SVG 1.2:1 (= 350px vysky pri 420 width).
+// Protahla strecha (aspect ≥ 2.5) ma 2.5:1 (= 168px vysky).
+// Tim se panely vzdy vykresli ve spravnych proporcich (PW × PH × Math.cos(tilt))
+// a karty nejsou bud zbytecne vysoke (u dlouhych strech) nebo zmackle (u ctvercu).
+const SVG_ASPECT_MIN = 1.2;
+const SVG_ASPECT_MAX = 2.5;
+
+// Vizuální mezera kolem polygonu v metrech (jen aby kompas/popisky neseděly přesně na hraně).
+const VISUAL_PAD_M = 0.8;
+
+// Fallback padding pro OBB ze středů panelů (kdyby chyběl world_polygon).
+const PANELS_FALLBACK_PAD_M = 1.0;
 
 interface RVP {
   roofId: string; panels: Panel[]; roofMeta?: RoofMeta;
@@ -87,37 +209,148 @@ interface RVP {
 }
 
 const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panelOrder }) => {
-  const t = useT();
   const [hov, setHov] = useState<number | null>(null);
 
   const L = useMemo(() => {
     if (!panels.length) return null;
-    let x0: number, x1: number, y0: number, y1: number;
-    if (roofMeta?.world_bounds && roofMeta.world_bounds.width_m > 0) {
-      x0 = roofMeta.world_bounds.min_x; x1 = roofMeta.world_bounds.max_x;
-      y0 = roofMeta.world_bounds.min_y; y1 = roofMeta.world_bounds.max_y;
-    } else {
-      const xs = panels.map(p => p.center[0]), ys = panels.map(p => p.center[1]);
-      const px = Math.max(2, (Math.max(...xs) - Math.min(...xs)) * 0.25);
-      const py = Math.max(2, (Math.max(...ys) - Math.min(...ys)) * 0.25);
-      x0 = Math.min(...xs) - px; x1 = Math.max(...xs) + px;
-      y0 = Math.min(...ys) - py; y1 = Math.max(...ys) + py;
+
+    // 1) OBB ze skutečných hran střechy (z backendu), s fallbackem na panel centers.
+    //    OBB pouzivame VYHRADNE pro:
+    //      - rotaci sveta tak, aby delsi osa byla vodorovne
+    //      - dimensions labels (footprint length × width)
+    //      - fallback obdelnik, kdyby chybel world_polygon
+    let obb: OrientedBox | null = null;
+    let dimsAreReal = false;
+    let worldPolygonRaw: Array<[number, number]> | null = null;
+    const wp = roofMeta?.world_polygon;
+
+    if (wp && wp.length >= 3) {
+      const polyPts: Array<[number, number]> = wp
+        .filter(p => Array.isArray(p) && p.length >= 2)
+        .map(p => [p[0], p[1]]);
+      obb = computeOrientedBoundingBox(polyPts);
+      dimsAreReal = obb !== null;
+      worldPolygonRaw = polyPts;
     }
-    const wM = x1 - x0, hM = y1 - y0;
-    const aW = SVG_W - 2 * PAD, aH = SVG_H - 2 * PAD;
-    const sc = Math.min(aW / wM, aH / hM);
-    const dW = wM * sc, dH = hM * sc;
-    const ox = (SVG_W - dW) / 2, oy = (SVG_H - dH) / 2;
-    const toS = (wx: number, wy: number) => ({ x: ox + (wx - x0) * sc, y: oy + (y1 - wy) * sc });
+
+    if (!obb) {
+      // Fallback — OBB z panel centers (rozmery budou menší než skutečná střecha)
+      const panelPts: Array<[number, number]> = panels.map(p => [p.center[0], p.center[1]]);
+      const obbRaw = computeOrientedBoundingBox(panelPts);
+      if (obbRaw) {
+        const ca0 = Math.cos(obbRaw.angleRad), sa0 = Math.sin(obbRaw.angleRad);
+        const halfL0 = obbRaw.length / 2 + PANELS_FALLBACK_PAD_M;
+        const halfW0 = obbRaw.width / 2 + PANELS_FALLBACK_PAD_M;
+        const [cx0, cy0] = obbRaw.center;
+        const cornersFallback: Array<[number, number]> = [
+          [cx0 - halfL0 * ca0 + halfW0 * sa0, cy0 - halfL0 * sa0 - halfW0 * ca0],
+          [cx0 + halfL0 * ca0 + halfW0 * sa0, cy0 + halfL0 * sa0 - halfW0 * ca0],
+          [cx0 + halfL0 * ca0 - halfW0 * sa0, cy0 + halfL0 * sa0 + halfW0 * ca0],
+          [cx0 - halfL0 * ca0 - halfW0 * sa0, cy0 - halfL0 * sa0 + halfW0 * ca0],
+        ];
+        obb = {
+          cornersWorld: cornersFallback,
+          center: obbRaw.center,
+          length: obbRaw.length + 2 * PANELS_FALLBACK_PAD_M,
+          width: obbRaw.width + 2 * PANELS_FALLBACK_PAD_M,
+          angleRad: obbRaw.angleRad,
+        };
+        // Fallback polygon = OBB samotny (obdelnik)
+        worldPolygonRaw = cornersFallback;
+      }
+    }
+    if (!obb || !worldPolygonRaw) return null;
+
+    // 2) Transformace world → rotated (rotace o -angle kolem středu OBB).
+    //    V "rotated" world space je delší osa polygonu vodorovně.
+    const [cx, cy] = obb.center;
+    const ca = Math.cos(-obb.angleRad);
+    const sa = Math.sin(-obb.angleRad);
+    const worldToRotated = (wx: number, wy: number): [number, number] => {
+      const dx = wx - cx, dy = wy - cy;
+      return [dx * ca - dy * sa, dx * sa + dy * ca];
+    };
+
+    // 3) Polygon v rotovanych souradnicich
+    const rotatedPolygon: Array<[number, number]> = worldPolygonRaw.map(
+      ([wx, wy]) => worldToRotated(wx, wy)
+    );
+
+    // 4) Skutecny bbox rotovaneho polygonu (muze se lisit od OBB u L-tvaru — pak ne).
+    //    Pro L-tvar (12x12 OBB) je polyBbox také 12x12. Pro obdelnik 30x5 oba 30x5.
+    const rxs = rotatedPolygon.map(p => p[0]);
+    const rys = rotatedPolygon.map(p => p[1]);
+    const polyMinX = Math.min(...rxs), polyMaxX = Math.max(...rxs);
+    const polyMinY = Math.min(...rys), polyMaxY = Math.max(...rys);
+    const polyW = polyMaxX - polyMinX;
+    const polyH = polyMaxY - polyMinY;
+
+    // 5) Adaptivni vyska SVG — aspect ratio strechy clampovany na [SVG_ASPECT_MIN, SVG_ASPECT_MAX].
+    //    Ctvercova strecha dostane 420x350 (1.2:1), protahla dostane 420x168 (2.5:1).
+    //    Panely uvnitr maji vzdy uniformni meritko (jeden scale faktor pro X i Y),
+    //    takze zustavaji ve spravnych proporcich 1.0x1.7 m.
+    const rawAspect = polyH > 0 ? polyW / polyH : SVG_ASPECT_MIN;
+    const displayAspect = Math.max(SVG_ASPECT_MIN, Math.min(SVG_ASPECT_MAX, rawAspect));
+    const svgH = Math.round(SVG_W / displayAspect);
+
+    // 6) Fitting polygonu do SVG s vizualnim paddingem v metrech kolem
+    const fitW = polyW + 2 * VISUAL_PAD_M;
+    const fitH = polyH + 2 * VISUAL_PAD_M;
+    const aW = SVG_W - 2 * PAD, aH = svgH - 2 * PAD;
+    const sc = Math.min(aW / fitW, aH / fitH);
+    const dW = fitW * sc, dH = fitH * sc;
+    const ox = (SVG_W - dW) / 2, oy = (svgH - dH) / 2;
+
+    // 7) Mapovani rotated coords → SVG (Y flip kvuli SVG konvenci)
+    const rotToS = (rx: number, ry: number) => ({
+      x: ox + (rx - polyMinX + VISUAL_PAD_M) * sc,
+      y: oy + (polyMaxY - ry + VISUAL_PAD_M) * sc,
+    });
+    const worldToS = (wx: number, wy: number) => {
+      const [rx, ry] = worldToRotated(wx, wy);
+      return rotToS(rx, ry);
+    };
+
+    // 8) SVG polygon points string — skutecny tvar strechy (L, T, obdelnik, ...)
+    const svgPolyPoints = rotatedPolygon
+      .map(([rx, ry]) => {
+        const { x, y } = rotToS(rx, ry);
+        return `${x.toFixed(2)},${y.toFixed(2)}`;
+      })
+      .join(' ');
+
+    // 9) Bbox polygonu v SVG souradnicich — pro umisteni dimension labelu
+    const bboxTopLeft = rotToS(polyMinX, polyMaxY);
+    const bboxBotRight = rotToS(polyMaxX, polyMinY);
+
     const tr = (panels[0]?.tilt ?? 0) * Math.PI / 180;
     const pw = PW * sc, ph = PH * Math.cos(tr) * sc;
     const tP = panels.reduce((s, p) => s + p.annual_production_kwh, 0);
     const aR = panels.reduce((s, p) => s + p.radiation_kwh_m2, 0) / panels.length;
-    return { ox, oy, dW, dH, wM, hM, toS, pw, ph, tP, aR };
+
+    // Kompas rotace v SVG (stupne, CW): rotace o +angle CCW sveta = +angle CW v SVG
+    const compassRotateDeg = obb.angleRad * 180 / Math.PI;
+
+    return {
+      worldToS, pw, ph, tP, aR,
+      svgPolyPoints,
+      bboxTopLeft,
+      bboxBotRight,
+      realLength: obb.length,
+      realWidth: obb.width,
+      dimsAreReal,
+      compassRotateDeg,
+      svgH,
+    };
   }, [panels, roofMeta]);
 
   if (!L) return null;
-  const { ox, oy, dW, dH, wM, hM, toS, pw, ph, tP, aR } = L;
+  const {
+    worldToS, pw, ph, tP, aR,
+    svgPolyPoints, bboxTopLeft, bboxBotRight,
+    realLength, realWidth, dimsAreReal,
+    compassRotateDeg, svgH,
+  } = L;
   const fmt = (n: number) => n.toLocaleString('cs-CZ', { maximumFractionDigits: 0 });
   const tilt = roofMeta?.tilt ?? panels[0]?.tilt ?? 0;
   const ori = orientationLabel(roofMeta, panels[0]?.azimuth ?? 180, tilt);
@@ -133,7 +366,6 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
       display: 'flex',
       flexDirection: 'column',
     }}>
-      {/* Header */}
       <div style={{ padding: '14px 16px 10px' }}>
         <div style={{
           display: 'flex',
@@ -168,7 +400,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
               color: '#6b7280',
               letterSpacing: '-0.005em',
             }}>
-              {panels.length} {panels.length === 1 ? t('panel') : panels.length < 5 ? t('panely') : t('panelů')}
+              {panels.length} {panels.length === 1 ? 'panel' : panels.length < 5 ? 'panely' : 'panelů'}
             </span>
           </div>
           <span style={{
@@ -180,14 +412,13 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
             textAlign: 'right',
             paddingTop: 1,
           }}>
-            {tilt < 5 ? t('plochá střecha') : t('sklon {{tilt}}°, orientace na {{ori}}', { tilt: tilt.toFixed(0), ori: t(ori) })}
+            {tilt < 5 ? 'plochá střecha' : `sklon ${tilt.toFixed(0)}°, orientace na ${ori}`}
           </span>
         </div>
       </div>
 
-      {/* SVG mapa */}
       <svg
-        viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+        viewBox={`0 0 ${SVG_W} ${svgH}`}
         width="100%"
         style={{
           display: 'block',
@@ -209,30 +440,19 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
           })}
         </defs>
 
-        {/* Plocha střechy */}
-        <rect
-          x={ox} y={oy} width={dW} height={dH}
+        {/* Strecha kreslena jako polygon — respektuje skutecny tvar (L, T, obdelnik, ...) */}
+        <polygon
+          points={svgPolyPoints}
           fill="#fff"
-          stroke="rgba(0,0,0,0.1)"
+          stroke="rgba(0,0,0,0.12)"
           strokeWidth={1}
-          rx={3}
+          strokeLinejoin="round"
           filter={`url(#shadow-${uid})`}
         />
 
-        {/* Jemné vnitřní čárkované ohraničení (oddělení vnitřní pracovní plochy) */}
-        <rect
-          x={ox + 3} y={oy + 3} width={dW - 6} height={dH - 6}
-          fill="none"
-          stroke="rgba(99,102,241,0.18)"
-          strokeWidth={0.5}
-          strokeDasharray="3 3"
-          rx={2}
-        />
-
-        {/* Panely */}
         {panels.map(p => {
           const t = gMaxR > gMinR ? (p.radiation_kwh_m2 - gMinR) / (gMaxR - gMinR) : 0.5;
-          const { x, y } = toS(p.center[0], p.center[1]);
+          const { x, y } = worldToS(p.center[0], p.center[1]);
           const isH = hov === p.id;
           const col = heatColor(t);
           const px1 = x - pw / 2, py1 = y - ph / 2;
@@ -308,47 +528,43 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
           );
         })}
 
-        {/* Rozměrový popisek šířky — pod plochou */}
+        {/* Dimension popisky vedle bbox polygonu — ukazuji "footprint" rozmery (OBB).
+            U L-tvaru oba rozmery 12 m (= velikost obalove bounding boxu). */}
         <text
-          x={ox + dW / 2}
-          y={oy + dH + 16}
+          x={(bboxTopLeft.x + bboxBotRight.x) / 2}
+          y={bboxBotRight.y + 14}
           fill="#9ca3af"
-          fontSize={9}
+          fontSize={9.5}
           textAnchor="middle"
           fontFamily="'JetBrains Mono', monospace"
           fontWeight={500}
         >
-          {wM.toFixed(1)} m
+          {realLength.toFixed(1)} m{!dimsAreReal ? ' *' : ''}
         </text>
-
-        {/* Rozměrový popisek hloubky — vlevo od plochy */}
         <text
-          x={ox - 10}
-          y={oy + dH / 2}
+          x={bboxTopLeft.x - 12}
+          y={(bboxTopLeft.y + bboxBotRight.y) / 2}
           fill="#9ca3af"
-          fontSize={9}
+          fontSize={9.5}
           textAnchor="middle"
           fontFamily="'JetBrains Mono', monospace"
           fontWeight={500}
-          transform={`rotate(-90, ${ox - 10}, ${oy + dH / 2})`}
+          transform={`rotate(-90, ${bboxTopLeft.x - 12}, ${(bboxTopLeft.y + bboxBotRight.y) / 2})`}
         >
-          {hM.toFixed(1)} m
+          {realWidth.toFixed(1)} m{!dimsAreReal ? ' *' : ''}
         </text>
 
-        {/* Kompas — kruhový terčík se 4 světovými stranami */}
+        {/* Kompas — rotován o úhel orientace střechy. S ukazuje do skutečného světa. */}
         {(() => {
           const cx = SVG_W - 22, cy = 22, r = 13;
           return (
-            <g>
-              {/* Vnější kruh */}
+            <g transform={`rotate(${compassRotateDeg.toFixed(2)}, ${cx}, ${cy})`}>
               <circle
                 cx={cx} cy={cy} r={r}
                 fill="rgba(255,255,255,0.92)"
                 stroke="rgba(0,0,0,0.1)"
                 strokeWidth={0.7}
               />
-
-              {/* Jemné křížové vodítko */}
               <line
                 x1={cx - r + 3} y1={cy} x2={cx + r - 3} y2={cy}
                 stroke="rgba(0,0,0,0.06)" strokeWidth={0.4}
@@ -357,78 +573,79 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 x1={cx} y1={cy - r + 3} x2={cx} y2={cy + r - 3}
                 stroke="rgba(0,0,0,0.06)" strokeWidth={0.4}
               />
-
-              {/* Sever — červená šipka */}
               <polygon
                 points={`${cx},${cy - r + 2.5} ${cx - 2.5},${cy - 0.5} ${cx + 2.5},${cy - 0.5}`}
                 fill="#ef4444"
               />
-              {/* Jih — šedá šipka */}
               <polygon
                 points={`${cx},${cy + r - 2.5} ${cx - 2.5},${cy + 0.5} ${cx + 2.5},${cy + 0.5}`}
                 fill="#cbd5e1"
               />
-
-              {/* Písmena světových stran */}
-              <text
-                x={cx} y={cy - r + 0.5}
-                fill="#ef4444"
-                fontSize={6.5}
-                fontWeight={700}
-                textAnchor="middle"
-                fontFamily="'Sora', sans-serif"
-                dominantBaseline="auto"
-              >
-                {t('S')}
-              </text>
-              <text
-                x={cx} y={cy + r + 5}
-                fill="#9ca3af"
-                fontSize={6.5}
-                fontWeight={600}
-                textAnchor="middle"
-                fontFamily="'Sora', sans-serif"
-              >
-                {t('J')}
-              </text>
-              <text
-                x={cx + r + 4} y={cy + 2.5}
-                fill="#9ca3af"
-                fontSize={6.5}
-                fontWeight={600}
-                textAnchor="middle"
-                fontFamily="'Sora', sans-serif"
-              >
-                {t('V')}
-              </text>
-              <text
-                x={cx - r - 4} y={cy + 2.5}
-                fill="#9ca3af"
-                fontSize={6.5}
-                fontWeight={600}
-                textAnchor="middle"
-                fontFamily="'Sora', sans-serif"
-              >
-                {t('Z')}
-              </text>
-
-              {/* Středový bod */}
+              {/* Counter-rotace textů, aby zůstaly čitelné */}
+              <g transform={`rotate(${(-compassRotateDeg).toFixed(2)}, ${cx}, ${cy - r + 0.5})`}>
+                <text
+                  x={cx} y={cy - r + 0.5}
+                  fill="#ef4444"
+                  fontSize={6.5}
+                  fontWeight={700}
+                  textAnchor="middle"
+                  fontFamily="'Sora', sans-serif"
+                  dominantBaseline="auto"
+                >
+                  S
+                </text>
+              </g>
+              <g transform={`rotate(${(-compassRotateDeg).toFixed(2)}, ${cx}, ${cy + r + 5})`}>
+                <text
+                  x={cx} y={cy + r + 5}
+                  fill="#9ca3af"
+                  fontSize={6.5}
+                  fontWeight={600}
+                  textAnchor="middle"
+                  fontFamily="'Sora', sans-serif"
+                >
+                  J
+                </text>
+              </g>
+              <g transform={`rotate(${(-compassRotateDeg).toFixed(2)}, ${cx + r + 4}, ${cy + 2.5})`}>
+                <text
+                  x={cx + r + 4} y={cy + 2.5}
+                  fill="#9ca3af"
+                  fontSize={6.5}
+                  fontWeight={600}
+                  textAnchor="middle"
+                  fontFamily="'Sora', sans-serif"
+                >
+                  V
+                </text>
+              </g>
+              <g transform={`rotate(${(-compassRotateDeg).toFixed(2)}, ${cx - r - 4}, ${cy + 2.5})`}>
+                <text
+                  x={cx - r - 4} y={cy + 2.5}
+                  fill="#9ca3af"
+                  fontSize={6.5}
+                  fontWeight={600}
+                  textAnchor="middle"
+                  fontFamily="'Sora', sans-serif"
+                >
+                  Z
+                </text>
+              </g>
               <circle cx={cx} cy={cy} r={0.8} fill="#6b7280" />
             </g>
           );
         })()}
 
-        {/* Tooltip */}
         {hov !== null && (() => {
           const p = panels.find(pp => pp.id === hov);
           if (!p) return null;
-          const { x, y } = toS(p.center[0], p.center[1]);
+          const { x, y } = worldToS(p.center[0], p.center[1]);
           const ord = panelOrder?.get(p.id);
           const tw = 178, th = ord !== undefined ? 76 : 60;
           let tx = x + pw / 2 + 8, ty = y - th / 2;
           if (tx + tw > SVG_W - 4) tx = x - pw / 2 - tw - 8;
           if (ty < 4) ty = 4;
-          if (ty + th > SVG_H - 4) ty = SVG_H - th - 4;
+          if (ty + th > svgH - 4) ty = svgH - th - 4;
           const yRad = ord !== undefined ? 32 : 17;
           const yProd = ord !== undefined ? 48 : 33;
           const yCoord = ord !== undefined ? 64 : 49;
@@ -449,7 +666,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                   fontWeight={700}
                   fontFamily="'JetBrains Mono', monospace"
                 >
-                  #{ord} {t('panel')}
+                  #{ord} panel
                 </text>
               )}
               <text
@@ -467,7 +684,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
                 fontSize={10}
                 fontFamily="'JetBrains Mono', monospace"
               >
-                {t('výroba')} {p.annual_production_kwh.toFixed(0)} kWh/{t('rok')}
+                výroba {p.annual_production_kwh.toFixed(0)} kWh/rok
               </text>
               <text
                 x={tx + 10} y={ty + yCoord}
@@ -482,7 +699,6 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
         })()}
       </svg>
 
-      {/* Footer */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr 1fr',
@@ -497,7 +713,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
             letterSpacing: '0.05em',
             marginBottom: 2,
           }}>
-            {t('Solární potenciál')}
+            Solární potenciál
           </div>
           <div style={{
             fontSize: 13,
@@ -526,7 +742,7 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
             letterSpacing: '0.05em',
             marginBottom: 2,
           }}>
-            {t('Roční výroba')}
+            Roční výroba
           </div>
           <div style={{
             fontSize: 13,
@@ -551,11 +767,8 @@ const RoofView: React.FC<RVP> = ({ roofId, panels, roofMeta, gMinR, gMaxR, panel
   );
 };
 
-const INITIAL_VISIBLE = 4;
-
 const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
-  const t = useT();
-  const [showAll, setShowAll] = useState(false);
+  const [page, setPage] = useState(0);
 
   const data = useMemo(() => {
     if (!panels.length) return null;
@@ -576,19 +789,25 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
   const { gr, tP } = data;
   const fmt = (n: number) => n.toLocaleString('cs-CZ', { maximumFractionDigits: 0 });
 
-  const needsPaging = gr.length > INITIAL_VISIBLE;
-  const visible = showAll ? gr : gr.slice(0, INITIAL_VISIBLE);
-  const hiddenCount = gr.length - INITIAL_VISIBLE;
+  const pageCount = Math.ceil(gr.length / ROOFS_PER_PAGE);
+  const needsPaging = gr.length > ROOFS_PER_PAGE;
+  const safePage = Math.min(page, pageCount - 1);
+  const visible = gr.slice(safePage * ROOFS_PER_PAGE, (safePage + 1) * ROOFS_PER_PAGE);
+
+  const goPrev = () => setPage(p => Math.max(0, p - 1));
+  const goNext = () => setPage(p => Math.min(pageCount - 1, p + 1));
 
   return (
-    <div style={{
-      background: '#fff',
-      borderRadius: 14,
-      border: '1px solid rgba(0,0,0,0.06)',
-      overflow: 'hidden',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-    }}>
-      {/* Hlavička panelu */}
+    <div
+      data-tour="panel-map"
+      style={{
+        background: '#fff',
+        borderRadius: 14,
+        border: '1px solid rgba(0,0,0,0.06)',
+        overflow: 'hidden',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+      }}
+    >
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -602,7 +821,7 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             color: '#111827',
             letterSpacing: '-0.015em',
           }}>
-            {t('Rozmístění panelů')}
+            Rozmístění panelů
           </div>
           <div style={{
             fontSize: 11,
@@ -610,7 +829,7 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             marginTop: 2,
             fontWeight: 400,
           }}>
-            {panels.length} {panels.length === 1 ? t('panel') : panels.length < 5 ? t('panely') : t('panelů')} {t('na')} {gr.length} {gr.length === 1 ? t('střeše') : gr.length < 5 ? t('střechách') : t('střechách')}
+            {panels.length} {panels.length === 1 ? 'panel' : panels.length < 5 ? 'panely' : 'panelů'} na {gr.length} {gr.length === 1 ? 'střeše' : gr.length < 5 ? 'střechách' : 'střechách'}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
@@ -640,19 +859,19 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
           }}>
-            {t('celková roční výroba')}
+            celková roční výroba
           </div>
         </div>
       </div>
 
-      {/* Grid střech — pro 1 střechu omezíme šířku, pro 2+ klasický grid */}
       <div style={{
         padding: '4px 14px 14px',
         display: 'grid',
-        gridTemplateColumns: gr.length === 1
+        gridTemplateColumns: visible.length === 1
           ? 'minmax(0, 520px)'
           : 'repeat(2, 1fr)',
-        justifyContent: gr.length === 1 ? 'center' : 'stretch',
+        justifyContent: visible.length === 1 ? 'center' : 'stretch',
+        alignItems: 'start',
         gap: 12,
       }}>
         {visible.map(([rid, rp]) => (
@@ -668,42 +887,85 @@ const PanelMapView: React.FC<Props> = ({ panels, roofs, panelOrder }) => {
         ))}
       </div>
 
-      {/* Stránkování */}
       {needsPaging && (
-        <div style={{ padding: '0 14px 14px' }}>
-          <button
-            onClick={() => setShowAll(s => !s)}
-            style={{
-              width: '100%',
-              padding: '9px 16px',
-              background: '#fafbfc',
-              border: '1px solid rgba(0,0,0,0.06)',
-              borderRadius: 10,
-              fontSize: 12,
-              fontWeight: 500,
-              color: '#374151',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              transition: 'all 0.15s',
-              letterSpacing: '-0.005em',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = '#f1f5f9';
-              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.12)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = '#fafbfc';
-              e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
-            }}
-          >
-            {showAll
-              ? `${t('Skrýt')} ${hiddenCount} ${hiddenCount === 1 ? t('střechu') : hiddenCount < 5 ? t('střechy') : t('střech')}`
-              : `${t('Zobrazit')} ${hiddenCount} ${hiddenCount === 1 ? t('další střechu') : hiddenCount < 5 ? t('další střechy') : t('dalších střech')}`}
-          </button>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 14,
+          padding: '4px 14px 16px',
+        }}>
+          <PagerButton
+            disabled={safePage === 0}
+            onClick={goPrev}
+            ariaLabel="Předchozí stránka"
+            icon={<FaChevronLeft />}
+          />
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 12,
+            fontWeight: 600,
+            color: '#6b7280',
+            letterSpacing: '-0.005em',
+            minWidth: 56,
+            textAlign: 'center',
+          }}>
+            <span style={{ color: '#111827' }}>{safePage + 1}</span>
+            <span style={{ margin: '0 6px', color: '#cbd5e1' }}>/</span>
+            <span>{pageCount}</span>
+          </span>
+          <PagerButton
+            disabled={safePage === pageCount - 1}
+            onClick={goNext}
+            ariaLabel="Další stránka"
+            icon={<FaChevronRight />}
+          />
         </div>
       )}
     </div>
   );
 };
+
+const PagerButton: React.FC<{
+  disabled: boolean;
+  onClick: () => void;
+  ariaLabel: string;
+  icon: React.ReactNode;
+}> = ({ disabled, onClick, ariaLabel, icon }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    aria-label={ariaLabel}
+    style={{
+      width: 32,
+      height: 32,
+      display: 'grid',
+      placeItems: 'center',
+      padding: 0,
+      background: disabled ? '#f3f4f6' : '#fafbfc',
+      border: '1px solid rgba(0, 0, 0, 0.06)',
+      borderRadius: '50%',
+      color: disabled ? '#cbd5e1' : '#374151',
+      cursor: disabled ? 'default' : 'pointer',
+      transition: 'all .15s',
+      fontSize: 11,
+    }}
+    onMouseEnter={e => {
+      if (disabled) return;
+      e.currentTarget.style.background = '#f1f5f9';
+      e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.12)';
+      e.currentTarget.style.color = '#111827';
+    }}
+    onMouseLeave={e => {
+      if (disabled) return;
+      e.currentTarget.style.background = '#fafbfc';
+      e.currentTarget.style.borderColor = 'rgba(0, 0, 0, 0.06)';
+      e.currentTarget.style.color = '#374151';
+    }}
+  >
+    {icon}
+  </button>
+);
 
 export default PanelMapView;

@@ -267,7 +267,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
         title={t('Solární analýza')}
       />
 
-      {/* Hero */}
       <header className="saa-hero">
         <button className="saa-back" onClick={onBack}>
           <FaArrowLeft /> {t('Zpět na přehled')}
@@ -406,7 +405,6 @@ const SolarAnalysisAdvanced: React.FC<Props> = ({ onBack }) => {
       {result && sel && (
         <div className="saa-results">
 
-          {/* Info strip */}
           <div className="saa-info-strip">
             <div className="saa-info-chip">
               <FaMapMarkerAlt />

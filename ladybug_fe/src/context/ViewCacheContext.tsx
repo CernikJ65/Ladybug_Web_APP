@@ -21,8 +21,6 @@ type ViewType =
   | 'solar'
   | 'solar-advanced'
   | 'hbjson'
-  | 'builder'
-  | 'heatpump'
   | 'heatpump-real'
   | 'ped-optimizer';
 

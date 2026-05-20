@@ -110,7 +110,6 @@ const WindView: React.FC<Props> = ({ data }) => {
         ))}
       </div>
 
-      {/* SVG WIND ROSE */}
       <h3 className="tv-title">
         <FaCompass /> {t('Větrná růžice')}
       </h3>

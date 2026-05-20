@@ -36,7 +36,6 @@ export interface TemperatureData {
 
 interface Props { data: TemperatureData; }
 
-/* ---------- helpers ---------- */
 const tempColor = (t: number, min: number, max: number): string => {
   const r = Math.max(0, Math.min(1, (t - min) / (max - min || 1)));
   if (r < 0.15) return `hsl(220, 65%, ${18 + r * 80}%)`;
@@ -144,7 +143,6 @@ const TemperatureView: React.FC<Props> = ({ data }) => {
           <h3 className="tv-title"><FaClock /> {t('Typický den — leden vs červenec')}</h3>
           <div className="sv-diagram-wrap">
             <svg viewBox={`0 0 ${DW} ${DH}`} className="sv-svg">
-              {/* Grid */}
               {Array.from({ length: 7 }, (_, i) => dMin + i * Math.ceil((dMax - dMin) / 6)).map(t => (
                 <g key={t}>
                   <line x1={DP.left} y1={DP.top + dCH - ((t - dMin) / (dMax - dMin)) * dCH}

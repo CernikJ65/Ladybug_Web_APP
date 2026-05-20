@@ -8,7 +8,7 @@ Soubor: ladybug_be/app/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import (
-    analysis, solar, heatpump, ped_optimizer, heatpump_real,
+    analysis, solar, ped_optimizer, heatpump_real,
     converter, progress,
 )
 
@@ -34,9 +34,6 @@ app.include_router(
 )
 app.include_router(
     solar.router, prefix="/api/solar", tags=["solar"],
-)
-app.include_router(
-    heatpump.router, prefix="/api/heatpump", tags=["heatpump"],
 )
 app.include_router(
     ped_optimizer.router,

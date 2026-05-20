@@ -120,7 +120,6 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             ))}
           </defs>
 
-          {/* Gridlines - horizontal */}
           {[0, 10, 20, 30, 40, 50, 60].map(a => (
             <g key={a}>
               <line x1={PAD.left} y1={toY(a)} x2={W - PAD.right} y2={toY(a)}
@@ -132,7 +131,6 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             </g>
           ))}
 
-          {/* Gridlines - vertical (hours) */}
           {Array.from({ length: H_MAX - H_MIN + 1 }, (_, i) => H_MIN + i).map(h => (
             <g key={h}>
               <line x1={toX(h)} y1={PAD.top} x2={toX(h)} y2={H - PAD.bottom}
@@ -143,7 +141,6 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             </g>
           ))}
 
-          {/* Axis labels */}
           <text x={W / 2} y={H - 2} textAnchor="middle"
             fontSize="13" fill="#ffffff"
             fontFamily="'Outfit', sans-serif">{t('Hodina dne')}</text>
@@ -152,7 +149,6 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             fontFamily="'Outfit', sans-serif"
             transform={`rotate(-90, 12, ${H / 2})`}>{t('Výška °')}</text>
 
-          {/* Sun arcs */}
           {daily_arcs.map((arc, i) => (
             <path key={arc.month} d={arcToPath(arc.points)}
               fill="none" stroke={COLORS[i]}
@@ -165,7 +161,6 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             />
           ))}
 
-          {/* Peak dots */}
           {daily_arcs.map((arc, i) => {
             const peak = arc.points.reduce((a, b) => b.altitude > a.altitude ? b : a);
             return (
@@ -176,7 +171,6 @@ const SunpathView: React.FC<Props> = ({ data }) => {
             );
           })}
 
-          {/* Hover crosshair + tooltip */}
           {tip && (
             <g>
               <line x1={tip.x} y1={PAD.top} x2={tip.x} y2={H - PAD.bottom}

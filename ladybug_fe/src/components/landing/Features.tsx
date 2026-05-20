@@ -8,7 +8,7 @@
 import React, { useCallback, type ReactNode } from 'react';
 import {
   FaSun, FaWind, FaChartLine,
-  FaCube, FaSolarPanel, FaFire, FaBalanceScale,
+  FaCube, FaSolarPanel, FaBalanceScale,
   FaFileImport,
   FaThermometerQuarter,
 } from 'react-icons/fa';
@@ -71,16 +71,6 @@ const Features: React.FC<Props> = ({ onFeatureClick }) => {
       color: '#e67e22',
       tags: ['Radiance', 'HBJSON'],
     },
-    // {
-    //   id: 'heatpump',
-    //   icon: <FaFire />,
-    //   title: 'Potenciál tepelných čerpadel',
-    //   description:
-    //     'Optimalizační úloha, porovnávající využití tepelného čerpadla ',
-    //   color: '#14b8a6',
-    //   tags: ['EnergyPlus', 'COP'],
-    // },
-    // TODO: odkomentovat po prezentaci
      {
        id: 'heatpump-real',
        icon: <FaThermometerQuarter />,

@@ -1,40 +1,45 @@
 import type { TourStep } from '../TourOverlay';
 
 /**
- * Kroky průvodce pro scénář Solární analýzy (FV optimalizace).
+ * Kroky průvodce pro scénář Solární analýza.
  * Vrací jiný seznam podle stavu (výsledky načtené / nenačtené).
  *
- * @param hasResult  Zda jsou již výsledky optimalizace načtené (info strip existuje).
+ * @param hasResult  Zda jsou již výsledky simulace načtené.
  */
 export const getSolarAdvancedSteps = (hasResult: boolean): TourStep[] => {
-  // Úvodní kroky — zobrazí se vždy, bez ohledu na stav.
+  // Úvodní kroky se zobrazují vždy, bez ohledu na stav.
   const intro: TourStep[] = [
     {
       selector: '.saa-hero h1',
       title: 'Solární analýza',
-      body: 'Tento scénář navrhne rozmístění fotovoltaických panelů na střechách modelu. Algoritmus vybere vhodné plochy podle sklonu, spočte ozáření z hodinových EPW dat a vrátí varianty s odhadem roční výroby.',
+      body:
+        'Optimalizační scénář, který rozmístí solární panely na střechy identifikované ve vstupních HBJSON datech, a to v nejvyšším počtu, jaký geometrie střech, jejich sklon a orientace dovolují. Pro panely se následně vypočítá solární potenciál a odhadne potenciální roční výroby elektrické energie a vrátí se ty nejlepší.',
       position: 'bottom',
     },
     {
       selector: '.saa-upload-grid',
       title: 'Vstupní soubory',
-      body: 'HBJSON popisuje geometrii budov a střech. EPW dodává hodinová klimatická data pro danou lokalitu. Bez obou souborů algoritmus nelze spustit.',
+      body:
+        'Formulář pro nahrání vstupních dat. Scénář vyžaduje oba klíčové formáty: HBJSON (geometrie obalsti) a EPW  (klimatické data lokality.',
       position: 'bottom',
     },
     {
       selector: '.saa-stepper',
       title: 'Počet panelů',
-      body: 'Cílový počet panelů, kolem nějž algoritmus vygeneruje sadu variant. Hodnotu lze upravit šipkami nebo přímým zápisem.',
+      body:
+        'Pole určuje, kolik panelů s největším potenciálem výroby se uživateli zobrazí ve výsledcích. Hodnotu lze upravit šipkami nebo přímým zápisem.',
     },
     {
       selector: '.saa-params',
       title: 'Pokročilé parametry',
-      body: 'Účinnost FV modulů, maximální přípustný sklon střechy, typ modulu (Standard, Premium, tenkovrstvý) a způsob montáže. Výchozí hodnoty odpovídají běžnému polykrystalickému modulu na volném stojanu.',
+      body:
+        'Rozbalovací sekce s dalšími parametry simulace. Účinnost panelu udává, jaký podíl dopadajícího slunečního záření se převede na elektrickou energii. Maximální sklon střechy slouží jako filtr ploch, které se mají do simulace zahrnout. Typ montáže rozlišuje mezi otevřenou konstrukci od střešní montáže.',
     },
     {
       selector: '.saa-run',
-      title: 'Spuštění optimalizace',
-      body: 'Po stisknutí tohoto tlačítka backend přečte HBJSON, vyfiltruje vhodné střešní plochy a přes Radiance + pvlib PVWatts spočte roční výrobu pro každou variantu.',
+      title: 'Spuštění simulace',
+      body:
+        'Tlačítko pro spuštění simulace.',
     },
   ];
 
@@ -47,22 +52,35 @@ export const getSolarAdvancedSteps = (hasResult: boolean): TourStep[] => {
     {
       selector: '.saa-info-strip',
       title: 'Informační pruh',
-      body: 'Lokalita z hlavičky EPW, počet rozpoznaných střech, jejich celková plocha a maximální možný počet panelů, který by se na ně vešel.',
+      body:
+        'Pruh s identifikací lokality načtené z hlavičky EPW souboru, počtem rozpoznaných střech, jejich celkovou plochou a maximálním počtem panelů, jež by se na ně vešly.',
     },
     {
       selector: '.saa-kpi-row',
-      title: 'Hlavní metriky',
-      body: 'Roční výroba v kWh, instalovaný výkon v kWp, plocha pokrytá panely a průměrný solární potenciál v kWh/m².',
+      title: 'Souhrnné statistiky',
+      body:
+        'Charakteristiky vybrané skupiny solárních panelů. Roční výroba udává odhadovanou produkci elektrické energie, instalovaný výkon, celkovou rozlohu panelů na střechách a průměrný solární potenciál na jeden metr čtvereční vybraných panelů.',
     },
     {
-      selector: '.saa-detail-grid',
-      title: 'Parametry a mapa rozmístění',
-      body: 'Vlevo souhrn konfigurace (typ modulu, montáž, sklon, azimut). Vpravo schematická mapa rozmístění panelů na jednotlivých střechách s barevnou škálou solárního potenciálu.',
+      selector: '.saa-detail-grid > .saa-card',
+      title: 'Parametry panelů',
+      body:
+        'Karta shrnuje parametry solárních panelů použitých v simulaci. Obsahuje například rozměry panelu,účinnost, typ montáže nebo celkové ztráty systému. Rozkliknutím Celkových ztrát se zobrazí jejich podrobný rozpis.',
     },
     {
-      selector: '.saa-table',
+      // Cílí na root div komponenty PanelMapView, který má data-tour="panel-map".
+      // Předchozí selector '.pmap-wrap' nematchoval, protože root PanelMapView
+      // používá pouze inline styly bez className.
+      selector: '[data-tour="panel-map"]',
+      title: 'Rozmístění solárních panelů',
+      body:
+        '2D vizualizace střešních ploch z HBJSON dat společně s rozmístěním panelů, jež ze simulace vzešly jako ty s nejvyšším potenciálem výroby. Pro každou střechu vzniká samostatná karta. Při najetí kurzorem na konkrétní panel se zobrazí jeho atributy, například potenciál roční výroby nebo jeho souřadnice  na střeše.',
+    },
+    {
+      selector: '.saa-table-wrap',
       title: 'Detail jednotlivých panelů',
-      body: 'Tabulka všech panelů seřazená podle roční výroby. U každého panelu vidíte plochu, sklon, azimut, ozáření a odhad výroby.',
+      body:
+        'Tabulka s informacemi o všech vybraných panelech, seřazená podle potenciálu roční výroby. U každého panelu je uvedena plocha, optimální sklon určený simulací a směr orientace. Závěr tvoří energetické parametry: roční solární potenciál, odhadovaná výroba a instalovaný výkon.',
     },
   ];
 };

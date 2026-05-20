@@ -12,20 +12,16 @@ import { useT } from './i18n/useT';
 
 type BackProps = { onBack: () => void };
 
-const SolarAnalysis = lazy(() => import('./components/analysis/solar/SolarAnalysis'));
+const EpwAnalysis = lazy(() => import('./components/analysis/epw/EpwAnalysis'));
 const SolarAnalysisAdvanced = lazy(() => import('./components/analysis/solar/SolarAnalysisAdvanced'));
 const HBJSONViewer = lazy(async () => {
   const m = await import('./components/analysis/hbjson_visualization/Hbjsonviewer');
   return { default: m.default as FC<BackProps> };
 });
-const HBJSONBuilder = lazy(async () => {
-  const m = await import('./components/analysis/builder/HbjsonBuilder');
-  return { default: m.default as FC<BackProps> };
-});
-const HeatPumpAnalysis = lazy(() => import('./components/analysis/heatpump/HeatPumpAnalysis'));
 const HeatPumpReal = lazy(() => import('./components/analysis/heatpump_real/HeatPumpReal'));
 const PedOptimizer = lazy(() => import('./components/analysis/ped_optimizer/PedOptimizer'));
 const DwgConverter = lazy(() => import('./components/analysis/converter/DwgConverter'));
+const SampleData = lazy(() => import('./components/sample_data/SampleData'));
 
 const RouteFallback: FC = () => (
   <div
@@ -55,32 +51,34 @@ const RouteFallback: FC = () => (
 
 type ViewType =
   | 'landing' | 'solar' | 'solar-advanced'
-  | 'hbjson' | 'builder' | 'heatpump'
-  | 'heatpump-real' | 'ped-optimizer' | 'converter';
+  | 'hbjson'
+  | 'heatpump-real' | 'ped-optimizer' | 'converter'
+  | 'samples';
 
 const hashToView: Record<string, ViewType> = {
   '': 'landing', features: 'landing', about: 'landing',
   solar: 'solar', 'solar-advanced': 'solar-advanced',
-  hbjson: 'hbjson', builder: 'builder',
-  heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
+  hbjson: 'hbjson',
+  'heatpump-real': 'heatpump-real',
   'ped-optimizer': 'ped-optimizer', converter: 'converter',
+  samples: 'samples',
 };
 const viewToHash: Record<ViewType, string> = {
   landing: '', solar: 'solar', 'solar-advanced': 'solar-advanced',
-  hbjson: 'hbjson', builder: 'builder',
-  heatpump: 'heatpump', 'heatpump-real': 'heatpump-real',
+  hbjson: 'hbjson',
+  'heatpump-real': 'heatpump-real',
   'ped-optimizer': 'ped-optimizer', converter: 'converter',
+  samples: 'samples',
 };
 const viewTitles: Record<ViewType, { cs: string; en: string }> = {
   landing:          { cs: 'Ladybug Web',                                en: 'Ladybug Web' },
   solar:            { cs: 'Analýza EPW – Ladybug Web',                  en: 'EPW Analysis – Ladybug Web' },
   'solar-advanced': { cs: 'Pokročilá solární analýza – Ladybug Web',    en: 'Advanced Solar Analysis – Ladybug Web' },
   hbjson:           { cs: '3D Vizualizace – Ladybug Web',               en: '3D Visualization – Ladybug Web' },
-  builder:          { cs: 'HBJSON Builder – Ladybug Web',               en: 'HBJSON Builder – Ladybug Web' },
-  heatpump:         { cs: 'Tepelná čerpadla – Ladybug Web',             en: 'Heat Pumps – Ladybug Web' },
   'heatpump-real':  { cs: 'Celoroční simulace TČ – Ladybug Web',       en: 'Year-Round HP Simulation – Ladybug Web' },
   'ped-optimizer':  { cs: 'PED optimalizátor – Ladybug Web',            en: 'PED Optimizer – Ladybug Web' },
   converter:        { cs: 'CAD Konvertor – Ladybug Web',                en: 'CAD Converter – Ladybug Web' },
+  samples:          { cs: 'Ukázková data – Ladybug Web',                en: 'Sample Data – Ladybug Web' },
 };
 
 function getHash(): string {
@@ -173,9 +171,6 @@ function App() {
       case 'solar-advanced':
         setCurrentView('solar-advanced');
         break;
-      case 'heatpump':
-        setCurrentView('heatpump');
-        break;
       case 'heatpump-real':
         setCurrentView('heatpump-real');
         break;
@@ -191,9 +186,8 @@ function App() {
       case 'climate':
         setCurrentView('hbjson');
         break;
-      case 'parametric':
-      case 'wind':
-        setCurrentView('builder');
+      case 'samples':
+        setCurrentView('samples');
         break;
       default:
         alert(t('Funkce "{{id}}" bude brzy dostupná!', { id }));
@@ -209,14 +203,13 @@ function App() {
         )}
         {currentView !== 'landing' && (
           <Suspense fallback={<RouteFallback />}>
-            {currentView === 'solar' && <SolarAnalysis onBack={back} />}
+            {currentView === 'solar' && <EpwAnalysis onBack={back} />}
             {currentView === 'solar-advanced' && <SolarAnalysisAdvanced onBack={back} />}
             {currentView === 'hbjson' && <HBJSONViewer onBack={back} />}
-            {currentView === 'builder' && <HBJSONBuilder onBack={back} />}
-            {currentView === 'heatpump' && <HeatPumpAnalysis onBack={back} />}
             {currentView === 'heatpump-real' && <HeatPumpReal onBack={back} />}
             {currentView === 'ped-optimizer' && <PedOptimizer onBack={back} />}
             {currentView === 'converter' && <DwgConverter onBack={back} />}
+            {currentView === 'samples' && <SampleData onBack={back} />}
           </Suspense>
         )}
       </SharedFilesProvider>

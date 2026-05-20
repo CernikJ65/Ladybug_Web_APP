@@ -63,62 +63,9 @@ const en_overrides: Record<string, string> = {
   'Plocha': 'Area',
   'Měsíc': 'Month',
 
-  // ── Builder ───────────────────────────────────────────────────────
-  'Budovy': 'Buildings',
-  '+ Přidat budovu': '+ Add building',
-  'Žádné budovy. Klikněte na "+ Přidat budovu" pro vytvoření.':
-    'No buildings. Click "+ Add building" to create one.',
-  'Odstranit budovu': 'Remove building',
-  'Pater': 'Floors',
-  'Název budovy': 'Building name',
-  'Patra': 'Floors',
-  '+ Přidat patro': '+ Add floor',
-  'Žádná patra. Klikněte na "+ Přidat patro" pro vytvoření.':
-    'No floors. Click "+ Add floor" to create one.',
-  'Odstranit patro': 'Remove floor',
-  'Název patra': 'Floor name',
-  'Výška podlaží (m)': 'Floor height (m)',
-  'Počet místností': 'Number of rooms',
-  'Lokalita projektu': 'Project location',
-  'Město': 'City',
-  'Název města': 'City name',
-  'Zeměpisná šířka': 'Latitude',
-  'Zeměpisná délka': 'Longitude',
-  'Časová zóna': 'Time zone',
   'Místnosti': 'Rooms',
-  '+ Přidat místnost': '+ Add room',
-  'Žádné místnosti. Klikněte na "+ Přidat místnost" pro vytvoření.':
-    'No rooms. Click "+ Add room" to create one.',
-  'Odstranit místnost': 'Remove room',
-  'Název místnosti': 'Room name',
-  'Šířka (m)': 'Width (m)',
-  'Délka (m)': 'Length (m)',
-  'Výška stropu (m)': 'Ceiling height (m)',
-  'Pozice X (m)': 'Position X (m)',
-  'Pozice Y (m)': 'Position Y (m)',
-  'Objem': 'Volume',
-  'Oken': 'Windows',
-  'Okna': 'Windows',
-  '+ Přidat okno': '+ Add window',
-  'Žádná okna. Klikněte na "+ Přidat okno".': 'No windows. Click "+ Add window".',
-  'Okno {{n}} ({{wall}})': 'Window {{n}} ({{wall}})',
-  'Odstranit okno': 'Remove window',
-  'Stěna': 'Wall',
-  'Sever': 'North',
-  'Jih': 'South',
   'Východ': 'East',
   'Západ': 'West',
-  'Výška (m)': 'Height (m)',
-  'Pozice od kraje (m)': 'Offset from edge (m)',
-  'Výška od podlahy (m)': 'Height above floor (m)',
-  'Nový projekt': 'New project',
-  'Praha': 'Prague',
-  'Budova {{n}}': 'Building {{n}}',
-  'Patro {{n}}': 'Floor {{n}}',
-  'Místnost {{n}}': 'Room {{n}}',
-  'Exportovat HBJSON': 'Export HBJSON',
-  'Detail místnosti': 'Room detail',
-  'Rozměry': 'Dimensions',
 
   // ── Converter ─────────────────────────────────────────────────────
   'Podporované formáty: .dwg, .dxf': 'Supported formats: .dwg, .dxf',
@@ -554,6 +501,20 @@ const en_overrides: Record<string, string> = {
   'Výroba FVE': 'PV production',
   'Spotřeba budovy': 'Building consumption',
   'Cena celkem': 'Total price',
+
+  'Zpět na úvod': 'Back to home',
+  'Ukázková data': 'Sample Data',
+  'Stažitelné soubory pro vyzkoušení analytických scénářů bez nutnosti připravovat vlastní data. Stažený soubor stačí v daném scénáři nahrát stejně jako vlastní.':
+    'Downloadable files for trying out the analysis scenarios without preparing your own data. Just upload the downloaded file in the chosen scenario as if it were your own.',
+  'HBJSON modely budov': 'HBJSON Building Models',
+  'Honeybee modely popisující geometrii budov a jejich tepelné zóny.':
+    'Honeybee models describing building geometry and thermal zones.',
+  'EPW klimatická data': 'EPW Climate Data',
+  'Hodinová klimatická data pro konkrétní lokality, převzatá z volně dostupných meteorologických souborů.':
+    'Hourly climate data for specific locations, taken from freely available weather files.',
+  'Zatím zde nejsou žádné soubory ke stažení.':
+    'No files available for download yet.',
+  'Stáhnout': 'Download',
 };
 
 export default en_overrides;

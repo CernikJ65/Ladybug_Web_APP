@@ -2,6 +2,7 @@ export default {
   navbar: {
     logo: 'Ladybug Web',
     features: 'Features',
+    samples: 'Sample Data',
     about: 'About',
     login: 'Sign in',
   },

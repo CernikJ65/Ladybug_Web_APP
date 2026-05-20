@@ -140,7 +140,6 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
         title={t('PED analýza')}
       />
 
-      {/* Hero */}
       <header className="ped-hero">
         <button className="ped-back" onClick={onBack}>
           <FaArrowLeft /> {t('Zpět na přehled')}
@@ -220,12 +219,16 @@ const PedOptimizer: React.FC<Props> = ({ onBack }) => {
                 </>
               )}
               <h2 className="ped-section-title">{t('Roční spotřeba budovy')}</h2>
-              <PedConsumptionBreakdown
-                data={selected.consumption_kwh}
-                hasHeatPump={selected.system.has_hp}
-              />
+              <div data-tour="ped-consumption">
+                <PedConsumptionBreakdown
+                  data={selected.consumption_kwh}
+                  hasHeatPump={selected.system.has_hp}
+                />
+              </div>
               <h2 className="ped-section-title">{t('Měsíční bilance')}</h2>
-              <PedMonthlyTable variant={selected} />
+              <div data-tour="ped-monthly">
+                <PedMonthlyTable variant={selected} />
+              </div>
             </>
           )}
         </div>

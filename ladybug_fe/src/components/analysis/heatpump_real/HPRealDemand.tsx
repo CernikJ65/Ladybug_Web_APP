@@ -33,7 +33,7 @@ const HPRealDemand: React.FC<Props> = ({
   );
 
   return (
-    <section className="hp-card">
+    <section className="hp-card" data-tour="hp-demand">
       <div className="hp-card-head">
         <FaBuilding className="hp-card-icon" />
         <div>

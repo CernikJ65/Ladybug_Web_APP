@@ -2,6 +2,7 @@ export default {
   navbar: {
     logo: 'Ladybug Web',
     features: 'Analytické scénáře',
+    samples: 'Ukázková data',
     about: 'O projektu',
     login: 'Přihlásit se',
   },

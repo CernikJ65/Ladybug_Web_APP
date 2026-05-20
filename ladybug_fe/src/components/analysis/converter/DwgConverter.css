@@ -7,8 +7,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
-/* ── Page ── */
-
 .cvt-page {
   --cvt-bg: #f5f7fa;
   --cvt-surface: #ffffff;
@@ -50,8 +48,6 @@
 .cvt-page *::after {
   box-sizing: border-box;
 }
-
-/* ── Hero ── */
 
 .cvt-hero {
   background: linear-gradient(135deg, #92400e 0%, #b45309 40%, #d97706 100%);
@@ -124,8 +120,6 @@
   max-width: 560px;
 }
 
-/* ── Back button ── */
-
 .cvt-back {
   position: absolute;
   top: 1.2rem;
@@ -149,8 +143,6 @@
   background: rgba(255, 255, 255, .22);
 }
 
-/* ── Content wrapper ── */
-
 .cvt-content {
   max-width: 900px;
   margin: -24px auto 0;
@@ -161,8 +153,6 @@
   flex-direction: column;
   gap: 1rem;
 }
-
-/* ── Card ── */
 
 .cvt-card {
   background: var(--cvt-surface);
@@ -198,8 +188,6 @@
   font-weight: 500;
   line-height: 1.45;
 }
-
-/* ── Upload zone ── */
 
 .cvt-upload-zone {
   border: 2px dashed var(--cvt-border);
@@ -265,8 +253,6 @@
   display: none;
 }
 
-/* ── Submit button ── */
-
 .cvt-submit {
   width: 100%;
   margin-top: 1.25rem;
@@ -296,8 +282,6 @@
   cursor: not-allowed;
   box-shadow: none;
 }
-
-/* ── Loading ── */
 
 .cvt-loading {
   text-align: center;
@@ -385,8 +369,6 @@
   flex-wrap: wrap;
 }
 
-/* ── Action buttons (success) ── */
-
 .cvt-download {
   display: inline-flex;
   align-items: center;
@@ -429,8 +411,6 @@
   color: var(--cvt-heading);
   background: var(--cvt-surface-2);
 }
-
-/* ── KPI row (kept for compatibility) ── */
 
 .cvt-kpi-row {
   display: grid;
@@ -481,8 +461,6 @@
   font-family: var(--cvt-mono);
 }
 
-/* ── Detail rows (kept for compatibility) ── */
-
 .cvt-detail-row {
   display: flex;
   justify-content: space-between;
@@ -505,8 +483,6 @@
   font-weight: 700;
 }
 
-/* ── Animations ── */
-
 @keyframes cvt-fadeUp {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
@@ -514,8 +490,6 @@
 @keyframes cvt-spin {
   to { transform: rotate(360deg); }
 }
-
-/* ── Responsive ── */
 
 @media (max-width: 700px) {
   .cvt-content { padding: 0 1rem; }

@@ -9,8 +9,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
-/* ── Page + variables (scoped) ── */
-
 .ped-page {
   --ped-bg: #f5f7fa;
   --ped-surface: #ffffff;
@@ -55,8 +53,6 @@
 .ped-page *::after {
   box-sizing: border-box;
 }
-
-/* ── Hero ── */
 
 .ped-hero {
   background: linear-gradient(135deg, #2980b9 0%, #3498db 60%, #5dade2 100%);
@@ -111,8 +107,6 @@
   margin: 0;
   max-width: 560px;
 }
-
-/* ── Back button ── */
 
 .ped-back {
   position: absolute;
@@ -423,8 +417,6 @@
   background: rgba(41, 128, 185, .2);
 }
 
-/* ── Params grid ── */
-
 .ped-params-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -549,8 +541,6 @@
   background: rgba(41, 128, 185, .15);
 }
 
-/* ── Select ── */
-
 .ped-select {
   background: var(--ped-surface-2);
   border: 1px solid var(--ped-border);
@@ -579,8 +569,6 @@
   border-color: var(--ped-blue);
   box-shadow: 0 0 0 3px var(--ped-blue-glow);
 }
-
-/* ── Slider (Apple-style) ── */
 
 .ped-slider-wrap {
   display: flex;
@@ -681,8 +669,6 @@
   letter-spacing: -.01em;
 }
 
-/* ── Run button ── */
-
 .ped-run {
   display: flex;
   align-items: center;
@@ -753,8 +739,6 @@
   font-family: var(--ped-font);
 }
 
-/* ── Results wrap ── */
-
 .ped-results {
   max-width: 1100px;
   margin: 0 auto;
@@ -764,8 +748,6 @@
   gap: 1rem;
   animation: ped-fadeUp .4s ease-out;
 }
-
-/* ── Info chips ── */
 
 .ped-info-strip {
   display: flex;
@@ -798,8 +780,6 @@
   letter-spacing: -.01em;
 }
 
-/* ── Section title ── */
-
 .ped-section-title {
   font-size: 1.05rem;
   font-weight: 700;
@@ -808,8 +788,6 @@
   letter-spacing: -.015em;
   font-family: var(--ped-font);
 }
-
-/* ── Variant cards ── */
 
 .ped-variants {
   display: grid;
@@ -979,8 +957,6 @@
   font-family: var(--ped-font);
 }
 
-/* ── HP performance grid ── */
-
 .ped-hp-perf {
   background: var(--ped-surface);
   border: 1px solid var(--ped-border);
@@ -1088,8 +1064,6 @@
   color: var(--ped-text);
   font-weight: 600;
 }
-
-/* ── Responsive ── */
 
 @media (max-width: 720px) {
   .ped-hero { padding: 1.25rem 1rem 3rem; }

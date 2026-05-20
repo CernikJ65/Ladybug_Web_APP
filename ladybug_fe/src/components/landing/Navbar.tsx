@@ -17,7 +17,6 @@ const Navbar: React.FC = () => {
     document.title = i18n.language === 'cs' ? titles.cs : titles.en;
   }, [i18n.language]);
 
-  // On mount: read hash, scroll to section, set title
   useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
@@ -29,12 +28,10 @@ const Navbar: React.FC = () => {
     updateTitle(hash);
   }, [updateTitle]);
 
-  // Update title when language changes
   useEffect(() => {
     updateTitle(window.location.hash);
   }, [i18n.language, updateTitle]);
 
-  // Listen to browser back/forward
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash;
@@ -67,6 +64,9 @@ const Navbar: React.FC = () => {
         <div className="nav-links">
           <a onClick={() => navigateTo('features')} style={{ cursor: 'pointer' }}>
             {t('navbar.features')}
+          </a>
+          <a onClick={() => navigateTo('samples')} style={{ cursor: 'pointer' }}>
+            {t('navbar.samples')}
           </a>
           <a onClick={() => navigateTo('about')} style={{ cursor: 'pointer' }}>
             {t('navbar.about')}

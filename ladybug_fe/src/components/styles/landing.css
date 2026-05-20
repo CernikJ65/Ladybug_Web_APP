@@ -132,7 +132,6 @@
   align-items: center;
   min-height: 90vh;
   position: relative;
-  /* Breathing gradient — slow ambient color shift */
   animation: heroBreathing 12s ease-in-out infinite;
 }
 
@@ -168,7 +167,6 @@
   pointer-events: none;
 }
 
-/* --- Grain texture — premium depth --- */
 .hero-grain {
   position: absolute;
   inset: -50% -50%;
@@ -188,7 +186,6 @@
   100% { transform: translate(-256px, -256px); }
 }
 
-/* --- Light leak — soft wandering glow --- */
 .hero-light-leak {
   position: absolute;
   width: 500px;
@@ -641,7 +638,6 @@
 }
 
 
-/* --- Header — Apple centered hierarchy --- */
 .features-header {
   max-width: 680px;
   margin: 0 auto 4.5rem;
@@ -743,7 +739,6 @@
     0 0 0 1px color-mix(in srgb, var(--accent) 3%, transparent);
 }
 
-/* --- Shine sweep --- */
 .feature-card::before {
   content: '';
   position: absolute;
@@ -1270,7 +1265,6 @@
   .scroll-ind { display: none; }
   .si-wrap { display: none; }
 
-  /* Features responsive */
   .features-section {
     padding: 8rem 1.5rem 8rem;
     padding-top: calc(8rem + 35px);
@@ -1285,7 +1279,6 @@
   .feature-card { padding: 2rem 1.5rem 1.5rem; border-radius: 18px; }
   .feature-accent { border-radius: 18px 18px 0 0; }
 
-  /* Hero ambient layers — reduce on mobile */
   .hero-light-leak { width: 300px; height: 300px; }
   .hero-light-leak--2 { width: 250px; height: 250px; }
 }
@@ -1303,7 +1296,6 @@
   .features-section::before,
   .features-section::after { height: 35px; }
 
-  /* Disable heavy ambient effects on small screens */
   .hero-grain { display: none; }
   .hero-light-leak { display: none; }
   .hero-section { animation: none; }

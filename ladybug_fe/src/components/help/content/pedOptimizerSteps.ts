@@ -4,35 +4,44 @@ export const getPedOptimizerSteps = (hasResult: boolean): TourStep[] => {
   const intro: TourStep[] = [
     {
       selector: '.ped-hero h1',
-      title: 'PED optimalizátor',
-      body: 'Tento scénář porovnává tři investiční varianty (FVE samotná, FVE + ASHP a FVE + GSHP) v rámci zadaného rozpočtu. Cílem je dosáhnout celoroční energetické bilance budovy (Positive Energy District).',
+      title: 'Optimalizace oblasti pomocí PV a TČ',
+      body:
+        'Optimalizační scénář, který na základě zadaného rozpočtu osadí oblast fotovoltaickými panely a tepelnými čerpadly ve třech porovnávaných variantách. První pokrývá oblast pouze fotovoltaickými panely, zbylé dvě k nim navíc doplní tepelné čerpadlo vzduch-voda, případně země-voda. Z roční bilance výroby a spotřeby se pro každou variantu vypočte, zda oblast dosahuje energetické pozitivity.',
       position: 'bottom',
     },
     {
-      selector: '.ped-upload-grid',
+      selector: '.ped-files',
       title: 'Vstupní soubory',
-      body: 'HBJSON popisuje geometrii budovy a střech. EPW dodává hodinová klimatická data pro danou lokalitu. Bez obou souborů algoritmus nelze spustit.',
+      body:
+        'Formulář pro nahrání vstupních dat. Scénář vyžaduje oba klíčové formáty: HBJSON (geometrie oblasti) a EPW (klimatická data lokality).',
       position: 'bottom',
     },
     {
       selector: '.ped-budget',
       title: 'Investiční rozpočet',
-      body: 'Celkový strop investice v Kč. Algoritmus se snaží zvolit takovou kombinaci tepelného čerpadla a počtu FV panelů, aby se vešla do tohoto rozpočtu a zároveň pokryla co nejvíc spotřeby budovy.',
+      body:
+        'Pole stanovuje horní finanční hranici v Kč, do které je možné oblast osadit energetickými agenty. Hodnotu lze upravit šipkami nebo přímým zápisem.',
     },
     {
-      selector: '.ped-field-grid--params',
+      selector: '.ped-params-grid',
       title: 'Parametry simulace',
-      body: 'Teplota vytápění (setpoint pro EnergyPlus), účinnost FV modulů a způsob montáže. Tyto hodnoty ovlivňují jak spotřebu budovy, tak výrobu z FVE.',
+      body:
+        'Parametry simulace převzaté z předchozích optimalizačních scénářů. Setpoint vytápění, účinnost fotovoltaických panelů a typ jejich montáže.',
     },
     {
-      selector: '.ped-card--costs',
+      // Cílí na druhý .ped-params-grid uvnitř PedForm, který má
+      // data-tour="ped-costs". Bez tohoto atributu by selector
+      // .ped-params-grid trefoval jen ten první (parametry simulace).
+      selector: '[data-tour="ped-costs"]',
       title: 'Ceny komponent',
-      body: 'Investiční náklady tepelných čerpadel (ASHP — vzduch/voda, GSHP — země/voda) a cena za jeden FV panel. Z těchto cen se počítá, kolik panelů a jaké TČ se vejde do rozpočtu.',
+      body:
+        'Sekce umožňuje specifikovat pořizovací cenu jednotlivých energetických agentů.',
     },
     {
       selector: '.ped-run',
-      title: 'Spuštění analýzy',
-      body: 'Po stisknutí backend načte HBJSON, přes Radiance + pvlib spočte výrobu FVE pro každou variantu a v EnergyPlus odsimuluje roční chod budovy s daným tepelným čerpadlem.',
+      title: 'Spuštění simulace',
+      body:
+        'Tlačítko pro spuštění simulace.',
     },
   ];
 
@@ -45,17 +54,26 @@ export const getPedOptimizerSteps = (hasResult: boolean): TourStep[] => {
     {
       selector: '.ped-info-strip',
       title: 'Informační pruh',
-      body: 'Lokalita z hlavičky EPW, počet místností a podlahová plocha modelu, maximální možný počet panelů na střechách a zadaný rozpočet.',
+      body:
+        'Pruh uvádí název lokality načtené z hlavičky EPW souboru, počet místností a celkovou podlahovou plochu rozpoznané budovy, maximální počet panelů, jež by se vešly na její střechy, a zadaný investiční rozpočet.',
     },
     {
       selector: '.ped-variants',
-      title: 'Tři varianty',
-      body: 'Karty tří investičních scénářů. U každé vidíte roční bilanci (výroba − spotřeba), počet panelů, výrobu, spotřebu a celkovou investici. Kliknutím variantu vyberete a zobrazí se její detail níže.',
+      title: 'Přehledové karty variant',
+      body:
+        'Přehledové karty poskytují stručný pohled na všechny tři varianty.',
     },
     {
-      selector: '.ped-section-title',
-      title: 'Detail vybrané varianty',
-      body: 'Pod kartami se pro vybranou variantu zobrazí výkonnostní ukazatele tepelného čerpadla (COP, SCOP), roční rozklad spotřeby budovy a měsíční bilance výroby a spotřeby.',
+      selector: '[data-tour="ped-consumption"]',
+      title: 'Roční spotřeba budovy',
+      body:
+        'Tabulka rozkládá celkovou roční spotřebu vybrané varianty na její dílčí složky.',
+    },
+    {
+      selector: '[data-tour="ped-monthly"]',
+      title: 'Měsíční bilance',
+      body:
+        'Tabulka uvádí pro každý měsíc kalendářního roku spotřebu budovy, výrobu fotovoltaických panelů a jejich výslednou bilanci. Tento pohled umožňuje odhalit období, ve kterých některý z energetických agentů ztrácí na účinnosti, a otevírá tak prostor pro hledání alternativních řešení pro tato období.',
     },
   ];
 };

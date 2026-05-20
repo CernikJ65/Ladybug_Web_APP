@@ -40,14 +40,17 @@ některých knihoven (zejména `openstudio`) může jiná verze způsobit probl�
 | **Node.js**    | 20 LTS nebo novější      | https://nodejs.org/en/download       |
 | **Git**        | aktuální                 | https://git-scm.com/downloads        |
 | **EnergyPlus** | **přesně 25.1.0**        | https://energyplus.net/downloads     |
+| **Radiance**   | **přesně 6.0a**          | https://github.com/LBNL-ETA/Radiance/releases/tag/1fa5414d     |
+| **ODA File Converter** | **27.1 nebo novější** | https://www.opendesign.com/guestfiles/oda_file_converter |
 
 ### Důležité poznámky k jednotlivým položkám
 
 **Python 3.13 — proč ne novější verzi?** Aplikace vyžaduje balíček
 `openstudio==3.10.0`, který obsahuje nativní kompilovaný kód. Jeho vývojáři
-vydávají tzv. "wheels" (předkompilované binárky) jen pro konkrétní verze
+vydávají tzv. „wheels" (předkompilované binárky) jen pro konkrétní verze
 Pythonu. Pro Python 3.13 wheel existuje a funguje bez problémů, pro Python
-3.14 (vydaný na podzim 2025) zatím chybí.
+3.14 a vyšší wheel zatím chybí — a to nejen u verze 3.10.0, ale
+i u aktuálnější 3.11.0.
 
 **Při instalaci Pythonu na Windows zaškrtněte "Add Python to PATH".** Bez
 tohoto kroku nepůjdou spustit příkazy `python` a `pip` z terminálu a museli
@@ -58,10 +61,7 @@ moderní JavaScriptové balíčky používané frontendem a `npm install` by
 selhal.
 
 **EnergyPlus 25.1.0 je nativní program** — nedá se nainstalovat přes pip
-ani npm. Stahuje se jako klasický instalátor z odkazu výše. Verze musí být
-přesně 25.1.0, protože novější i starší verze mají rozdíly v IDF schématu
-a chování HVAC objektů, kvůli kterým by simulace mohly selhat nebo vracet
-jiné výsledky než ty uvedené v diplomové práci.
+ani npm. Stahuje se jako klasický instalátor z odkazu výše. 
 
 Po instalaci si zapamatujte cestu, kam se EnergyPlus nainstaloval — typicky:
 
@@ -79,6 +79,7 @@ python --version
 node --version
 git --version
 Test-Path "C:\EnergyPlusV25-1-0\energyplus.exe"
+Test-Path "C:\Radiance\bin\rtrace.exe"
 ```
 
 Očekávané výstupy:
@@ -87,6 +88,7 @@ Očekávané výstupy:
 Python 3.13.x
 v20.x.x  (nebo vyšší)
 git version 2.x.x
+True
 True
 ```
 
@@ -122,7 +124,7 @@ git clone https://github.com/CernikJ65/Ladybug_Web_APP.git
 ```
 
 Jakmile klonování proběhne, měli byste vidět složku `Ladybug_Web_APP`
-a v ní právě dvě části — backendovou a frontendovou.
+a v ní právě dvě části a to backendovou a frontendovou.
 
 Než obsah složky ověříte, přejděte do ní:
 
@@ -246,9 +248,7 @@ se dají naimportovat a prostředí je v pořádku.
 
 Toto je kritický krok, na který se snadno zapomíná. Honeybee potřebuje
 vědět, kde najít instalaci EnergyPlus. Má sice zabudovanou logiku, která
-EnergyPlus zkouší najít automaticky, ale na počítačích s více instalacemi
-(typicky pokud máte i OpenStudio) může najít špatnou verzi, což by vedlo
-k odlišným výsledkům simulací než v diplomové práci.
+EnergyPlus zkouší najít automaticky, ale openstudio čast instaluje vlastní energyplus.
 
 Nejdřív zkontrolujte, jaký EnergyPlus honeybee aktuálně používá:
 
@@ -277,10 +277,10 @@ má často v sobě také EnergyPlus, který se bere jako výchozí.
    ```
 
 3. Důležité detaily, které snadno přehlédnete:
-   - **Dvojitá zpětná lomítka `\\`** — JSON je vyžaduje, jednoduchá `\`
+   - **Dvojitá zpětná lomítka `\\`** JSON je vyžaduje, jednoduchá `\`
      by způsobila syntaktickou chybu. Alternativně lze použít forward
      slash `/`, který také funguje.
-   - **Čárka na konci řádku zůstává** — `"...",` ne `"..."`. Bez čárky
+   - **Čárka na konci řádku zůstává** `"...",` ne `"..."`. Bez čárky
      bude soubor neplatný JSON.
    - **Cesta směřuje ke SLOŽCE**, ne k souboru `energyplus.exe` —
      honeybee si k němu doplní cestu sám.
@@ -301,7 +301,7 @@ Bez tohoto kroku by simulace přes EnergyPlus nebylo možné spustit.
 
 ## 4. Příprava frontendu
 
-V novém okně terminálu (backend nechte pro pozdější běh — bude potřeba
+V novém okně terminálu (backend nechte pro pozdější běh bude potřeba
 dvou oken současně) přeskočte do adresáře, kde se u vás nachází frontendová
 část aplikace:
 

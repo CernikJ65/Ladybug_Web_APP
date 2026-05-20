@@ -48,8 +48,6 @@ function useNumberField(value: number, onChange: (v: number) => void) {
   return { raw, handleChange, handleBlur };
 }
 
-/* ── FileBox ── */
-
 interface FileBoxProps {
   id: string;
   file: File | null;
@@ -105,8 +103,6 @@ const FileBox: React.FC<FileBoxProps> = ({
     </div>
   );
 };
-
-/* ── Slider (Apple-style) ── */
 
 interface SliderProps {
   label: string;
@@ -346,7 +342,7 @@ const PedForm: React.FC<Props> = (p) => {
     <p className="ped-form-note">
       {t('Investiční náklady jednotlivých prvků v Kč.')}
     </p>
-    <div className="ped-params-grid">
+    <div className="ped-params-grid" data-tour="ped-costs">
       <PriceField
         label={t('Čerpadlo ASHP vzduch/voda')}
         value={p.ashpCost}
@@ -370,7 +366,6 @@ const PedForm: React.FC<Props> = (p) => {
       />
     </div>
 
-    {/* ── Run button ── */}
     <button
       className="ped-run"
       onClick={p.onRun}

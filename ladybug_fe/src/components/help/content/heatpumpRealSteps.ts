@@ -5,34 +5,40 @@ export const getHeatpumpRealSteps = (hasResult: boolean): TourStep[] => {
     {
       selector: '.hp-hero h1',
       title: 'Potenciál tepelných čerpadel',
-      body: 'Tento scénář umisťuje do zón vyznačených v HBJSON datech tepelná čerpadla a pomocí EnergyPlus počítá jejich roční spotřebu. Současně porovná dva typy — vzduch-voda (ASHP) a země-voda (GSHP), proto se simulace interně spouští dvakrát.',
+      body:
+        'Optimalizační scénář, který umisťuje do zón vyznačených v HBJSON datech tepelná čerpadla a počítá jejich potenciál. Zároveň porovnává dva druhy čerpadel, vzduch-voda (ASHP) a země-voda (GSHP), proto se simulace interně spouští dvakrát.',
       position: 'bottom',
     },
     {
       selector: '.hp-files',
       title: 'Vstupní soubory',
-      body: 'HBJSON popisuje geometrii budovy a její zóny. EPW dodává hodinová klimatická data pro celý simulovaný rok. Bez obou souborů simulace nelze spustit.',
+      body:
+        'Formulář pro nahrání vstupních dat. Scénář vyžaduje oba klíčové formáty: HBJSON (geometrie budovy) a EPW (klimatická data lokality).',
       position: 'bottom',
     },
     {
       selector: '.hp-type-grid',
       title: 'Typ budovy',
-      body: 'Volba typu budovy určuje výchozí program provozu — ventilaci a vnitřní zisky (obsazenost, osvětlení, spotřebiče). Tyto profily se přebírají z Ladybug knihovny dle vybraného typu.',
+      body:
+        'Sekce umožňuje budovám z HBJSON dat přiřadit jeden ze šesti dostupných typů. Volba typu určuje, která šablona energetického chování převzatá z Ladybug Tools bude budově přiřazena. Šablona reprezentuje typická vnitřní zatížení daného druhu budovy.',
     },
     {
       selector: '.hp-mode-seg',
       title: 'Režim simulace',
-      body: 'Zvolte, zda se má simulovat pouze vytápění, nebo i chlazení v letních měsících. Pouze vytápění zrychlí simulaci a hodí se pro čistě otopné scénáře.',
+      body:
+        'Přepínač rozhoduje, zda bude simulace zahrnovat pouze vytápění místností, nebo také jejich chlazení.',
     },
     {
       selector: '.hp-params-grid',
       title: 'Setpointy a rekuperace',
-      body: 'Teplota vytápění a chlazení určuje hranice komfortní zóny, na které čerpadlo reaguje. Rekuperace (ERV) snižuje ztráty větráním — 0 % znamená bez ventilace, vyšší hodnota znamená vyšší účinnost zpětného získávání tepla.',
+      body:
+        'Posuvník Setpoint vytápění určuje cílovou teplotu, kterou má tepelné čerpadlo v zónách budovy během simulace udržovat. ',
     },
     {
       selector: '.hp-run',
       title: 'Spuštění simulace',
-      body: 'Tlačítko spustí EnergyPlus dvakrát za sebou — jednou s ASHP a jednou s GSHP. Kvůli tomu může simulace trvat několik desítek vteřin až minut podle velikosti modelu.',
+      body:
+        'Tlačítko pro spuštění simulace.',
     },
   ];
 
@@ -44,18 +50,24 @@ export const getHeatpumpRealSteps = (hasResult: boolean): TourStep[] => {
     ...intro,
     {
       selector: '.hp-overview-card',
-      title: 'Přehled budovy',
-      body: 'Souhrn rozpoznané geometrie — počet místností a celková plocha. Pod tím je seznam jednotlivých zón s jejich rozměry a plochami, které vstoupily do simulace.',
+      title: 'Místnosti budovy',
+      body:
+        'Karta uvádí seznam všech místností rozpoznaných v HBJSON datech společně s jejich rozměry. Tyto místnosti v simulaci vystupují jako zóny vytápění, jejichž teplotu se tepelná čerpadla snaží po celý rok udržet na zadaných hodnotách.',
     },
     {
-      selector: '.hp-kpi-row',
+      // Cílí na root section komponenty HPRealDemand, který má data-tour="hp-demand".
+      // Předchozí selector '.hp-kpi-row' matchoval jen řádek KPI karet, takže
+      // spotlight zachycoval pouze horní část a měsíční graf zůstával mimo.
+      selector: '[data-tour="hp-demand"]',
       title: 'Tepelná potřeba budovy',
-      body: 'Roční spotřeba na vytápění a (volitelně) chlazení v kWh, vypočtená přímo z EnergyPlus. Tato hodnota je vstupem pro porovnání obou typů čerpadel.',
+      body:
+        'Sekce shrnuje, kolik tepla bylo potřeba do budovy dodat během jednoho simulovaného roku. Souhrnnou roční hodnotu v kWh doplňuje sloupcový graf, který tuto potřebu rozkládá na jednotlivé měsíce.',
     },
     {
       selector: '.hp-compare-wrap',
-      title: 'Porovnání ASHP vs. GSHP',
-      body: 'Karta porovnává oba typy čerpadel — vzduch-voda (ASHP) a země-voda (GSHP). Přepínačem nahoře vybíráte, který typ se má zobrazit jako primární. U každého vidíte roční spotřebu elektřiny, sezónní COP a rozdíl oproti druhé variantě.',
+      title: 'Porovnání tepelných čerpadel',
+      body:
+        'Závěrečná část scénáře nabízí tři pohledy na simulaci uspořádané do samostatných záložek, mezi nimiž lze libovolně přepínat. Úvodní záložka Porovnání poskytuje agregovaný přehled klíčových metrik obou čerpadel, jako jsou hodnota COP nebo celková roční spotřeba elektřiny. Zbylé dvě záložky nabízejí detailnější pohled na každé čerpadlo zvlášť, doplněný například o měsíční graf dodaného tepla či rozpis výroby podle potřeb jednotlivých místností.',
     },
   ];
 };

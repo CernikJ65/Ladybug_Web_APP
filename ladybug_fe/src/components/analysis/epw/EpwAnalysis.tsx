@@ -12,7 +12,7 @@ import HelpButton from '../../help/HelpButton';
 import TourOverlay from '../../help/TourOverlay';
 import { getEpwSteps } from '../../help/content/epwSteps';
 import { useT } from '../../../i18n/useT';
-import './SolarAnalysis.css';
+import './EpwAnalysis.css';
 
 /* ---------- typy ---------- */
 interface LocationInfo {
@@ -36,7 +36,7 @@ interface Props { onBack: () => void; }
 const API = 'http://127.0.0.1:8000/api/analysis';
 
 /* ---------- komponenta ---------- */
-const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
+const EpwAnalysis: React.FC<Props> = ({ onBack }) => {
   const t = useT();
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -244,4 +244,4 @@ const SolarAnalysis: React.FC<Props> = ({ onBack }) => {
   );
 };
 
-export default SolarAnalysis;
+export default EpwAnalysis;

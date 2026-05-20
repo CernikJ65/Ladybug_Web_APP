@@ -111,6 +111,21 @@
   bottom: -7px; transform: rotate(225deg);
 }
 
+/* Stranová umístění — tooltip vedle prvku, šipka ukazuje vodorovně.
+   Reset defaultního left/margin-left a nastavení svislé pozice
+   na střed karty. */
+.tour-tooltip.right::before {
+  left: -7px; margin-left: 0;
+  top: 50%; margin-top: -6px;
+  transform: rotate(-45deg);
+}
+.tour-tooltip.left::before {
+  left: auto; margin-left: 0;
+  right: -7px;
+  top: 50%; margin-top: -6px;
+  transform: rotate(135deg);
+}
+
 /* ── Tooltip obsah ── */
 .tour-tooltip-head {
   display: flex; justify-content: space-between;

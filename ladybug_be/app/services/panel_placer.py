@@ -229,6 +229,18 @@ class PanelPlacer:
             actual_tilt = self._optimal.tilt_degrees
             actual_azimuth = self._optimal.azimuth_degrees
 
+            # OPRAVA: po dvojnásobné rotaci (projekce přes plane střechy +
+            # tilt_face) má panel v lokální rovině rotovaný obdélník místo
+            # axis-aligned. To rozbíjí SensorGrid.from_face3d v ladybug-
+            # radiance — buňky gridu se nevejdou do skutečného tvaru
+            # polygonu a vyhodí chybu "None of the Face3Ds input to
+            # SensorGrid.from_face3d can produce a quad grid...".
+            #
+            # Rekonstrukcí panelu s explicitně axis-aligned osami v cílové
+            # rovině zachováme geometrii (centrum, normála, rozměry) i
+            # plochu, ale lokální polygon bude čistý obdélník.
+            panel_face = self._rebuild_axis_aligned(panel_face, hw, hh)
+
         pid = self._next_id
         self._next_id += 1
 
@@ -262,3 +274,57 @@ class PanelPlacer:
             height=2 * hh,
         )
         return poly2d.is_polygon_inside(panel_rect)
+
+    @staticmethod
+    def _rebuild_axis_aligned(panel_face: Face3D, hw: float, hh: float) -> Face3D:
+        """
+        Z panelu po `tilt_face` rotaci vyrobí čistý axis-aligned obdélník
+        ve své cílové rovině.
+
+        Důvod: composition rotací (plane střechy → tilt_face) vyrobí Face3D,
+        jehož lokální polygon2d je rotovaný obdélník (axis-aligned bbox je
+        větší než plocha). SensorGrid.from_face3d v honeybee-radiance pak
+        nedokáže vygenerovat grid — buňky se v lokální 2D rovině pokoušejí
+        umístit do axis-aligned bboxu, ale ne všechny leží uvnitř
+        skutečného tvaru polygonu.
+
+        Tato metoda zachová:
+          - světové centrum panelu,
+          - normálu (orientaci na světovou stranu),
+          - rozměry hw × hh (lokální axis-aligned),
+          - plochu.
+
+        u-osa = směr první hrany původního panelu (zachová orientaci
+        panelu vůči střeše — důležité pro chování stínění při dlouhé
+        i krátké straně panelu).
+        v-osa = normála × u (ortogonalní v rovině panelu).
+        """
+        boundary = list(panel_face.boundary)
+        center = panel_face.center
+        normal = panel_face.normal
+
+        u_dir = (boundary[1] - boundary[0]).normalize()
+        v_dir = normal.cross(u_dir).normalize()
+
+        p1 = Point3D(
+            center.x - hw * u_dir.x - hh * v_dir.x,
+            center.y - hw * u_dir.y - hh * v_dir.y,
+            center.z - hw * u_dir.z - hh * v_dir.z,
+        )
+        p2 = Point3D(
+            center.x + hw * u_dir.x - hh * v_dir.x,
+            center.y + hw * u_dir.y - hh * v_dir.y,
+            center.z + hw * u_dir.z - hh * v_dir.z,
+        )
+        p3 = Point3D(
+            center.x + hw * u_dir.x + hh * v_dir.x,
+            center.y + hw * u_dir.y + hh * v_dir.y,
+            center.z + hw * u_dir.z + hh * v_dir.z,
+        )
+        p4 = Point3D(
+            center.x - hw * u_dir.x + hh * v_dir.x,
+            center.y - hw * u_dir.y + hh * v_dir.y,
+            center.z - hw * u_dir.z + hh * v_dir.z,
+        )
+        clean_plane = Plane(n=normal, o=p1, x=u_dir)
+        return Face3D([p1, p2, p3, p4], plane=clean_plane)
